@@ -5,8 +5,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Icon } from 'react-native-elements';
 
 // Import screens
-import LoginScreen from '../screens/LoginScreen';
-import RegisterScreen from '../screens/RegisterScreen';
+import SigninScreen from '../screens/SigninScreen';
+import SignupScreen from '../screens/SignupScreen';
 import TravelRequestForm from '../screens/TravelRequestForm';
 import TravelRequestList from '../screens/TravelRequestList';
 import supabase from '../config/supabase';
@@ -88,13 +88,13 @@ export default function AppNavigator() {
           // Auth screens
           <>
             <Stack.Screen 
-              name="Login" 
-              component={LoginScreen}
+              name="Signin" 
+              component={SigninScreen}
               options={{ headerShown: false }}
             />
             <Stack.Screen 
-              name="Register" 
-              component={RegisterScreen}
+              name="Signup" 
+              component={SignupScreen}
               options={{ headerShown: false }}
             />
           </>
