@@ -96,13 +96,19 @@ export default function AppNavigator() {
     headerShown: true,
     title: title,
     headerRight: () => (
-      <Icon 
-        name="log-out" 
-        type="ionicon" 
-        size={24} 
-        onPress={handleSignOut}
-        containerStyle={{ marginRight: 15 }}
-      />
+       <Button
+      icon={{
+        name: "exit-outline",
+        type: "ionicon",
+        size: 20,
+        color: "#FF3B30"
+      }}
+      title="Sign Out"
+      type="clear"
+      titleStyle={{ color: "#FF3B30", fontSize: 14 }}
+      onPress={handleSignOut}
+      containerStyle={{ marginRight: 10 }}
+    />
     )
   });
 
