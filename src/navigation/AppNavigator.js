@@ -78,8 +78,33 @@ export default function AppNavigator() {
       if (session?.user) {
         setUserType(session.user.app_metadata.role);
       }
+      else{
+        setUserType(null);
+      }
     });
   }, []);
+   const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      // The auth state change listener will handle navigation
+    } catch (error) {
+      console.error('Error signing out:', error.message);
+    }
+  };
+   // Common header options with sign out button
+  const getHeaderOptions = (title) => ({
+    headerShown: true,
+    title: title,
+    headerRight: () => (
+      <Icon 
+        name="log-out" 
+        type="ionicon" 
+        size={24} 
+        onPress={handleSignOut}
+        containerStyle={{ marginRight: 15 }}
+      />
+    )
+  });
 
   return (
     <NavigationContainer>
@@ -105,13 +130,13 @@ export default function AppNavigator() {
               <Stack.Screen 
                 name="ClientHome" 
                 component={ClientTabs}
-                options={{ headerShown: false }}
+                options={getHeaderOptions('Find Me Hotels')}
               />
             ) : (
               <Stack.Screen 
                 name="AgentHome" 
                 component={AgentTabs}
-                options={{ headerShown: false }}
+                options={ getHeaderOptions('search requests') }
               />
             )}
           </>

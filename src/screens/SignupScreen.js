@@ -1,7 +1,11 @@
-import React, { useState, useEffect, useRef, memo, useCallback, useMemo } from 'react';
-import { View, StyleSheet, TextInput } from 'react-native';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { View, StyleSheet,TextInput, ScrollView, 
+  KeyboardAvoidingView, Platform} from 'react-native';
 import { Button, Input, Text } from 'react-native-elements';
 import { Dropdown } from 'react-native-element-dropdown';
+
+import { validEmail, validPasswordSignup, validPhoneNumber } from '../utils/validation';
+import supabase from '../config/supabase';
 
 // Custom debounce hook
 const useDebounce = (value, delay) => {
@@ -20,21 +24,6 @@ const useDebounce = (value, delay) => {
   return debouncedValue;
 };
 
-const SearchInput = memo(({ value, onChangeText }) => (
-  <TextInput
-    style={styles.searchInput}
-    placeholder="Type to search..."
-    placeholderTextColor="#86939e"
-    onChangeText={onChangeText}
-    value={value}
-    autoCapitalize="none"
-    autoCorrect={false}
-  />
-), (prevProps, nextProps) => prevProps.value === nextProps.value);
-
-import { validEmail, validPasswordSignup, validPhoneNumber } from '../utils/validation';
-import supabase from '../config/supabase';
-
 export default function SignupScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -42,53 +31,28 @@ export default function SignupScreen({ navigation }) {
   const [role, setRole] = useState('client');
   const [loading, setLoading] = useState(false);
   const [first_name, setFirstName] = useState('');
-  const[second_name, setSecondName] = useState('');
-  const[country_name, setCountryName] = useState('');
+  const [second_name, setSecondName] = useState('');
+  const [country_name, setCountryName] = useState('');
   const [admin_email, setAdminEmail] = useState('');
-  const[company_email, setCompanyEmail] = useState('');
-  const[agent_phone, setAgentPhone] = useState('');
-  const[client_country, setClientCountry] = useState('');
-  const[countries, setCountries] = useState([]);
-  const[loadingCountries, setLoadingCountries] = useState(false);
-  const[countriesError, setCountriesError] = useState(null);
-  const [searchText, setSearchText] = useState('');
+  const [company_email, setCompanyEmail] = useState('');
+  const [messaging_app, setMessagingApp] = useState('');
+  const [agent_phone, setAgentPhone] = useState('');
+  const [client_country, setClientCountry] = useState('');
+  const [countries, setCountries] = useState([]);
+  const [loadingCountries, setLoadingCountries] = useState(false);
+  const [countriesError, setCountriesError] = useState(null);
+  const [countrySearch, setCountrySearch] = useState('');
   
-  // Use debounced search text to prevent unnecessary re-renders
-  const debouncedSearchText = useDebounce(searchText, 300);
-  
-  const filteredCountries = useMemo(() => {
-    if (!debouncedSearchText) return countries;
-    return countries.filter(country => 
-      country.label.toLowerCase().includes(debouncedSearchText.toLowerCase())
-    );
-  }, [countries, debouncedSearchText]);
-
-  const handleSearchChange = useCallback((text) => {
-    setSearchText(text);
-  }, []);
-
-  // Memoize the dropdown props for better performance
-  const dropdownProps = useMemo(() => ({
-    data: filteredCountries,
-    labelField: "label",
-    valueField: "value",
-    placeholder: "Select country...",
-    style: styles.dropdown,
-    activeColor: "#e8e8e8",
-    maxHeight: 300,
-    selectedTextStyle: styles.selectedTextStyle,
-    placeholderStyle: styles.placeholderStyle,
-    renderItem: (item) => (
-      <View style={styles.dropdownItemContainer}>
-        <Text style={styles.dropdownItem}>
-          {item.label}
-        </Text>
-      </View>
-    ),
-    dropdownPosition: "auto",
-    keyboardAvoiding: true
-  }), [filteredCountries]);
-
+  const roles = [
+    { label: 'Client', value: 'client' },
+    { label: 'Agent', value: 'agent' },
+    { label: 'Company', value: 'company' },
+    { label: 'Admin', value: 'admin' }
+  ];
+  const messaging_apps = [
+    { label: 'WhatsApp', value: 'whatsapp' },
+    { label: 'Telegram', value: 'telegram' }
+    ];
   // Fetch countries from Supabase
   useEffect(() => {
     const fetchCountries = async () => {
@@ -120,13 +84,6 @@ export default function SignupScreen({ navigation }) {
 
     fetchCountries();
   }, []);
-
-  const roles = [
-    { label: 'Client', value: 'client' },
-    { label: 'Agent', value: 'agent' },
-    { label: 'Company', value: 'company' },
-    { label: 'Admin', value: 'admin' }
-  ];
 
   const handleSignup = async () => {
     try {
@@ -173,12 +130,16 @@ export default function SignupScreen({ navigation }) {
           if (!validEmail(company_email)) {
             throw new Error('Please enter a valid company email');
           }
+          if (!validPhoneNumber(agent_phone)) {
+            throw new Error('Please enter a valid phone number');
+          }
           userData = {
             ...userData,
             first_name,
             second_name,
             company_email,
-            phone_number: agent_phone
+            phone_number: agent_phone,
+            messaging_app
           };
           break;
 
@@ -202,7 +163,7 @@ export default function SignupScreen({ navigation }) {
           }
           userData = {
             ...userData,
-            company_name: country_name,
+            company_name: company_name,
             admin_email
           };
           break;
@@ -236,7 +197,15 @@ export default function SignupScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
+      <KeyboardAvoidingView 
+    style={styles.container}
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+    keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+  >
+   <ScrollView 
+    contentContainerStyle={styles.scrollContainer}
+    showsVerticalScrollIndicator={true}
+  >
       <Text h3 style={styles.title}>Sign Up</Text>
       <View style={styles.form}>
         <Input
@@ -259,6 +228,7 @@ export default function SignupScreen({ navigation }) {
         <Text style={styles.passwordHint}>
           Password must contain at least 8 characters, including uppercase, lowercase, and numbers
         </Text>
+        
         <Input
           placeholder="Confirm Password"
           onChangeText={setConfirmPassword}
@@ -298,22 +268,38 @@ export default function SignupScreen({ navigation }) {
             ) : countriesError ? (
               <Text style={styles.errorText}>{countriesError}</Text>
             ) : (
-              <View>
-                <SearchInput
-                  value={searchText}
-                  onChangeText={handleSearchChange}
-                />
-                <Dropdown
-                  {...dropdownProps}
-                  value={client_country}
-                  onChange={item => {
-                    setClientCountry(item.value);
-                    setSearchText('');
-                  }}
-                />
-              </View>
+              <Dropdown
+                data={countries}
+                labelField="label"
+                valueField="value"
+                value={client_country}
+                onChange={item => {
+                  setClientCountry(item.value);
+                  setCountrySearch('');
+                }}
+                placeholder="Select country..."
+                style={styles.dropdown}
+                placeholderStyle={styles.placeholderStyle}
+                selectedTextStyle={styles.selectedTextStyle}
+                activeColor="#e8e8e8"
+                search
+                searchPlaceholder="Search country..."
+                searchQuery={countrySearch}
+                onChangeSearchQuery={setCountrySearch}
+                searchField="label"
+                maxHeight={300}
+                renderItem={(item) => (
+                  <View style={styles.dropdownItemContainer}>
+                    <Text style={styles.dropdownItem}>
+                      {item.label}
+                    </Text>
+                  </View>
+                )}
+                dropdownPosition="auto"
+                keyboardAvoiding={true}
+              />
             )}
-          </>
+           </>
         )}
 
         {/* Agent specific fields */}
@@ -329,6 +315,19 @@ export default function SignupScreen({ navigation }) {
                 (company_email && !validEmail(company_email)) ? 'Please enter a valid email' : ''}
             />
             <>
+            <Text style={styles.label}>Messaging App:</Text>
+    <Dropdown
+      data={messaging_apps}
+      labelField="label"
+      valueField="value"
+      value={messaging_app}
+      onChange={item => setMessagingApp(item.value)}
+      placeholder="Select messaging app"
+      style={styles.dropdown}
+      placeholderStyle={styles.placeholderStyle}
+      selectedTextStyle={styles.selectedTextStyle}
+      activeColor="#e8e8e8"
+    />
               <Input
                 placeholder="Phone Number (e.g. +1234567890)"
                 onChangeText={setAgentPhone}
@@ -374,8 +373,10 @@ export default function SignupScreen({ navigation }) {
           onChange={item => setRole(item.value)}
           placeholder="Select role"
           style={styles.dropdown}
+          placeholderStyle={styles.placeholderStyle}
+          selectedTextStyle={styles.selectedTextStyle}
+          activeColor="#e8e8e8"
         />
-
         <Button
           title="Sign Up"
           onPress={handleSignup}
@@ -388,8 +389,8 @@ export default function SignupScreen({ navigation }) {
           onPress={() => navigation.goBack()}
         />
       </View>
-    </View>
-  
+      </ScrollView>
+       </KeyboardAvoidingView>
   );
 }
 
@@ -398,6 +399,12 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: '#fff',
+  },
+
+ scrollContainer: {
+    flexGrow: 1,
+    padding: 20,
+    paddingBottom: 40, // Add extra padding at the bottom
   },
   passwordHint: {
     fontSize: 12,
@@ -453,12 +460,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginVertical: 10,
   },
-  searchIcon: {
-    marginRight: 5,
-  },
-  searchIcon: {
-    marginRight: 5,
-  },
   dropdownItemContainer: {
     padding: 12,
     borderBottomWidth: 1,
@@ -474,8 +475,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 10,
-    marginVertical: 8,
-    marginHorizontal: 8,
-    fontSize: 16,
+    marginBottom: 10,
   },
+  
 });
