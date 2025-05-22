@@ -9,7 +9,7 @@ import { checkUserRole, getCurrentUser } from '../utils/auth';
 export default function TravelRequestForm({ navigation }) {
   // Check if user is client
   useEffect(() => {
-    const checkUserRole = async () => {
+  
     checkUserRole('client', navigation);
   }, [navigation]);
 
