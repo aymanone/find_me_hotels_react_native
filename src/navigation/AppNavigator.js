@@ -8,6 +8,7 @@ import supabase from '../config/supabase';
 import { Icon, Button } from 'react-native-elements';
 import SigninScreen from '../screens/SigninScreen';
 import TravelRequestList from '../screens/TravelRequestList';
+import TravelRequestForm from '../screens/TravelRequestForm'; 
 import { View, Text } from 'react-native';
 
 // Create navigators
@@ -44,11 +45,20 @@ function ClientTabs() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName = focused ? 'list' : 'list-outline';
+           if (route.name === 'Requests') {
+            iconName = focused ? 'list' : 'list-outline';
+          } else if (route.name === 'NewRequest') {
+            iconName = focused ? 'add-circle' : 'add-circle-outline';
+          }
           return <Icon name={iconName} type="ionicon" size={size} color={color} />;
         },
       })}
     >
+       <Tab.Screen 
+        name="NewRequest" 
+        component={TravelRequestForm}
+        options={{ title: 'New Request' }}
+      />
       <Tab.Screen 
         name="Requests" 
         component={TravelRequestList}
