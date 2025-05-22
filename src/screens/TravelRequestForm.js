@@ -5,19 +5,12 @@ import { Button, Input, Text, CheckBox } from 'react-native-elements';
 import { Dropdown } from 'react-native-element-dropdown';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
-
+import { checkUserRole, getCurrentUser } from '../utils/auth';
 export default function TravelRequestForm({ navigation }) {
   // Check if user is client
   useEffect(() => {
     const checkUserRole = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user || user.app_metadata.role !== 'client') {
-        await supabase.auth.signOut();
-        navigation.navigate('Signin');
-      }
-    };
-    
-    checkUserRole();
+    checkUserRole('client', navigation);
   }, [navigation]);
 
   // State variables
