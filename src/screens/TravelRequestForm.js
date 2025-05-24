@@ -9,8 +9,8 @@ import { checkUserRole, getCurrentUser } from '../utils/auth';
 export default function TravelRequestForm({ navigation }) {
   // Check if user is client
   useEffect(() => {
-  
-    checkUserRole('client', navigation);
+    
+    checkUserRole("client", navigation, "Signin");
   }, [navigation]);
 
   // State variables
@@ -272,7 +272,9 @@ export default function TravelRequestForm({ navigation }) {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} 
+    keyboardShouldPersistTaps="handled"
+    >
       <Text h4 style={styles.title}>New Travel Request</Text>
       
       {/* Dates Row */}
@@ -459,7 +461,24 @@ export default function TravelRequestForm({ navigation }) {
           />
         </View>
       </View>
-      
+       {/* Meals Row */}
+      <View style={styles.row}>
+        <View style={styles.fullWidth}>
+          <Text style={styles.label}>Meals</Text>
+          <View style={styles.mealsContainer}>
+            {['Breakfast', 'Lunch', 'Dinner'].map(meal => (
+              <CheckBox
+                key={meal}
+                title={meal}
+                checked={formData.meals.includes(meal.toLowerCase())}
+                onPress={() => toggleMeal(meal.toLowerCase())}
+                containerStyle={styles.checkbox}
+              />
+            ))}
+          </View>
+        </View>
+      </View>
+  
       {/* Budget Row */}
       <View style={styles.row}>
         <View style={styles.halfWidth}>
@@ -493,24 +512,7 @@ export default function TravelRequestForm({ navigation }) {
         </View>
       </View>
       
-      {/* Meals Row */}
-      <View style={styles.row}>
-        <View style={styles.fullWidth}>
-          <Text style={styles.label}>Meals</Text>
-          <View style={styles.mealsContainer}>
-            {['Breakfast', 'Lunch', 'Dinner'].map(meal => (
-              <CheckBox
-                key={meal}
-                title={meal}
-                checked={formData.meals.includes(meal.toLowerCase())}
-                onPress={() => toggleMeal(meal.toLowerCase())}
-                containerStyle={styles.checkbox}
-              />
-            ))}
-          </View>
-        </View>
-      </View>
-      
+     
       {/* Travelers Nationality Row */}
       <View style={styles.row}>
         <View style={styles.fullWidth}>
@@ -538,60 +540,56 @@ export default function TravelRequestForm({ navigation }) {
           />
         </View>
       </View>
-      
-      {/* Preferred Agents Countries Row */}
-      <View style={styles.row}>
-        <View style={styles.fullWidth}>
-          <Text style={styles.label}>Preferred Agents Countries</Text>
-          <Dropdown
-            data={allCountries.map(country => ({
-              label: country.country_name,
-              value: country.id
-            }))}
-            labelField="label"
-            valueField="value"
-            value={formData.preferredAgentsCountries[0]}
-            onChange={item => addPreferredAgentCountry(item.value)}
-            placeholder="Select first country"
-            style={styles.dropdown}
-            placeholderStyle={styles.placeholderStyle}
-            selectedTextStyle={styles.selectedTextStyle}
-            search
-            searchPlaceholder="Search country..."
-            disabled={formData.preferredAgentsCountries.length >= 2}
+ 
+    {/* Preferred Agents Countries Row */}
+<View style={styles.row}>
+  <View style={styles.fullWidth}>
+    <Text style={styles.label}>Preferred Agents Countries</Text>
+    <Dropdown
+      data={allCountries.map(country => ({
+        label: country.country_name,
+        value: country.id
+      }))}
+      labelField="label"
+      valueField="value"
+    
+      onChange={item => {
+        addPreferredAgentCountry(item.value);
+      }}
+     // dropdownPosition="top"
+      showsVerticalScrollIndicator={true}
+      placeholder="Select country"
+      style={[
+        styles.dropdown, 
+        formData.preferredAgentsCountries.length >= 2 ? styles.disabledDropdown : {}
+      ]}
+      placeholderStyle={styles.placeholderStyle}
+      selectedTextStyle={styles.selectedTextStyle}
+      search
+      searchPlaceholder="Search country..."
+      disable={formData.preferredAgentsCountries.length >= 2}
+      excludeItems={formData.preferredAgentsCountries.map(id => ({ value: id }))}
+      excludeSearchItems={formData.preferredAgentsCountries.map(id => ({ value: id }))}
+    />
+    
+    {/* Display selected countries as tags */}
+    <View style={styles.agentCountriesContainer}>
+      {formData.preferredAgentsCountries.map(countryId => (
+        <View key={countryId} style={styles.agentCountryTag}>
+          <Text style={styles.agentCountryTagText}>
+            {allCountries.find(country => country.id === countryId)?.country_name}
+          </Text>
+          <Button
+            icon={{ name: 'close', size: 15, color: 'white' }}
+            onPress={() => removePreferredAgentCountry(countryId)}
+            buttonStyle={styles.removeAgentCountryButton}
           />
-          {formData.preferredAgentsCountries.length > 0 && (
-            <Dropdown
-              data={allCountries.map(country => ({
-                label: country.country_name,
-                value: country.id
-              }))}
-              labelField="label"
-              valueField="value"
-              value={formData.preferredAgentsCountries[1]}
-              onChange={item => addPreferredAgentCountry(item.value)}
-              placeholder="Select second country"
-              style={styles.dropdown}
-              placeholderStyle={styles.placeholderStyle}
-              selectedTextStyle={styles.selectedTextStyle}
-              search
-              searchPlaceholder="Search country..."
-              disabled={formData.preferredAgentsCountries.length < 1 || formData.preferredAgentsCountries.length >= 2}
-            />
-          )}
-          {formData.preferredAgentsCountries.map(countryId => (
-            <View key={countryId} style={styles.agentCountryTag}>
-              <Text style={styles.agentCountryTagText}>{allCountries.find(country => country.id === countryId)?.country_name}</Text>
-              <Button
-                icon={{ name: 'close', size: 15, color: 'white' }}
-                onPress={() => removePreferredAgentCountry(countryId)}
-                buttonStyle={styles.removeAgentCountryButton}
-              />
-            </View>
-          ))}
         </View>
-      </View>
-      
+      ))}
+    </View>
+  </View>
+</View>
+     
       {/* Notes Row */}
       <View style={styles.row}>
         <View style={styles.fullWidth}>
@@ -622,7 +620,8 @@ export default function TravelRequestForm({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     padding: 16,
-    backgroundColor: '#fff'
+    backgroundColor: '#fff',
+    paddingBottom:50,
   },
   title: {
     marginBottom: 16,
@@ -694,6 +693,17 @@ const styles = StyleSheet.create({
     padding: 2,
     borderRadius: 8
   },
+  agentCountriesContainer: {
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  marginTop: 8,
+  paddingBottom:80,
+},
+disabledDropdown: {
+  backgroundColor: '#f0f0f0',
+  borderColor: '#d0d0d0',
+  opacity: 0.7
+},
   agentCountryTag: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -715,6 +725,7 @@ const styles = StyleSheet.create({
   },
   submitButtonContainer: {
     marginTop: 16,
-    alignItems: 'center'
+    alignItems: 'center',
+    marginBottom:32,
   }
 });

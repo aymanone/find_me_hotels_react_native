@@ -32,7 +32,7 @@ export default function SignupScreen({ navigation }) {
   const [loading, setLoading] = useState(false);
   const [first_name, setFirstName] = useState('');
   const [second_name, setSecondName] = useState('');
-  const [country_name, setCountryName] = useState('');
+  const [company_name, setCompanyyName] = useState('');
   const [admin_email, setAdminEmail] = useState('');
   const [company_email, setCompanyEmail] = useState('');
   const [messaging_app, setMessagingApp] = useState('');
@@ -155,7 +155,7 @@ export default function SignupScreen({ navigation }) {
           break;
 
         case 'company':
-          if (!country_name || !admin_email) {
+          if ( !admin_email) {
             throw new Error('Please fill in all company fields');
           }
           if (!validEmail(admin_email)) {
@@ -163,7 +163,7 @@ export default function SignupScreen({ navigation }) {
           }
           userData = {
             ...userData,
-            company_name: company_name,
+            
             admin_email
           };
           break;
@@ -205,6 +205,7 @@ export default function SignupScreen({ navigation }) {
    <ScrollView 
     contentContainerStyle={styles.scrollContainer}
     showsVerticalScrollIndicator={true}
+    keyboardShouldPersistTaps="handled"
   >
       <Text h3 style={styles.title}>Sign Up</Text>
       <View style={styles.form}>
@@ -269,6 +270,7 @@ export default function SignupScreen({ navigation }) {
               <Text style={styles.errorText}>{countriesError}</Text>
             ) : (
               <Dropdown
+                style={styles.clientCountries}
                 data={countries}
                 labelField="label"
                 valueField="value"
@@ -278,7 +280,7 @@ export default function SignupScreen({ navigation }) {
                   setCountrySearch('');
                 }}
                 placeholder="Select country..."
-                style={styles.dropdown}
+      
                 placeholderStyle={styles.placeholderStyle}
                 selectedTextStyle={styles.selectedTextStyle}
                 activeColor="#e8e8e8"
@@ -346,13 +348,7 @@ export default function SignupScreen({ navigation }) {
         {/* Company specific fields */}
         {role === 'company' && (
           <>
-            <Input
-              placeholder="Company Name"
-              onChangeText={text => setCountryName(text.slice(0, 30))}
-              value={country_name}
-              maxLength={30}
-              errorMessage={country_name === '' ? 'Company name is required' : ''}
-            />
+            
             <Input
               placeholder="Admin Email"
               onChangeText={setAdminEmail}
@@ -404,7 +400,7 @@ const styles = StyleSheet.create({
  scrollContainer: {
     flexGrow: 1,
     padding: 20,
-    paddingBottom: 40, // Add extra padding at the bottom
+    paddingBottom: 100, // Add extra padding at the bottom
   },
   passwordHint: {
     fontSize: 12,
@@ -476,6 +472,15 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 10,
     marginBottom: 10,
+  },
+  clientCountries:{
+    height: 50,
+    marginHorizontal: 10,
+    paddingBottom:20,
+    backgroundColor: '#f2f2f2',
+    borderRadius: 8,
+    paddingHorizontal: 12, 
+  
   },
   
 });
