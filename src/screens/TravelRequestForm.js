@@ -6,6 +6,7 @@ import { Dropdown } from 'react-native-element-dropdown';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
 import { checkUserRole, getCurrentUser } from '../utils/auth';
+import { removeFirstOccurrence } from '../utils/arrayUtils';  
 export default function TravelRequestForm({ navigation }) {
   // Check if user is client
   useEffect(() => {
@@ -153,21 +154,20 @@ export default function TravelRequestForm({ navigation }) {
 
   // Handle adding/removing children
   const addChild = (age) => {
-    if (!formData.requestChildren.includes(age)) {
+  
       setFormData({
         ...formData,
         requestChildren: [...formData.requestChildren, age]
       });
-    }
+    
   };
 
   const removeChild = (age) => {
     setFormData({
       ...formData,
-      requestChildren: formData.requestChildren.filter(childAge => childAge !== age)
-    });
-  };
-
+      requestChildren: removeFirstOccurrence(formData.requestChildren, age)
+  });
+  }
   // Handle meal selection
   const toggleMeal = (meal) => {
     const meals = [...formData.meals];
