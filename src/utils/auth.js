@@ -64,6 +64,7 @@ export const getCurrentUser = async () => {
  */
 export const signOut = async (navigation, redirectTo = 'Signin') => {
   try {
+    supabase.removeAllChannels();
     const { error } = await supabase.auth.signOut();
     
     if (error) throw error;

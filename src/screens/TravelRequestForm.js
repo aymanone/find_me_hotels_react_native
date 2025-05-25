@@ -1,5 +1,5 @@
 import { View, StyleSheet, ScrollView, Platform, Alert } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect ,useRef} from 'react';
 import supabase from '../config/supabase';
 import { Button, Input, Text, CheckBox } from 'react-native-elements';
 import { Dropdown } from 'react-native-element-dropdown';
@@ -7,6 +7,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
 import { checkUserRole, getCurrentUser } from '../utils/auth';
 import { removeFirstOccurrence } from '../utils/arrayUtils';  
+import {unsubscribeChannels} from '../utils/channelUtils.js'; // Import the unsubscribe function
 export default function TravelRequestForm({ navigation }) {
   // Check if user is client
   useEffect(() => {
@@ -15,11 +16,17 @@ export default function TravelRequestForm({ navigation }) {
   }, [navigation]);
 
   // State variables
+  const channelsRef=useRef([]);
   const [allCountries, setAllCountries] = useState([]);
   const [areas, setAreas] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+   // References to dropdowns for resetting
+  const countryDropdownRef = useRef(null);
+  const areaDropdownRef = useRef(null);
+  const nationalityDropdownRef = useRef(null);
+  const preferredAgentsDropdownRef = useRef(null);
   
   // Form data
   const [formData, setFormData] = useState({
@@ -69,7 +76,7 @@ export default function TravelRequestForm({ navigation }) {
     fetchCountries();
 
     // Set up realtime subscription for countries table
-    const channel = supabase
+    const countriesChanges = supabase
       .channel('countries_changes')
       .on(
         'postgres_changes',
@@ -85,12 +92,31 @@ export default function TravelRequestForm({ navigation }) {
             preferredAgentsCountries: []
           }));
           setAreas([]);
+           // Reset dropdown UI states using refs
+      if (countryDropdownRef.current) {
+        countryDropdownRef.current.reset();
+      }
+      if (areaDropdownRef.current) {
+        areaDropdownRef.current.reset();
+      }
+      if (nationalityDropdownRef.current) {
+        nationalityDropdownRef.current.reset();
+      }
+      if (preferredAgentsDropdownRef.current) {
+        preferredAgentsDropdownRef.current.reset();
+      }
+       Alert.alert(
+        'Data Updated',
+        'Countries information has been updated. Your selections have been reset.',
+        [{ text: 'OK' }]
+      );
         }
       )
       .subscribe();
+      channelsRef.current.push(countriesChanges);
 
     return () => {
-      channel.unsubscribe();
+   unsubscribeChannels(channelsRef.current);
     };
   }, []);
 
@@ -321,6 +347,7 @@ export default function TravelRequestForm({ navigation }) {
         <View style={styles.halfWidth}>
           <Text style={styles.label}>Destination Country</Text>
           <Dropdown
+          ref={countryDropdownRef}
             data={allCountries
               .filter(country => country.can_visit)
               .map(country => ({
@@ -349,6 +376,7 @@ export default function TravelRequestForm({ navigation }) {
         <View style={styles.halfWidth}>
           <Text style={styles.label}>Destination Area</Text>
           <Dropdown
+          ref={areaDropdownRef}
             data={areas.map(area => ({
               label: area.area_name,
               value: area.id
@@ -410,8 +438,8 @@ export default function TravelRequestForm({ navigation }) {
         <View style={styles.childrenContainer}>
           <Text style={styles.label}>Children</Text>
           <View style={styles.childrenList}>
-            {formData.requestChildren.map(age => (
-              <View key={age} style={styles.childTag}>
+            {formData.requestChildren.map((age,index )=> (
+              <View key={`${age}-${index}`} style={styles.childTag}>
                 <Text style={styles.childTagText}>{age} years</Text>
                 <Button
                   icon={{ name: 'close', size: 15, color: 'white' }}
@@ -518,6 +546,7 @@ export default function TravelRequestForm({ navigation }) {
         <View style={styles.fullWidth}>
           <Text style={styles.label}>Travelers Nationality</Text>
           <Dropdown
+          ref={nationalityDropdownRef}
             data={allCountries.map(country => ({
               label: country.country_name,
               value: country.id
@@ -546,6 +575,7 @@ export default function TravelRequestForm({ navigation }) {
   <View style={styles.fullWidth}>
     <Text style={styles.label}>Preferred Agents Countries</Text>
     <Dropdown
+    ref={preferredAgentsDropdownRef}
       data={allCountries.map(country => ({
         label: country.country_name,
         value: country.id
@@ -593,13 +623,18 @@ export default function TravelRequestForm({ navigation }) {
       {/* Notes Row */}
       <View style={styles.row}>
         <View style={styles.fullWidth}>
-          <Text style={styles.label}>Notes</Text>
+          <Text style={styles.label}>Notes:examples: honeymoon,<br></br>
+          sea view, balcony, smocking room etc.
+           </Text>
           <Input
             multiline
-            numberOfLines={4}
+            numberOfLines={10}
+            textAlignVertical='top'
             value={formData.notes}
             onChangeText={(text) => setFormData({...formData, notes: text})}
             containerStyle={styles.input}
+            inputContainerStyle={styles.notesInputContainer}
+            inputStyle={styles.notesInput}
           />
         </View>
       </View>
@@ -699,6 +734,18 @@ const styles = StyleSheet.create({
   marginTop: 8,
   paddingBottom:80,
 },
+   notesInputContainer: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+  },
+  notesInput: {
+    minHeight: 100,
+    textAlignVertical: 'top',
+    paddingTop: 8,
+  },
+
 disabledDropdown: {
   backgroundColor: '#f0f0f0',
   borderColor: '#d0d0d0',

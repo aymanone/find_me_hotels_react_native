@@ -270,7 +270,7 @@ export default function SignupScreen({ navigation }) {
               <Text style={styles.errorText}>{countriesError}</Text>
             ) : (
               <Dropdown
-                style={styles.clientCountries}
+                style={[styles.dropdown,styles.clientCountries]}
                 data={countries}
                 labelField="label"
                 valueField="value"
@@ -474,12 +474,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   clientCountries:{
-    height: 50,
-    marginHorizontal: 10,
-    paddingBottom:20,
-    backgroundColor: '#f2f2f2',
-    borderRadius: 8,
-    paddingHorizontal: 12, 
+    
+    marginBottom: 20,
   
   },
   
