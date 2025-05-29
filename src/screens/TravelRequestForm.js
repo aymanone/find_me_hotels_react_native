@@ -1,4 +1,4 @@
-import { View, StyleSheet, ScrollView, Platform, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, Platform, Alert ,KeyboardAvoidingView} from 'react-native';
 import React, { useState, useEffect ,useRef} from 'react';
 import supabase from '../config/supabase';
 import { Button, Input, Text, CheckBox } from 'react-native-elements';
@@ -298,6 +298,11 @@ export default function TravelRequestForm({ navigation }) {
   };
 
   return (
+     <KeyboardAvoidingView 
+    style={{ flex: 1 }}
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+    keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 40}
+  >
     <ScrollView style={styles.container} 
     keyboardShouldPersistTaps="handled"
     >
@@ -623,7 +628,9 @@ export default function TravelRequestForm({ navigation }) {
       {/* Notes Row */}
       <View style={styles.row}>
         <View style={styles.fullWidth}>
-          <Text style={styles.label}>Notes:examples: honeymoon,<br></br>
+          <Text style={styles.label}
+          numberOfLines={2}
+          >Notes:examples: honeymoon,
           sea view, balcony, smocking room etc.
            </Text>
           <Input
@@ -649,6 +656,7 @@ export default function TravelRequestForm({ navigation }) {
         />
       </View>
     </ScrollView>
+  </KeyboardAvoidingView>
   );
 }
 
@@ -739,6 +747,7 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 8,
     paddingHorizontal: 8,
+    maxHeight:150,
   },
   notesInput: {
     minHeight: 100,
