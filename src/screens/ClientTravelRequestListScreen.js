@@ -9,6 +9,8 @@ import { unsubscribeChannels } from '../utils/channelUtils';
 
 export default function ClientTravelRequestList({ navigation }) {
   const [travelRequests, setTravelRequests] = useState([]);
+  const [allTravelRequests, setAllTravelRequests] = useState([]); // Store all requests
+  const [filteredRequests, setFilteredRequests] = useState([]); // Store filtered requests
   const [loading, setLoading] = useState(true);
   const [filterIndex, setFilterIndex] = useState(0); // 0: Active, 1: All
   const [highlightedRequests, setHighlightedRequests] = useState({});
@@ -26,6 +28,23 @@ export default function ClientTravelRequestList({ navigation }) {
     
     checkRole();
   }, []);
+  // Apply filter when filterIndex changes or allTravelRequests updates
+useEffect(() => {
+  if (filterIndex === 0) {
+    // Filter for active requests
+    const today = new Date();
+    setFilteredRequests(
+      allTravelRequests.filter(
+        request => 
+          request.status === 'active' && 
+          new Date(request.start_date) >= today
+      )
+    );
+  } else {
+    // Show all requests
+    setFilteredRequests(allTravelRequests);
+  }
+}, [filterIndex, allTravelRequests]);
 
   // Fetch travel requests and set up subscription
   // With this useFocusEffect:
@@ -42,45 +61,80 @@ useFocusEffect(
         subscriptionRef.current = [];
       }
     };
-  }, [filterIndex])
+  }, [])
 );
+const fetchTravelRequests = async () => {
+  try {
+    setLoading(true);
+    
+    // Get current user
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
 
-  const fetchTravelRequests = async () => {
-    try {
-      setLoading(true);
+    // Build query for ALL travel requests (no filtering here)
+    let query = supabase
+      .from('travel_requests')
+      .select('id, creator_id, status, offers_number, request_area, request_country, start_date, end_date')
+      .eq('creator_id', user.id)
+      .order('start_date', { ascending: false })
+      .order('end_date', { ascending: false });
+
+    const { data: requestsData, error } = await query;
+    if (error) throw error;
+    
+    if (requestsData && requestsData.length > 0) {
+      // Extract unique country IDs and area IDs
+      const countryIds = [...new Set(requestsData.map(req => req.request_country))];
+      const areaIds = [...new Set(requestsData.map(req => req.request_area).filter(Boolean))];
       
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
-
-      // Build query
-      let query = supabase
-        .from('travel_requests_full')
-        .select('id, creator_id, status, offers_number, request_area, request_country, start_date, end_date, area_name, country_name')
-        .eq('creator_id', user.id)
-        .order('start_date', { ascending: false })
-        .order('end_date', { ascending: false });
-
-      // Apply filter if showing only active requests
-      if (filterIndex === 0) {
-        const today = new Date();
-        query = query
-          .eq('status', 'active')
-          .gte('start_date', today.toISOString().split('T')[0]);
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-      setTravelRequests(data || []);
-    } catch (error) {
-      console.error('Error fetching travel requests:', error.message);
-      alert('Failed to load travel requests');
-    } finally {
-      setLoading(false);
+      // Fetch countries in a single query
+      const { data: countriesData, error: countriesError } = await supabase
+        .from('countries')
+        .select('id, country_name')
+        .in('id', countryIds);
+      
+      if (countriesError) throw countriesError;
+      
+      // Fetch areas in a single query
+      const { data: areasData, error: areasError } = await supabase
+        .from('areas')
+        .select('id, area_name')
+        .in('id', areaIds);
+      
+      if (areasError) throw areasError;
+      
+      // Create lookup maps
+      const countryMap = countriesData.reduce((map, country) => {
+        map[country.id] = country.country_name;
+        return map;
+      }, {});
+      
+      const areaMap = areasData.reduce((map, area) => {
+        map[area.id] = area.area_name;
+        return map;
+      }, {});
+      
+      // Combine data
+      const combinedData = requestsData.map(request => ({
+        ...request,
+        country_name: countryMap[request.request_country] || 'Unknown',
+        area_name: request.request_area ? areaMap[request.request_area] || 'Unknown' : null
+      }));
+      
+      setAllTravelRequests(combinedData);
+      // Filtered requests will be set by the useEffect
+    } else {
+      setAllTravelRequests([]);
+      // Filtered requests will be set by the useEffect
     }
-  };
-
+  } catch (error) {
+    console.error('Error fetching travel requests:', error.message);
+    alert('Failed to load travel requests');
+  } finally {
+    setLoading(false);
+  }
+};
+ 
   const setupSubscription = async () => {
     try {
       // Clean up previous subscription if exists
@@ -113,39 +167,79 @@ useFocusEffect(
   };
 
   const handleSubscriptionUpdate = (payload) => {
-    if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
-      const updatedRequest = payload.new;
+  if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
+    const updatedRequest = payload.new;
+    
+    // Update the travel requests list
+    setAllTravelRequests(prevRequests => {
+      const existingIndex = prevRequests.findIndex(req => req.id === updatedRequest.id);
       
-      // Update the travel requests list
-      setTravelRequests(prevRequests => {
-        const existingIndex = prevRequests.findIndex(req => req.id === updatedRequest.id);
-        
-        if (existingIndex >= 0) {
-          // Check if offers_number changed
-          if (prevRequests[existingIndex].offers_number !== updatedRequest.offers_number) {
-            // Highlight this request
-            setHighlightedRequests(prev => ({
-              ...prev,
-              [`${updatedRequest.id}+${updatedRequest.offers_number}+${updatedRequest.status}`]: true
-            }));
-          }
-          
-          // Update the request in the array
-          const newRequests = [...prevRequests];
-          newRequests[existingIndex] = updatedRequest;
-          return newRequests;
-        } else {
-          // Add new request to the array
-          return [...prevRequests, updatedRequest];
+      if (existingIndex >= 0) {
+        // Check if offers_number changed
+        if (prevRequests[existingIndex].offers_number !== updatedRequest.offers_number) {
+          // Highlight this request
+          setHighlightedRequests(prev => ({
+            ...prev,
+            [`${updatedRequest.id}+${updatedRequest.offers_number}+${updatedRequest.status}`]: true
+          }));
         }
-      });
-    } else if (payload.eventType === 'DELETE') {
-      // Remove deleted request from the list
-      setTravelRequests(prevRequests => 
-        prevRequests.filter(req => req.id !== payload.old.id)
-      );
+        
+        // Update the request in the array
+        const newRequests = [...prevRequests];
+        newRequests[existingIndex] = {
+          ...updatedRequest,
+          country_name: prevRequests[existingIndex].country_name,
+          area_name: prevRequests[existingIndex].area_name
+        };
+        return newRequests;
+      } else {
+        // For new requests, we need to fetch country and area names
+        fetchRequestDetails(updatedRequest);
+        return prevRequests;
+      }
+    });
+  } else if (payload.eventType === 'DELETE') {
+    // Remove deleted request from the list
+    setAllTravelRequests(prevRequests => 
+      prevRequests.filter(req => req.id !== payload.old.id)
+    );
+  }
+};
+// Helper function to fetch country and area names for a new request
+const fetchRequestDetails = async (request) => {
+  try {
+    // Fetch country name
+    const { data: countryData } = await supabase
+      .from('countries')
+      .select('country_name')
+      .eq('id', request.request_country)
+      .single();
+    
+    // Fetch area name if applicable
+    let areaName = null;
+    if (request.request_area) {
+      const { data: areaData } = await supabase
+        .from('areas')
+        .select('area_name')
+        .eq('id', request.request_area)
+        .single();
+      
+      if (areaData) areaName = areaData.area_name;
     }
-  };
+    
+    // Add the new request with country and area names
+    setAllTravelRequests(prev => [
+      ...prev,
+      {
+        ...request,
+        country_name: countryData?.country_name || 'Unknown',
+        area_name: areaName
+      }
+    ]);
+  } catch (error) {
+    console.error('Error fetching request details:', error);
+  }
+};
 
   const isRequestActive = (request) => {
     const today = new Date();
@@ -258,7 +352,7 @@ useFocusEffect(
       
       {loading ? (
         <ActivityIndicator size="large" color="#007bff" style={styles.loader} />
-      ) : travelRequests.length === 0 ? (
+      ) : filteredRequests.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>No travel requests found</Text>
           <Button
@@ -270,7 +364,7 @@ useFocusEffect(
       ) : (
         <>
           <FlatList
-            data={travelRequests}
+            data={filteredRequests}
             renderItem={renderTravelRequest}
             keyExtractor={item => `${item.id}+${item.offers_number}+${item.status}`}
             contentContainerStyle={styles.listContainer}
