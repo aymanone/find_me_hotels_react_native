@@ -20,12 +20,6 @@ const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 const Drawer = createDrawerNavigator();
 
-// Stack navigators for each user type
-const ClientStack = createNativeStackNavigator();
-const AgentStack = createNativeStackNavigator();
-const CompanyStack = createNativeStackNavigator();
-const AdminStack = createNativeStackNavigator();
-
 // Simple placeholder screen for sign out functionality
 function SignOutScreen() {
   useEffect(() => {
@@ -48,7 +42,6 @@ function SignOutScreen() {
     </View>
   );
 }
-  
 
 // Placeholder component for screens not yet implemented
 function PlaceholderScreen({ title }) {
@@ -81,18 +74,23 @@ function ClientTabs() {
        <Tab.Screen 
         name="NewRequest" 
         component={TravelRequestForm}
-        options={{ title: 'New Request' }}
+        options={{ title: 'New Request', headerShown: false }}
       />
       <Tab.Screen 
         name="Requests" 
         component={ClientTravelRequestList}
-        options={{ title: 'My Requests' }}
+        options={{ title: 'My Requests', headerShown: false }}
       />
     </Tab.Navigator>
   );
 }
 
-// Client drawer
+// Client Profile Screen (specific to clients only)
+function ClientProfileScreen() {
+  return <PlaceholderScreen title="Client Profile - My Bookings & Settings" />;
+}
+
+// CLIENT DRAWER - Contains ALL client screens
 function ClientDrawer() {
   return (
     <Drawer.Navigator
@@ -121,6 +119,7 @@ function ClientDrawer() {
         swipeEnabled: true,
       })}
     >
+      {/* HOME - Contains the main client tabs */}
       <Drawer.Screen 
         name="Home" 
         component={ClientTabs} 
@@ -131,9 +130,36 @@ function ClientDrawer() {
           ),
         }}
       />
+      
+      {/* CLIENT-SPECIFIC NESTED SCREENS */}
+      <Drawer.Screen 
+        name="ClientTravelRequestDetails" 
+        component={ClientTravelRequestDetailsScreen}
+        options={{
+          title: 'Request Details',
+          drawerIcon: ({ color }) => (
+            <Icon name="document-text-outline" type="ionicon" size={22} color={color} />
+          ),
+          drawerItemStyle: { display: 'none' }, // Hide from drawer menu but keep accessible
+        }}
+      />
+      
+      <Drawer.Screen 
+        name="OfferDetails" 
+        component={OfferDetailsScreen}
+        options={{
+          title: 'Offer Details',
+          drawerIcon: ({ color }) => (
+            <Icon name="pricetag-outline" type="ionicon" size={22} color={color} />
+          ),
+          drawerItemStyle: { display: 'none' }, // Hide from drawer menu but keep accessible
+        }}
+      />
+      
+      {/* CLIENT PROFILE */}
       <Drawer.Screen 
         name="Profile" 
-        component={() => <PlaceholderScreen title="Client Profile" />}
+        component={ClientProfileScreen}
         options={{
           title: 'My Profile',
           drawerIcon: ({ color }) => (
@@ -141,6 +167,8 @@ function ClientDrawer() {
           ),
         }}
       />
+      
+      {/* SIGN OUT */}
       <Drawer.Screen 
         name="SignOut" 
         component={SignOutScreen}
@@ -155,35 +183,6 @@ function ClientDrawer() {
         }}
       />
     </Drawer.Navigator>
-  );
-}
-
-// Client Stack with nested screens
-function ClientStackNavigator() {
-  return (
-    <ClientStack.Navigator>
-      <ClientStack.Screen 
-        name="ClientDrawer" 
-        component={ClientDrawer} 
-        options={{ headerShown: false }}
-      />
-      <ClientStack.Screen 
-        name="ClientTravelRequestDetails" 
-        component={ClientTravelRequestDetailsScreen}
-        options={{ 
-          headerShown: true,
-          title: 'Request Details'
-        }}
-      />
-       <ClientStack.Screen 
-        name="OfferDetails" 
-        component={OfferDetailsScreen}
-        options={{ 
-          headerShown: true,
-          title: 'Offer Details'
-        }}
-        />
-    </ClientStack.Navigator>
   );
 }
 
@@ -209,18 +208,23 @@ function AgentTabs() {
       <Tab.Screen 
         name="AvailableRequests" 
         component={() => <PlaceholderScreen title="Available Requests" />}
-        options={{ title: 'Available Requests' }}
+        options={{ title: 'Available Requests', headerShown: false }}
       />
       <Tab.Screen 
         name="MyOffers" 
         component={() => <PlaceholderScreen title="My Offers" />}
-        options={{ title: 'My Offers' }}
+        options={{ title: 'My Offers', headerShown: false }}
       />
     </Tab.Navigator>
   );
 }
 
-// Agent drawer
+// Agent Profile Screen (specific to agents only)
+function AgentProfileScreen() {
+  return <PlaceholderScreen title="Agent Profile - My Performance & Earnings" />;
+}
+
+// AGENT DRAWER - Contains ALL agent screens
 function AgentDrawer() {
   return (
     <Drawer.Navigator
@@ -249,19 +253,47 @@ function AgentDrawer() {
         swipeEnabled: true,
       })}
     >
+      {/* HOME - Contains the main agent tabs */}
       <Drawer.Screen 
         name="Home" 
         component={AgentTabs} 
         options={{
-          title: 'Find Me Hotels',
+          title: 'Search Requests',
           drawerIcon: ({ color }) => (
             <Icon name="home-outline" type="ionicon" size={22} color={color} />
           ),
         }}
       />
+      
+      {/* AGENT-SPECIFIC NESTED SCREENS */}
+      <Drawer.Screen 
+        name="RequestDetails" 
+        component={() => <PlaceholderScreen title="Request Details" />}
+        options={{
+          title: 'Request Details',
+          drawerIcon: ({ color }) => (
+            <Icon name="document-text-outline" type="ionicon" size={22} color={color} />
+          ),
+          drawerItemStyle: { display: 'none' }, // Hide from drawer menu but keep accessible
+        }}
+      />
+      
+      <Drawer.Screen 
+        name="CreateOffer" 
+        component={() => <PlaceholderScreen title="Create Offer" />}
+        options={{
+          title: 'Create Offer',
+          drawerIcon: ({ color }) => (
+            <Icon name="add-circle-outline" type="ionicon" size={22} color={color} />
+          ),
+          drawerItemStyle: { display: 'none' }, // Hide from drawer menu but keep accessible
+        }}
+      />
+      
+      {/* AGENT PROFILE */}
       <Drawer.Screen 
         name="Profile" 
-        component={() => <PlaceholderScreen title="Agent Profile" />}
+        component={AgentProfileScreen}
         options={{
           title: 'My Profile',
           drawerIcon: ({ color }) => (
@@ -269,6 +301,8 @@ function AgentDrawer() {
           ),
         }}
       />
+      
+      {/* SIGN OUT */}
       <Drawer.Screen 
         name="SignOut" 
         component={SignOutScreen}
@@ -283,35 +317,6 @@ function AgentDrawer() {
         }}
       />
     </Drawer.Navigator>
-  );
-}
-
-// Agent Stack with nested screens
-function AgentStackNavigator() {
-  return (
-    <AgentStack.Navigator>
-      <AgentStack.Screen 
-        name="AgentDrawer" 
-        component={AgentDrawer} 
-        options={{ headerShown: false }}
-      />
-      <AgentStack.Screen 
-        name="RequestDetails" 
-        component={() => <PlaceholderScreen title="Request Details" />}
-        options={{ 
-          headerShown: true,
-          title: 'Request Details'
-        }}
-      />
-      <AgentStack.Screen 
-        name="CreateOffer" 
-        component={() => <PlaceholderScreen title="Create Offer" />}
-        options={{ 
-          headerShown: true,
-          title: 'Create Offer'
-        }}
-      />
-    </AgentStack.Navigator>
   );
 }
 
@@ -337,18 +342,23 @@ function CompanyTabs() {
       <Tab.Screen 
         name="Agents" 
         component={() => <PlaceholderScreen title="Company Agents" />}
-        options={{ title: 'My Agents' }}
+        options={{ title: 'My Agents', headerShown: false }}
       />
       <Tab.Screen 
         name="Requests" 
         component={() => <PlaceholderScreen title="Company Requests" />}
-        options={{ title: 'Requests' }}
+        options={{ title: 'Requests', headerShown: false }}
       />
     </Tab.Navigator>
   );
 }
 
-// Company drawer
+// Company Profile Screen (specific to companies only)
+function CompanyProfileScreen() {
+  return <PlaceholderScreen title="Company Profile - Settings & Billing" />;
+}
+
+// COMPANY DRAWER - Contains ALL company screens
 function CompanyDrawer() {
   return (
     <Drawer.Navigator
@@ -377,19 +387,47 @@ function CompanyDrawer() {
         swipeEnabled: true,
       })}
     >
+      {/* HOME - Contains the main company tabs */}
       <Drawer.Screen 
         name="Home" 
         component={CompanyTabs} 
         options={{
-          title: 'Find Me Hotels',
+          title: 'Company Dashboard',
           drawerIcon: ({ color }) => (
             <Icon name="home-outline" type="ionicon" size={22} color={color} />
           ),
         }}
       />
+      
+      {/* COMPANY-SPECIFIC NESTED SCREENS */}
+      <Drawer.Screen 
+        name="AgentDetails" 
+        component={() => <PlaceholderScreen title="Agent Details" />}
+        options={{
+          title: 'Agent Details',
+          drawerIcon: ({ color }) => (
+            <Icon name="person-outline" type="ionicon" size={22} color={color} />
+          ),
+          drawerItemStyle: { display: 'none' }, // Hide from drawer menu but keep accessible
+        }}
+      />
+      
+      <Drawer.Screen 
+        name="RequestDetails" 
+        component={() => <PlaceholderScreen title="Request Details" />}
+        options={{
+          title: 'Request Details',
+          drawerIcon: ({ color }) => (
+            <Icon name="document-text-outline" type="ionicon" size={22} color={color} />
+          ),
+          drawerItemStyle: { display: 'none' }, // Hide from drawer menu but keep accessible
+        }}
+      />
+      
+      {/* COMPANY PROFILE */}
       <Drawer.Screen 
         name="Profile" 
-        component={() => <PlaceholderScreen title="Company Profile" />}
+        component={CompanyProfileScreen}
         options={{
           title: 'My Profile',
           drawerIcon: ({ color }) => (
@@ -397,6 +435,8 @@ function CompanyDrawer() {
           ),
         }}
       />
+      
+      {/* SIGN OUT */}
       <Drawer.Screen 
         name="SignOut" 
         component={SignOutScreen}
@@ -411,35 +451,6 @@ function CompanyDrawer() {
         }}
       />
     </Drawer.Navigator>
-  );
-}
-
-// Company Stack with nested screens
-function CompanyStackNavigator() {
-  return (
-    <CompanyStack.Navigator>
-      <CompanyStack.Screen 
-        name="CompanyDrawer" 
-        component={CompanyDrawer} 
-        options={{ headerShown: false }}
-      />
-      <CompanyStack.Screen 
-        name="AgentDetails" 
-        component={() => <PlaceholderScreen title="Agent Details" />}
-        options={{ 
-          headerShown: true,
-          title: 'Agent Details'
-        }}
-      />
-      <CompanyStack.Screen 
-        name="RequestDetails" 
-        component={() => <PlaceholderScreen title="Request Details" />}
-        options={{ 
-          headerShown: true,
-          title: 'Request Details'
-        }}
-      />
-    </CompanyStack.Navigator>
   );
 }
 
@@ -465,18 +476,23 @@ function AdminTabs() {
       <Tab.Screen 
         name="Users" 
         component={() => <PlaceholderScreen title="Admin Users" />}
-        options={{ title: 'Users' }}
+        options={{ title: 'Users', headerShown: false }}
       />
       <Tab.Screen 
         name="Analytics" 
         component={() => <PlaceholderScreen title="Admin Analytics" />}
-        options={{ title: 'Analytics' }}
+        options={{ title: 'Analytics', headerShown: false }}
       />
     </Tab.Navigator>
   );
 }
 
-// Admin drawer
+// Admin Profile Screen (specific to admins only)
+function AdminProfileScreen() {
+  return <PlaceholderScreen title="Admin Profile - System Settings" />;
+}
+
+// ADMIN DRAWER - Contains ALL admin screens
 function AdminDrawer() {
   return (
     <Drawer.Navigator
@@ -505,19 +521,47 @@ function AdminDrawer() {
         swipeEnabled: true,
       })}
     >
+      {/* HOME - Contains the main admin tabs */}
       <Drawer.Screen 
         name="Home" 
         component={AdminTabs} 
         options={{
-          title: 'Find Me Hotels',
+          title: 'Admin Dashboard',
           drawerIcon: ({ color }) => (
             <Icon name="home-outline" type="ionicon" size={22} color={color} />
           ),
         }}
       />
+      
+      {/* ADMIN-SPECIFIC NESTED SCREENS */}
+      <Drawer.Screen 
+        name="UserDetails" 
+        component={() => <PlaceholderScreen title="User Details" />}
+        options={{
+          title: 'User Details',
+          drawerIcon: ({ color }) => (
+            <Icon name="person-outline" type="ionicon" size={22} color={color} />
+          ),
+          drawerItemStyle: { display: 'none' }, // Hide from drawer menu but keep accessible
+        }}
+      />
+      
+      <Drawer.Screen 
+        name="AnalyticsReport" 
+        component={() => <PlaceholderScreen title="Analytics Report" />}
+        options={{
+          title: 'Analytics Report',
+          drawerIcon: ({ color }) => (
+            <Icon name="bar-chart-outline" type="ionicon" size={22} color={color} />
+          ),
+          drawerItemStyle: { display: 'none' }, // Hide from drawer menu but keep accessible
+        }}
+      />
+      
+      {/* ADMIN PROFILE */}
       <Drawer.Screen 
         name="Profile" 
-        component={() => <PlaceholderScreen title="Admin Profile" />}
+        component={AdminProfileScreen}
         options={{
           title: 'My Profile',
           drawerIcon: ({ color }) => (
@@ -525,6 +569,8 @@ function AdminDrawer() {
           ),
         }}
       />
+      
+      {/* SIGN OUT */}
       <Drawer.Screen 
         name="SignOut" 
         component={SignOutScreen}
@@ -542,40 +588,12 @@ function AdminDrawer() {
   );
 }
 
-// Admin Stack with nested screens
-function AdminStackNavigator() {
-  return (
-    <AdminStack.Navigator>
-      <AdminStack.Screen 
-        name="AdminDrawer" 
-        component={AdminDrawer} 
-        options={{ headerShown: false }}
-      />
-      <AdminStack.Screen 
-        name="UserDetails" 
-        component={() => <PlaceholderScreen title="User Details" />}
-        options={{ 
-          headerShown: true,
-          title: 'User Details'
-        }}
-      />
-      <AdminStack.Screen 
-        name="AnalyticsReport" 
-        component={() => <PlaceholderScreen title="Analytics Report" />}
-        options={{ 
-          headerShown: true,
-          title: 'Analytics Report'
-        }}
-      />
-    </AdminStack.Navigator>
-  );
-}
-
 export default function AppNavigator() {
   const [session, setSession] = useState(null);
   const [userType, setUserType] = useState(null);
   const [appState, setAppState] = useState(AppState.currentState);
-   // Handle app state changes (foreground, background)
+   
+  // Handle app state changes (foreground, background)
   useEffect(() => {
     const subscription = AppState.addEventListener('change', nextAppState => {
       if (appState.match(/active/) && nextAppState.match(/inactive|background/)) {
@@ -591,6 +609,7 @@ export default function AppNavigator() {
       subscription.remove();
     };
   }, [appState]);
+
   //auth state management
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -610,29 +629,6 @@ export default function AppNavigator() {
       }
     });
   }, []);
-  
-  //  header options with sign out button
-  const getHeaderOptionsWithSignOut = (title) => ({
-  title,
-  headerRight: () => (
-    <Button
-      icon={{
-        name: "exit-outline",
-        type: "ionicon",
-        size: 24,
-        color: "#FF3B30"
-      }}
-      type="clear"
-      onPress={async () => {
-        try {
-          await signOut(); // Use the signOut function from auth.js
-        } catch (error) {
-          console.error('Error signing out:', error.message);
-        }
-      }}
-    />
-  )
-});
 
   return (
     <NavigationContainer>
@@ -652,31 +648,31 @@ export default function AppNavigator() {
             />
           </>
         ) : (
-          // App screens
+          // App screens - Each user type gets their own complete drawer
           <>
             {userType === 'client' ? (
               <Stack.Screen 
-                name="ClientHome" 
-                component={ClientStackNavigator}
-                options={getHeaderOptionsWithSignOut("Trip's Room")}
+                name="ClientApp" 
+                component={ClientDrawer}
+                options={{ headerShown: false }}
               />
             ) : userType === 'agent' ? (
               <Stack.Screen 
-                name="AgentHome" 
-                component={AgentStackNavigator}
-                options={getHeaderOptionsWithSignOut('Search Requests')}
+                name="AgentApp" 
+                component={AgentDrawer}
+                options={{ headerShown: false }}
               />
             ) : userType === 'company' ? (
               <Stack.Screen 
-                name="CompanyHome" 
-                component={CompanyStackNavigator}
-                options={getHeaderOptionsWithSignOut('Company Dashboard')}
+                name="CompanyApp" 
+                component={CompanyDrawer}
+                options={{ headerShown: false }}
               />
             ) : userType === 'admin' ? (
               <Stack.Screen 
-                name="AdminHome" 
-                component={AdminStackNavigator}
-                options={getHeaderOptionsWithSignOut('Admin Dashboard')}
+                name="AdminApp" 
+                component={AdminDrawer}
+                options={{ headerShown: false }}
               />
             ) : null}
           </>
