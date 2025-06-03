@@ -20,3 +20,17 @@ export const validPhoneNumber = (phoneNumber) => {
   const phoneRegex = /^(\+|[0-9]{1,3})[0-9]{9,14}$/;
   return phoneRegex.test(phoneNumber);
 };
+// Add this function to your existing validation.js file
+
+export const validURL = (url) => {
+  const pattern = new RegExp(
+    '^(https?:\\/\\/)?' + // protocol
+    '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
+    '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
+    '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
+    '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
+    '(\\#[-a-z\\d_]*)?$',
+    'i'
+  );
+  return pattern.test(url);
+};

@@ -12,6 +12,10 @@ import ClientTravelRequestList from '../screens/ClientTravelRequestListScreen';
 import ClientTravelRequestDetailsScreen from '../screens/ClientTravelRequestDetailsScreen';
 import TravelRequestForm from '../screens/TravelRequestForm'; 
 import OfferDetailsScreen from '../screens/OfferDetailsScreen';
+import AdminCreateCompanyFormScreen from '../screens/AdminCreateCompanyFormScreen';
+import CompanyCreateAgentFormScreen from '../screens/CompanyCreateAgentFormScreen';
+import AgentSearchTravelRequestsScreen from '../screens/AgentSearchTravelRequestsScreen';
+import AgentTravelRequestDetailsScreen from '../screens/AgentTravelRequestDetailsScreen';
 import { View, Text } from 'react-native';
 import {signOut} from '../utils/auth';
 
@@ -207,7 +211,7 @@ function AgentTabs() {
     >
       <Tab.Screen 
         name="AvailableRequests" 
-        component={() => <PlaceholderScreen title="Available Requests" />}
+        component={AgenSearchTravelRequestsScreen}
         options={{ title: 'Available Requests', headerShown: false }}
       />
       <Tab.Screen 
@@ -268,7 +272,7 @@ function AgentDrawer() {
       {/* AGENT-SPECIFIC NESTED SCREENS */}
       <Drawer.Screen 
         name="RequestDetails" 
-        component={() => <PlaceholderScreen title="Request Details" />}
+        component={AgentTravelRequestDetailsScreen}
         options={{
           title: 'Request Details',
           drawerIcon: ({ color }) => (
@@ -330,7 +334,7 @@ function CompanyTabs() {
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
-          if (route.name === 'Agents') {
+          if (route.name === 'Create Agent') {
             iconName = focused ? 'people' : 'people-outline';
           } else if (route.name === 'Requests') {
             iconName = focused ? 'list' : 'list-outline';
@@ -338,7 +342,13 @@ function CompanyTabs() {
           return <Icon name={iconName} type="ionicon" size={size} color={color} />;
         },
       })}
-    >
+    > 
+      <Tab.Screen 
+        name="Create Agent"
+        component={CompanyCreateAgentFormScreen} 
+        options={{ title: 'Create Agent', headerShown: false }}
+        
+      />
       <Tab.Screen 
         name="Agents" 
         component={() => <PlaceholderScreen title="Company Agents" />}
@@ -464,7 +474,7 @@ function AdminTabs() {
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
-          if (route.name === 'Users') {
+          if (route.name === 'Create Company') {
             iconName = focused ? 'people' : 'people-outline';
           } else if (route.name === 'Analytics') {
             iconName = focused ? 'analytics' : 'analytics-outline';
@@ -474,9 +484,10 @@ function AdminTabs() {
       })}
     >
       <Tab.Screen 
-        name="Users" 
-        component={() => <PlaceholderScreen title="Admin Users" />}
-        options={{ title: 'Users', headerShown: false }}
+        name="Create Company"
+        component={AdminCreateCompanyFormScreen} 
+        options={{ title: 'Create Company', headerShown: false }}
+        
       />
       <Tab.Screen 
         name="Analytics" 

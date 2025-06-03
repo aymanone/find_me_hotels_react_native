@@ -3,7 +3,7 @@ import { View, StyleSheet,TextInput, ScrollView,
   KeyboardAvoidingView, Platform} from 'react-native';
 import { Button, Input, Text } from 'react-native-elements';
 import { Dropdown } from 'react-native-element-dropdown';
-
+import {signOut} from '../utils/auth';
 import { validEmail, validPasswordSignup, validPhoneNumber } from '../utils/validation';
 import supabase from '../config/supabase';
 
@@ -185,8 +185,14 @@ export default function SignupScreen({ navigation }) {
       alert('Registration successful! Please check your email for verification.');
       
       // Wait for 5 seconds before navigating
-      setTimeout(() => {
-        navigation.navigate('Signin');
+      setTimeout(async () => {
+        try {
+          await signOut(navigation, 'Signin');
+        } catch (error) {
+          console.error('Error during sign out after registration:', error);
+          // Fallback if signOut fails
+          navigation.navigate('Signin');
+        }
       }, 5000);
       
     } catch (error) {

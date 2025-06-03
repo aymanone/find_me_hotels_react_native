@@ -9,6 +9,7 @@ export default function LoginScreen({ navigation }) {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
+    
     try {
       setLoading(true);
       const { error } = await supabase.auth.signInWithPassword({
