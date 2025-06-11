@@ -11,6 +11,8 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
   const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(true);
    const [requestSectionExpanded, setRequestSectionExpanded] = useState(true);
+   const [offersSectionExpanded, setOffersSectionExpanded] = useState(true);
+   const [refreshingOffers, setRefreshingOffers] = useState(false);
   // Check if user is a client
   useEffect(() => {
     const checkRole = async () => {
@@ -75,6 +77,58 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
       </View>
     );
   }
+  const refreshOffers = async () => {
+  try {
+    setRefreshingOffers(true);
+    
+    // Get the most recent offer's creation date if we have offers
+    let createdAtFilter = '';
+    if (offers.length > 0) {
+      // Sort offers by created_at to find the most recent one
+      const sortedOffers = [...offers].sort((a, b) => 
+        new Date(b.created_at) - new Date(a.created_at)
+      );
+      createdAtFilter = sortedOffers[0].created_at;
+      
+      // Fetch only new offers (created after our most recent one)
+      const { data: newOffersData, error: newOffersError } = await supabase
+        .from('offers')
+        .select('*')
+        .eq('request_id', id)
+        .gt('created_at', createdAtFilter)
+        .order('created_at', { ascending: false });
+      
+      if (newOffersError) throw newOffersError;
+      
+      // If we have new offers, add them to the existing ones
+      if (newOffersData && newOffersData.length > 0) {
+        setOffers(prevOffers => [...newOffersData, ...prevOffers]);
+        alert(`${newOffersData.length} new offer(s) found!`);
+      } else {
+        alert('No new offers available');
+      }
+    } else {
+      // If we don't have any offers yet, fetch all offers
+      const { data: allOffersData, error: allOffersError } = await supabase
+        .from('offers')
+        .select('*')
+        .eq('request_id', id)
+        .order('created_at', { ascending: false });
+      
+      if (allOffersError) throw allOffersError;
+      setOffers(allOffersData || []);
+      
+      if (allOffersData.length === 0) {
+        alert('No offers available yet');
+      }
+    }
+  } catch (error) {
+    console.error('Error refreshing offers:', error.message);
+    alert('Failed to refresh offers');
+  } finally {
+    setRefreshingOffers(false);
+  }
+};
 
   return (
     <ScrollView style={styles.container}>
@@ -123,7 +177,14 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
             </View>
             
             <Divider style={styles.divider} />
-            
+             <View style={styles.infoRow}>
+              <View style={styles.fullWidth}>
+                <Text style={styles.infoLabel}>Nationality</Text>
+                <Text style={styles.infoValue}>{request.travelers_nationality_name}</Text>
+               
+              </View>
+            </View>
+             <Divider style={styles.divider} />
             {/* Travelers Column */}
             <View style={styles.infoRow}>
               <View style={styles.fullWidth}>
@@ -197,21 +258,87 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
             )}
           </View>
         )}
-      
-        <Text h4>Offers</Text>
-        {offers.length > 0 ? (
-          offers.map((offer, index) => (
-            <View key={index} style={styles.offerContainer}>
-              <Text style={styles.offerText}>Provider: {offer.provider_name}</Text>
-              <Text style={styles.offerText}>Price: ${offer.price}</Text>
-              <Text style={styles.offerText}>Details: {offer.details}</Text>
-              <Divider style={{ marginVertical: 5 }} />
-            </View>
-          ))
-        ) : (
-          <Text style={styles.noOffersText}>No offers yet</Text>
-        )}
+  
       </Card>
+      <Card containerStyle={styles.card}>
+      
+  <TouchableOpacity 
+    style={styles.sectionHeader}
+    onPress={() => setOffersSectionExpanded(!offersSectionExpanded)}
+  >
+    <Text h4 style={styles.sectionTitle}>Offers ({offers.length})</Text>
+    <Icon
+      name={offersSectionExpanded ? 'chevron-up' : 'chevron-down'}
+      type="font-awesome"
+      size={18}
+      color="#007bff"
+    />
+  </TouchableOpacity>
+  
+  <View style={styles.refreshButtonContainer}>
+    <Button
+      title={refreshingOffers ? "Loading..." : "Get New Offers"}
+      type="outline"
+      disabled={refreshingOffers}
+      buttonStyle={styles.refreshButton}
+      titleStyle={styles.refreshButtonText}
+      onPress={refreshOffers}
+    />
+  </View>
+
+  {offersSectionExpanded && (
+    <View style={styles.sectionContent}>
+      {offers.length > 0 ? (
+        offers.map((offer, index) => (
+          <Card key={index} containerStyle={styles.offerCard}>
+            <View style={styles.offerHeader}>
+              <Text style={styles.offerTitle}>Offer #{index + 1}</Text>
+              <View style={styles.statusContainer}>
+                <Text style={[styles.statusText, { color: offer.status === 'pending' ? '#FFA500' : '#28a745' }]}>
+                  {offer.status}
+                </Text>
+              </View>
+            </View>
+            
+            <Divider style={styles.divider} />
+            
+            <View style={styles.offerDetailsContainer}>
+              <View style={styles.offerDetailRow}>
+                <Icon name="cash-outline" type="ionicon" size={16} color="#28a745" />
+                <Text style={styles.offerDetailText}>
+                  Price Range: ${offer.min_cost} - ${offer.max_cost}
+                </Text>
+              </View>
+              
+              <View style={styles.offerDetailRow}>
+                <Icon name="star" type="ionicon" size={16} color="#FFD700" />
+                <Text style={styles.offerDetailText}>
+                  Hotels Rating: {offer.min_rating} - {offer.max_rating} stars
+                </Text>
+              </View>
+              
+              <View style={styles.offerDetailRow}>
+                <Icon name="business" type="ionicon" size={16} color="#007bff" />
+                <Text style={styles.offerDetailText}>
+                  Number of Hotels: {offer.num_of_hotels}
+                </Text>
+              </View>
+            </View>
+            
+            <Button
+              title="View Details"
+              icon={<Icon name="eye-outline" type="ionicon" color="#fff" size={16} style={styles.buttonIcon} />}
+              buttonStyle={styles.viewDetailsButton}
+              onPress={() => navigation.navigate('OfferDetailsScreen', { offerId: offer.id })}
+            />
+          </Card>
+        ))
+      ) : (
+        <Text style={styles.noOffersText}>No offers yet for this request</Text>
+      )}
+    </View>
+  )}
+</Card>
     </ScrollView>
   );
 }
@@ -307,4 +434,80 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     marginTop: 10,
   },
+  offerCard: {
+  borderRadius: 8,
+  marginBottom: 15,
+  padding: 0,
+  overflow: 'hidden',
+},
+offerHeader: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  padding: 12,
+  backgroundColor: '#f9f9f9',
+},
+offerTitle: {
+  fontSize: 16,
+  fontWeight: 'bold',
+},
+statusContainer: {
+  paddingHorizontal: 8,
+  paddingVertical: 4,
+  borderRadius: 12,
+  backgroundColor: '#f8f9fa',
+},
+statusText: {
+  fontSize: 12,
+  fontWeight: 'bold',
+},
+offerDetailsContainer: {
+  padding: 12,
+},
+offerDetailRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginBottom: 8,
+},
+offerDetailText: {
+  marginLeft: 8,
+  fontSize: 14,
+},
+viewDetailsButton: {
+  backgroundColor: '#007bff',
+  borderRadius: 0,
+  marginTop: 8,
+},
+buttonIcon: {
+  marginRight: 8,
+},
+sectionHeaderWithButton: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  padding: 16,
+  backgroundColor: '#f9f9f9',
+},
+sectionTitleContainer: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  flex: 1,
+},
+refreshButtonContainer: {
+  flexDirection: 'row',
+  justifyContent: 'flex-end',
+  paddingHorizontal: 16,
+  paddingTop: 0,
+  paddingBottom: 8,
+  backgroundColor: '#f9f9f9',
+},
+refreshButton: {
+  paddingHorizontal: 10,
+  height: 36,
+  borderColor: '#007bff',
+},
+refreshButtonText: {
+  fontSize: 12,
+  color: '#007bff',
+},
 });

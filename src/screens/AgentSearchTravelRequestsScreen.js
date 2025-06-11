@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, FlatList, Alert } from 'react
 import { Button } from 'react-native-elements';
 import { Dropdown } from 'react-native-element-dropdown';
 import { checkUserRole } from '../utils/auth';
-import { supabase } from '../config/supabase';
+import  supabase  from '../config/supabase';
 import { useNavigation } from '@react-navigation/native';
 
 const AgentSearchTravelRequestsScreen = () => {
@@ -17,6 +17,7 @@ const AgentSearchTravelRequestsScreen = () => {
   const [sortField, setSortField] = useState('min_budget');
   const [showSortOptions, setShowSortOptions] = useState(false);
   const [requestsWithDetails, setRequestsWithDetails] = useState([]);
+  const maxOffers=30;
 
   // Options for dropdowns
   const requestOptions = [
@@ -88,59 +89,52 @@ const AgentSearchTravelRequestsScreen = () => {
   };
 
   const searchTravelRequests = async () => {
-    if (!selectedCountry) {
-      Alert.alert('Error', 'Please select a country');
+  if (!selectedCountry) {
+    Alert.alert('Error', 'Please select a country');
+    return;
+  }
+
+  try {
+    // Get tomorrow's date
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      Alert.alert('Error', 'User not authenticated');
       return;
     }
-
-    try {
-      // Get tomorrow's date
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      tomorrow.setHours(0, 0, 0, 0);
-
-      let query = supabase
-        .from('travel_requests')
-        .select('id, max_budget, min_budget, start_date, end_date, request_country, request_area, adults, children')
-        .eq('request_country', selectedCountry)
-        .gte('start_date', tomorrow.toISOString());
-
-      if (requestOption === 'prefered requests' && agent) {
-        // Get agent's preferred countries
-        const { data: prefCountries, error: prefError } = await supabase
-          .from('prefered_agent_countries')
-          .select('country_id')
-          .eq('agent_id', agent.id);
-
-        if (prefError) throw prefError;
-        
-        const prefCountryIds = prefCountries.map(pc => pc.country_id);
-        if (prefCountryIds.includes(selectedCountry)) {
-          query = query.eq('request_country', selectedCountry);
-        } else {
-          setTravelRequests([]);
-          setRequestsWithDetails([]);
-          setShowSortOptions(false);
-          return;
-        }
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-
-      setTravelRequests(data);
-      setShowSortOptions(data.length > 0);
-      
-      if (data.length > 0) {
-        await fetchRequestDetails(data);
-      } else {
-        setRequestsWithDetails([]);
-      }
-    } catch (error) {
-      console.error('Error searching travel requests:', error);
-      Alert.alert('Error', 'Failed to search travel requests');
+      let response;
+    
+    if (requestOption === 'prefered requests') {
+      // Call the RPC function for preferred requests
+      response = await supabase.rpc('agent_preferred_travel_requests', {
+        p_agent_id: user.id,
+        p_request_country: selectedCountry,
+        p_agent_country: agent?.agent_country || null, // Agent's country ID
+        p_max_offers: maxOffers // Maximum number of offers allowed
+      });
+    } else {
+      // Call the RPC function for all available requests
+      response = await supabase.rpc('agent_available_travel_requests', {
+        p_agent_id: user.id,
+        p_request_country: selectedCountry,
+        p_max_offers: maxOffers // Maximum number of offers allowed
+      });
     }
-  };
+    
+    if (response.error) throw response.error;
+    
+    // Since the RPC function already includes all details, we can directly use the results
+    setRequestsWithDetails(response.data || []);
+    setShowSortOptions((response.data || []).length > 0);
+    
+  } catch (error) {
+    console.error('Error searching travel requests:', error);
+    Alert.alert('Error', 'Failed to search travel requests');
+  }
+  
+};
 
   const fetchRequestDetails = async (requests) => {
     try {
@@ -231,14 +225,17 @@ const AgentSearchTravelRequestsScreen = () => {
   };
 
   const renderTravelRequest = ({ item }) => {
+     const hasMaxOffers = item.offers_number >= maxOffers;
     return (
       <TouchableOpacity 
-        style={styles.requestCard}
+        style={[styles.requestCard,
+           hasMaxOffers && styles.maxOffersCard]
+        }
         onPress={() => navigateToRequestDetails(item.id)}
       >
         <View style={styles.row}>
           <Text style={styles.label}>Destination:</Text>
-          <Text style={styles.value}>{item.country_name}, {item.area_name}</Text>
+          <Text style={styles.value}>{item.request_country_name}, {item.request_area_name}</Text>
         </View>
         <View style={styles.row}>
           <Text style={styles.label}>Dates:</Text>
@@ -256,6 +253,21 @@ const AgentSearchTravelRequestsScreen = () => {
             {item.adults} Adults, {Array.isArray(item.children) ? item.children.length : 0} Children
           </Text>
         </View>
+         <View style={styles.row}>
+          <Text style={styles.label}>Nationality:</Text>
+          <Text style={styles.value}>
+           {item.travelers_nationality_name}
+          </Text>
+        </View>
+         <View style={styles.row}>
+          <Text style={styles.label}>Offers:</Text>
+          <Text style={[styles.value
+            , hasMaxOffers && styles.maxOffersCard
+          ]}>${item.offers_number}
+            {' Offers'}
+            {item.offers_number >= 30 ?  "can't make new offers" : ''}
+          </Text>
+        </View>
          <View style={styles.detailsButtonContainer}>
         <Button
           title="View Details"
@@ -264,7 +276,7 @@ const AgentSearchTravelRequestsScreen = () => {
           buttonStyle={styles.detailsButton}
           titleStyle={styles.detailsButtonText}
           icon={{
-            name: 'arrow-right',
+            name: hasMaxOffers? 'eye':'arrow-right',
             type: 'font-awesome',
             size: 15,
             color: '#2089dc'
@@ -282,6 +294,15 @@ const AgentSearchTravelRequestsScreen = () => {
       <View style={styles.searchController}>
         {/* Search Parameters Row */}
         <View style={styles.row}>
+           <Dropdown
+            style={styles.dropdown}
+            data={requestOptions}
+            labelField="label"
+            valueField="value"
+            placeholder="Request Type"
+            value={requestOption}
+            onChange={item => setRequestOption(item.value)}
+          />
           <Button
             title="Search"
             onPress={searchTravelRequests}
@@ -294,40 +315,17 @@ const AgentSearchTravelRequestsScreen = () => {
             valueField="value"
             placeholder="Select Country"
             value={selectedCountry}
+             search
+            maxHeight={300}
             onChange={item => setSelectedCountry(item.value)}
           />
-          <Dropdown
-            style={styles.dropdown}
-            data={requestOptions}
-            labelField="label"
-            valueField="value"
-            placeholder="Request Type"
-            value={requestOption}
-            onChange={item => setRequestOption(item.value)}
-          />
+         
         </View>
 
         {/* Sort Search Result Row - Only shown when there are results */}
         {showSortOptions && (
           <View style={styles.row}>
-            <Button
-              title="Sort"
-              onPress={handleSort}
-              buttonStyle={styles.sortButton}
-            />
-            <Dropdown
-              style={styles.dropdown}
-              data={sortOptions}
-              labelField="label"
-              valueField="value"
-              placeholder="Sort Order"
-              value={sortOption}
-              onChange={item => {
-                setSortOption(item.value);
-                setTimeout(handleSort, 100);
-              }}
-            />
-            <Dropdown
+             <Dropdown
               style={styles.dropdown}
               data={sortFieldOptions}
               labelField="label"
@@ -339,11 +337,34 @@ const AgentSearchTravelRequestsScreen = () => {
                 setTimeout(handleSort, 100);
               }}
             />
+             <Dropdown
+              style={styles.dropdown}
+              data={sortOptions}
+              labelField="label"
+              valueField="value"
+              placeholder="Sort Order"
+              value={sortOption}
+              onChange={item => {
+                setSortOption(item.value);
+                setTimeout(handleSort, 100);
+              }}
+            />
+            <Button
+              title="Sort"
+              onPress={handleSort}
+              buttonStyle={styles.sortButton}
+            />
+           
+           
           </View>
         )}
       </View>
 
       {/* Travel Requests Details Section */}
+       <View style={styles.row}>
+          <Text style={styles.label}>maximum {maxOffers} per request :</Text>
+          
+        </View>
       <FlatList
         data={requestsWithDetails}
         renderItem={renderTravelRequest}
@@ -434,6 +455,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginRight: 5,
   },
+   maxOffersCard: {
+    borderColor: '#dc3545',
+    borderWidth: 2,
+    opacity: 0.8,
+  },
+  maxOffersText: {
+    color: '#dc3545',
+    fontWeight: 'bold',
+  },
+  maxOffersButton: {
+    borderColor: '#dc3545',
+  },
+  maxOffersButtonText: {
+    color: '#dc3545',
+  },       
+
 });
 
 export default AgentSearchTravelRequestsScreen;

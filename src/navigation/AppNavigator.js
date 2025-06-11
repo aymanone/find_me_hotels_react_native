@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useRef } from 'react';
 import {AppState} from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -16,8 +16,16 @@ import AdminCreateCompanyFormScreen from '../screens/AdminCreateCompanyFormScree
 import CompanyCreateAgentFormScreen from '../screens/CompanyCreateAgentFormScreen';
 import AgentSearchTravelRequestsScreen from '../screens/AgentSearchTravelRequestsScreen';
 import AgentTravelRequestDetailsScreen from '../screens/AgentTravelRequestDetailsScreen';
+import ClientOfferDetailsScreen from '../screens/ClientOfferDetailsScreen';
 import { View, Text } from 'react-native';
 import {signOut} from '../utils/auth';
+import { 
+  setupClientChannels, 
+  setupAgentChannels, 
+  setupCompanyChannels, 
+  setupAdminChannels 
+} from '../utils/channelUtils';
+import { Alert } from 'react-native';
 
 // Create navigators
 const Stack = createNativeStackNavigator();
@@ -25,20 +33,25 @@ const Tab = createBottomTabNavigator();
 const Drawer = createDrawerNavigator();
 
 // Simple placeholder screen for sign out functionality
-function SignOutScreen() {
+
+// Simple placeholder screen for sign out functionality
+function SignOutScreen({ navigation }) {
   useEffect(() => {
     const handleSignOut = async () => {
       try {
-        await signOut();
+        // Use the existing signOut function with navigation
+        await signOut(navigation, 'Signin');
       } catch (error) {
         console.error('Error signing out:', error.message);
+        // Fallback if signOut fails
+        navigation.navigate('Signin');
       }
     };
     
     handleSignOut();
     
     return () => {};
-  }, []);
+  }, [navigation]);
   
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -149,8 +162,8 @@ function ClientDrawer() {
       />
       
       <Drawer.Screen 
-        name="OfferDetails" 
-        component={OfferDetailsScreen}
+        name="OfferDetailsScreen" 
+        component={ClientOfferDetailsScreen}
         options={{
           title: 'Offer Details',
           drawerIcon: ({ color }) => (
@@ -211,7 +224,7 @@ function AgentTabs() {
     >
       <Tab.Screen 
         name="AvailableRequests" 
-        component={AgenSearchTravelRequestsScreen}
+        component={AgentSearchTravelRequestsScreen}
         options={{ title: 'Available Requests', headerShown: false }}
       />
       <Tab.Screen 
@@ -271,7 +284,7 @@ function AgentDrawer() {
       
       {/* AGENT-SPECIFIC NESTED SCREENS */}
       <Drawer.Screen 
-        name="RequestDetails" 
+        name="AgentTravelRequestDetails" 
         component={AgentTravelRequestDetailsScreen}
         options={{
           title: 'Request Details',
@@ -603,6 +616,7 @@ export default function AppNavigator() {
   const [session, setSession] = useState(null);
   const [userType, setUserType] = useState(null);
   const [appState, setAppState] = useState(AppState.currentState);
+  const channelsRef=useRef([]);
    
   // Handle app state changes (foreground, background)
   useEffect(() => {
@@ -612,14 +626,60 @@ export default function AppNavigator() {
         console.log('App going to background - removing all channels');
         supabase.removeAllChannels();
       }
-      
+      else if (appState.match(/inactive|background/) && nextAppState === 'active') {
+        // App coming back to foreground - setup channels again if user is logged in
+        if (session?.user) {
+          setupUserChannels(session.user.app_metadata.role, session.user.id);
+        }
+      }
       setAppState(nextAppState);
     });
 
     return () => {
       subscription.remove();
     };
-  }, [appState]);
+  }, [appState,session]);
+
+ const setupUserChannels = (role, userId) => {
+    // Clean up any existing channels first
+    if (channelsRef.current.length > 0) {
+      channelsRef.current.forEach(channel => {
+        supabase.removeChannel(channel);
+      });
+      channelsRef.current = [];
+    }
+
+    // Create a sign out handler that uses the existing signOut function
+    const handleSignOut = async () => {
+      try {
+        await signOut(null, 'Signin');
+      } catch (error) {
+        console.error('Error signing out:', error);
+        navigation.navigate('Signin');
+      }
+    };
+      let channels = [];
+    switch (role) {
+      case 'client':
+        //channels = setupClientChannels(userId, handleSignOut);
+        break;
+      case 'agent':
+        channels = setupAgentChannels(userId, handleSignOut);
+        break;
+      case 'company':
+        channels = setupCompanyChannels(userId, handleSignOut);
+        break;
+      case 'admin':
+        channels = setupAdminChannels(userId, handleSignOut);
+        break;
+      default:
+        console.log('Unknown user role:', role);
+    }
+
+    // Store channels for later cleanup
+    channelsRef.current = channels;
+    console.log(`Set up ${channels.length} channels for ${role} user`);
+  };
 
   //auth state management
   useEffect(() => {
@@ -627,6 +687,7 @@ export default function AppNavigator() {
       setSession(session);
       if (session?.user) {
         setUserType(session.user.app_metadata.role);
+        setupUserChannels(session.user.app_metadata.role, session.user.id);
       }
     });
 
@@ -637,8 +698,18 @@ export default function AppNavigator() {
       }
       else{
         setUserType(null);
+          if (channelsRef.current.length > 0) {
+            supabase.removeAllChannels();
+            channelsRef.current = [];
+        }
       }
     });
+    return () => {
+      if (channelsRef.current.length > 0) {
+        supabase.removeAllChannels();
+            channelsRef.current = [];
+      }
+    } ;
   }, []);
 
   return (

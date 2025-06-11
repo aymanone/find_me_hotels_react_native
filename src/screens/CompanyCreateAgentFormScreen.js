@@ -10,6 +10,7 @@ const CompanyCreateAgentFormScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [isCompany, setIsCompany] = useState(false);
   const [countries, setCountries] = useState([]);
+  const [isPermittedToWork, setIsPermittedToWork] = useState(true);
   
   // Form state
   const [firstName, setFirstName] = useState('');
@@ -38,7 +39,12 @@ const CompanyCreateAgentFormScreen = ({ navigation }) => {
       if (!isUserCompany) {
         Alert.alert('Access Denied', 'You do not have permission to access this page.');
         navigation.goBack();
+        return;
       }
+      const { data: { user } } = await supabase.auth.getUser();
+    if (user?.user_metadata?.permitted_to_work === false) {
+      setIsPermittedToWork(false);
+    }
     } catch (error) {
       console.error('Error checking company status:', error);
       Alert.alert('Error', 'Failed to verify your permissions.');
@@ -162,8 +168,23 @@ const CompanyCreateAgentFormScreen = ({ navigation }) => {
       </View>
     );
   }
-
+// Add this component function inside your main component
+const PermissionWarning = () => (
+  <View style={styles.warningContainer}>
+    <Text style={styles.warningIcon}>⚠️</Text>
+    <Text style={styles.warningTitle}>Access Restricted</Text>
+    <Text style={styles.warningText}>
+      Your account is currently not permitted to create new companies.
+      Please contact the system administrator for assistance.
+    </Text>
+  </View>
+);
   return (
+    <>
+    {!isPermittedToWork ? (
+      <PermissionWarning />
+    ) : (
+      
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Create New Agent</Text>
       
@@ -244,6 +265,8 @@ const CompanyCreateAgentFormScreen = ({ navigation }) => {
         )}
       </TouchableOpacity>
     </ScrollView>
+  )}
+</>
   );
 };
 
@@ -334,6 +357,31 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+   warningContainer: {
+    backgroundColor: '#FFF3CD',
+    borderColor: '#FFEEBA',
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 20,
+    marginVertical: 20,
+    alignItems: 'center',
+  },
+  warningIcon: {
+    fontSize: 48,
+    marginBottom: 10,
+  },
+  warningTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#856404',
+    marginBottom: 10,
+  },
+  warningText: {
+    fontSize: 16,
+    color: '#856404',
+    textAlign: 'center',
+    lineHeight: 24,
   },
 });
 

@@ -12,7 +12,7 @@ const AdminCreateCompanyFormScreen = () => {
   const [loading, setLoading] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [countries, setCountries] = useState([]);
-  
+  const [isPermittedToWork, setIsPermittedToWork] = useState(true);
   
   // Form state
   const [companyName, setCompanyName] = useState('');
@@ -48,7 +48,13 @@ const AdminCreateCompanyFormScreen = () => {
       if (!isUserAdmin) {
         Alert.alert('Access Denied', 'You do not have permission to access this page.');
         navigation.goBack();
+        return;
       }
+      // Check if the user is permitted to work
+      const { data: { user } } = await supabase.auth.getUser();
+    if (user?.user_metadata?.permitted_to_work === false) {
+      setIsPermittedToWork(false);
+    }
     } catch (error) {
       console.error('Error checking admin status:', error);
       Alert.alert('Error', 'Failed to verify your permissions.');
@@ -87,7 +93,7 @@ const AdminCreateCompanyFormScreen = () => {
       url: '',
       phone: '',
     };
-
+    
     // Validate company name
     if (!companyName.trim()) {
       newErrors.companyName = 'Company name is required';
@@ -195,8 +201,22 @@ const AdminCreateCompanyFormScreen = () => {
       </View>
     );
   }
+  const PermissionWarning = () => (
+  <View style={styles.warningContainer}>
+    <Text style={styles.warningIcon}>⚠️</Text>
+    <Text style={styles.warningTitle}>Access Restricted</Text>
+    <Text style={styles.warningText}>
+      Your account is currently not permitted to create new companies.
+      Please contact the system administrator for assistance.
+    </Text>
+  </View>
+);
 
   return (
+    <>
+      {!isPermittedToWork ? (
+      <PermissionWarning />
+    ) : (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Create New Company</Text>
       
@@ -302,6 +322,8 @@ const AdminCreateCompanyFormScreen = () => {
         )}
       </TouchableOpacity>
     </ScrollView>
+      )}
+      </>
   );
 };
 
@@ -391,6 +413,31 @@ textItem: {
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+   warningContainer: {
+    backgroundColor: '#FFF3CD',
+    borderColor: '#FFEEBA',
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 20,
+    marginVertical: 20,
+    alignItems: 'center',
+  },
+  warningIcon: {
+    fontSize: 48,
+    marginBottom: 10,
+  },
+  warningTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#856404',
+    marginBottom: 10,
+  },
+  warningText: {
+    fontSize: 16,
+    color: '#856404',
+    textAlign: 'center',
+    lineHeight: 24,
   },
 });
 
