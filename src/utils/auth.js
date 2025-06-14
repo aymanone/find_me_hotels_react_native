@@ -45,6 +45,13 @@ export const checkUserRole = async (requiredRole, navigation, redirectTo ="Signi
  */
 export const getCurrentUser = async () => {
   try {
+     // First refresh the session to get the latest user data
+    const { data: sessionData, error: refreshError } = await supabase.auth.refreshSession();
+    
+    if (refreshError) {
+      console.warn('Session refresh failed:', refreshError.message);
+      // Continue with getting user even if refresh fails
+    }
     const { data: { user }, error } = await supabase.auth.getUser();
     
     if (error) throw error;
@@ -93,3 +100,12 @@ export const getUserRole = async () => {
     return null;
   }
 };
+export const notAllowedAuthenticatedUser = async()=>{
+  const user= await getCurrentUser();
+  if (user) {
+    console.warn('Authenticated user attempted to access a restricted area');
+    const redirect = await checkUserRole(user?.app_metadata?.role);
+    return false; // User is authenticated, not allowed
+  }
+  return true;
+}

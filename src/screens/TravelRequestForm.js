@@ -75,45 +75,7 @@ export default function TravelRequestForm({ navigation }) {
 
     fetchCountries();
 
-    // Set up realtime subscription for countries table
-    const countriesChanges = supabase
-      .channel('countries_changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'countries' },
-        () => {
-          fetchCountries();
-          // Reset country and area selections
-          setFormData(prev => ({
-            ...prev,
-            requestCountry: null,
-            requestArea: null,
-            travelersNationality: null,
-            preferredAgentsCountries: []
-          }));
-          setAreas([]);
-           // Reset dropdown UI states using refs
-      if (countryDropdownRef.current) {
-        countryDropdownRef.current.reset();
-      }
-      if (areaDropdownRef.current) {
-        areaDropdownRef.current.reset();
-      }
-      if (nationalityDropdownRef.current) {
-        nationalityDropdownRef.current.reset();
-      }
-      if (preferredAgentsDropdownRef.current) {
-        preferredAgentsDropdownRef.current.reset();
-      }
-       Alert.alert(
-        'Data Updated',
-        'Countries information has been updated. Your selections have been reset.',
-        [{ text: 'OK' }]
-      );
-        }
-      )
-      .subscribe();
-      channelsRef.current.push(countriesChanges);
+   
 
     return () => {
    unsubscribeChannels(channelsRef.current);
@@ -229,74 +191,186 @@ export default function TravelRequestForm({ navigation }) {
   };
 
   // Submit form
-  const handleSubmit = async () => {
-    try {
-      // Validate form
-      if (!formData.requestCountry) {
-        throw new Error('Please select a destination country');
-      }
-      if (!formData.requestArea) {
-        throw new Error('Please select a destination area');
-      }
-      if (!formData.numOfAdults || parseInt(formData.numOfAdults) < 1) {
-        throw new Error('Please enter at least 1 adult');
-      }
-      if (!formData.hotelRating) {
-        throw new Error('Please select a hotel rating');
-      }
-      if (!formData.numOfRooms || parseInt(formData.numOfRooms) < 1) {
-        throw new Error('Please enter at least 1 room');
-      }
-      if (!formData.minBudget || !formData.maxBudget) {
-        throw new Error('Please enter both minimum and maximum budget');
-      }
-      if (parseInt(formData.minBudget) > parseInt(formData.maxBudget)) {
-        throw new Error('Minimum budget cannot be greater than maximum budget');
-      }
-      if (!formData.travelersNationality) {
-        throw new Error('Please select travelers nationality');
-      }
-
-      setLoading(true);
-     const { data: { user } } = await supabase.auth.getUser();
-      const { error } = await supabase
-        .from('travel_requests')
-        .insert([
-          {
-            adults: parseInt(formData.numOfAdults),
-            children: formData.requestChildren,
-            min_budget: parseInt(formData.minBudget),
-            max_budget: parseInt(formData.maxBudget),
-            notes: formData.notes,
-            start_date: format(formData.startDate, 'yyyy-MM-dd'),
-            end_date: format(formData.endDate, 'yyyy-MM-dd'),
-            rooms: parseInt(formData.numOfRooms),
-            hotel_rating: formData.hotelRating,
-            request_country: formData.requestCountry,
-            request_area: formData.requestArea,
-            travelers_nationality: formData.travelersNationality,
-            meals: formData.meals,
-            preferred_agents_countries: formData.preferredAgentsCountries,
-            creator_id: user?.id
-          }
-        ]);
-
-      if (error) throw error;
-      
-      Alert.alert('Success', 'Travel request submitted successfully!');
-      
-      // Wait for 3 seconds before navigating
-      setTimeout(() => {
-        navigation.navigate('Requests');
-      }, 3000);
-      
-    } catch (error) {
-      Alert.alert('Error', error.message);
-    } finally {
-      setLoading(false);
+  // Add this to the handleSubmit function as part of the validation process
+const handleSubmit = async () => {
+  try {
+    // Basic form validation
+     if (formData.startDate < new Date().setHours(0,0,0,0)) {
+      throw new Error('The Dates are not valid');
     }
-  };
+     if (formData.startDate >= formData.endDate) {
+      throw new Error('The Dates are not valid');
+    }
+    if (!formData.requestCountry) {
+      throw new Error('Please select a destination country');
+    }
+    if (!formData.requestArea) {
+      throw new Error('Please select a destination area');
+    }
+    if (!formData.numOfAdults || parseInt(formData.numOfAdults) < 1) {
+      throw new Error('Please enter at least 1 adult');
+    }
+    if (!formData.hotelRating && formData.hotelRating !== 0) {
+      throw new Error('Please select a hotel rating');
+    }
+    if (!formData.numOfRooms || parseInt(formData.numOfRooms) < 1) {
+      throw new Error('Please enter at least 1 room');
+    }
+    if (!formData.minBudget || !formData.maxBudget) {
+      throw new Error('Please enter both minimum and maximum budget');
+    }
+    if (parseInt(formData.minBudget) > parseInt(formData.maxBudget)) {
+      throw new Error('Minimum budget cannot be greater than maximum budget');
+    }
+    if (!formData.travelersNationality) {
+      throw new Error('Please select travelers nationality');
+    }
+    
+    setLoading(true);
+    
+    // Refresh all countries data to ensure we have the latest status
+    const { data: refreshedCountries, error: countriesError } = await supabase
+      .from('minimum_countries_info')
+      .select('*')
+      .order('country_name');
+    
+    if (countriesError) throw new Error('Failed to validate countries. Please try again.');
+    
+    // Update the countries state with fresh data
+    setAllCountries(refreshedCountries);
+    
+    // Validate destination country
+    const destinationCountry = refreshedCountries.find(c => c.id === formData.requestCountry);
+    if (!destinationCountry || !destinationCountry.can_visit) {
+      // Reset country and area selections
+      setFormData(prev => ({
+        ...prev,
+        requestCountry: null,
+        requestArea: null
+      }));
+      
+      // Reset dropdown UI states
+      if (countryDropdownRef.current) {
+        countryDropdownRef.current.reset();
+      }
+      if (areaDropdownRef.current) {
+        areaDropdownRef.current.reset();
+      }
+      
+      throw new Error('The selected destination country is no longer available for visits. Please select another country.');
+    }
+    
+    // Validate nationality country
+    const nationalityCountry = refreshedCountries.find(c => c.id === formData.travelersNationality);
+    if (!nationalityCountry || !nationalityCountry.citizens_can_travel) {
+      // Reset nationality selection
+      console.log(nationalityCountry);
+      setFormData(prev => ({
+        ...prev,
+        travelersNationality: null
+      }));
+      
+      // Reset dropdown UI state
+      if (nationalityDropdownRef.current) {
+        nationalityDropdownRef.current.reset();
+      }
+      
+      throw new Error('The selected nationality is no longer allowed to travel. Please select another nationality.');
+    }
+    
+    // Validate preferred agent countries
+    if (formData.preferredAgentsCountries.length > 0) {
+      const invalidAgentCountries = formData.preferredAgentsCountries.filter(
+        countryId => !refreshedCountries.some(c => c.id === countryId)
+      );
+      
+      if (invalidAgentCountries.length > 0) {
+        // Reset invalid preferred agent countries
+        setFormData(prev => ({
+          ...prev,
+          preferredAgentsCountries: []
+        }));
+        
+        // Reset dropdown UI state
+        if (preferredAgentsDropdownRef.current) {
+          preferredAgentsDropdownRef.current.reset();
+        }
+        
+        throw new Error('Some preferred agent countries are no longer available. They have been removed from your selection.');
+      }
+    }
+    
+    // Refresh areas data for the selected country
+    const { data: refreshedAreas, error: areasError } = await supabase
+      .from('areas')
+      .select('*')
+      .eq('country_id', formData.requestCountry)
+      .eq('can_visit', true)
+      .order('area_name');
+    
+    if (areasError) throw new Error('Failed to validate areas. Please try again.');
+    
+    // Update the areas state with fresh data
+    setAreas(refreshedAreas);
+    
+    // Validate area
+    const selectedArea = refreshedAreas.find(a => a.id === formData.requestArea);
+    if (!selectedArea) {
+      // Reset area selection
+      setFormData(prev => ({
+        ...prev,
+        requestArea: null
+      }));
+      
+      // Reset dropdown UI state
+      if (areaDropdownRef.current) {
+        areaDropdownRef.current.reset();
+      }
+      
+      throw new Error('The selected area is no longer available for visits. Please select another area.');
+    }
 
+    // If all validations pass, proceed with the insert
+    const { data: { user } } = await supabase.auth.getUser();
+    const { error } = await supabase
+      .from('travel_requests')
+      .insert([
+        {
+          adults: parseInt(formData.numOfAdults),
+          children: formData.requestChildren,
+          min_budget: parseInt(formData.minBudget),
+          max_budget: parseInt(formData.maxBudget),
+          notes: formData.notes,
+          start_date: format(formData.startDate, 'yyyy-MM-dd'),
+          end_date: format(formData.endDate, 'yyyy-MM-dd'),
+          rooms: parseInt(formData.numOfRooms),
+          hotel_rating: formData.hotelRating,
+          request_country: formData.requestCountry,
+          request_area: formData.requestArea,
+          travelers_nationality: formData.travelersNationality,
+          meals: formData.meals,
+          preferred_agents_countries: formData.preferredAgentsCountries,
+          creator_id: user?.id
+        }
+      ]);
+
+    if (error) throw error;
+    
+    Alert.alert('Success', 'Travel request submitted successfully!');
+    
+    // Wait for 3 seconds before navigating
+    setTimeout(() => {
+      navigation.navigate('Requests');
+    }, 3000);
+    
+  } catch (error) {
+    Alert.alert('Error', error.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
+  
   return (
      <KeyboardAvoidingView 
     style={{ flex: 1 }}
@@ -552,7 +626,9 @@ export default function TravelRequestForm({ navigation }) {
           <Text style={styles.label}>Travelers Nationality</Text>
           <Dropdown
           ref={nationalityDropdownRef}
-            data={allCountries.map(country => ({
+            data={allCountries.
+              filter(country => country.citizens_can_travel)
+              .map(country => ({
               label: country.country_name,
               value: country.id
             }))}

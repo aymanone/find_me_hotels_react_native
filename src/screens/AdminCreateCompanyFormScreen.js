@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import supabase from '../config/supabase';
-import { checkUserRole } from '../utils/auth';
+import { checkUserRole, getCurrentUser } from '../utils/auth';
 import { validEmail, validPhoneNumber, validURL } from '../utils/validation';
 import { useNavigation } from '@react-navigation/native';
 import { ActivityIndicator } from 'react-native';
@@ -51,8 +51,8 @@ const AdminCreateCompanyFormScreen = () => {
         return;
       }
       // Check if the user is permitted to work
-      const { data: { user } } = await supabase.auth.getUser();
-    if (user?.user_metadata?.permitted_to_work === false) {
+      const  user  = await getCurrentUser();
+    if (user?.app_metadata?.permitted_to_work === false) {
       setIsPermittedToWork(false);
     }
     } catch (error) {
@@ -144,10 +144,35 @@ const AdminCreateCompanyFormScreen = () => {
       setLoading(true);
       
       // Get current user
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      const  user  = await getCurrentUser();
       
-      if (userError) throw userError;
+      if (!user) throw "problems validating the user";
+       // Re-fetch countries to ensure we have the latest data
+    const { data: refreshedCountries, error: countriesError } = await supabase
+      .from('countries')
+      .select('id, country_name')
+      .order('country_name', { ascending: true });
+    
+    if (countriesError) throw new Error('Failed to validate country data. Please try again.');
+    
+    // Check if the selected country still exists
+    const countryStillExists = refreshedCountries.some(country => country.id === companyCountry);
+    
+    if (!countryStillExists) {
+      setErrors(prev => ({
+        ...prev,
+        companyCountry: 'The selected country is no longer available. Please select another country.'
+      }));
       
+      // Update the countries list with fresh data
+      setCountries(refreshedCountries || []);
+      
+      // Reset the country selection
+      setCompanyCountry('');
+      
+      throw new Error('The selected country is no longer available. Please select another country.');
+    }
+    
       // Prepare company data
       const companyData = {
         company_name: companyName,

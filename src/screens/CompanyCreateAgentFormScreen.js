@@ -3,7 +3,7 @@ import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity, Alert 
 import { ActivityIndicator } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import supabase from '../config/supabase';
-import { checkUserRole } from '../utils/auth';
+import { checkUserRole,getCurrentUser } from '../utils/auth';
 import { validEmail } from '../utils/validation';
 
 const CompanyCreateAgentFormScreen = ({ navigation }) => {
@@ -41,8 +41,8 @@ const CompanyCreateAgentFormScreen = ({ navigation }) => {
         navigation.goBack();
         return;
       }
-      const { data: { user } } = await supabase.auth.getUser();
-    if (user?.user_metadata?.permitted_to_work === false) {
+      const  user = await getCurrentUser();
+    if (user?.app_metadata?.permitted_to_work === false) {
       setIsPermittedToWork(false);
     }
     } catch (error) {
@@ -113,52 +113,78 @@ const CompanyCreateAgentFormScreen = ({ navigation }) => {
     return isValid;
   };
 
-  const handleCreateAgent = async () => {
-    if (!validateForm()) return;
+ const handleCreateAgent = async () => {
+  if (!validateForm()) return;
 
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
+     // Get current user
+    const  user  = await getCurrentUser();
+    
+    if (!user) throw 'user is not validated';
+    
+    // Re-fetch countries to ensure we have the latest data
+    const { data: refreshedCountries, error: countriesError } = await supabase
+      .from('countries')
+      .select('id, country_name')
+      .order('country_name', { ascending: true });
+    
+    if (countriesError) throw new Error('Failed to validate country data. Please try again.');
+    
+    // Check if the selected country still exists
+    const countryStillExists = refreshedCountries.some(country => country.id === agentCountry);
+    
+    if (!countryStillExists) {
+      setErrors(prev => ({
+        ...prev,
+        agentCountry: 'The selected country is no longer available. Please select another country.'
+      }));
       
-      // Get current user
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      // Update the countries list with fresh data
+      setCountries(refreshedCountries || []);
       
-      if (userError) throw userError;
-      
-      // Prepare agent data
-      const agentData = {
-        first_name: firstName,
-        second_name: secondName,
-        agent_country: agentCountry,
-        agent_email: agentEmail,
-        company_id: user.id
-      };
-      
-      // Insert agent into database
-      const { data, error } = await supabase
-        .from('agents')
-        .insert([agentData]);
-      
-      if (error) throw error;
-      
-      Alert.alert(
-        'Success',
-        'Agent created successfully!',
-        [{ text: 'OK' }]
-      );
-      
-      // Reset form
-      setFirstName('');
-      setSecondName('');
-      setAgentEmail('');
+      // Reset the country selection
       setAgentCountry('');
       
-    } catch (error) {
-      console.error('Error creating agent:', error);
-      Alert.alert('Error', 'Failed to create agent. Please try again.');
-    } finally {
-      setLoading(false);
+      throw new Error('The selected country is no longer available. Please select another country.');
     }
-  };
+    
+   
+    // Prepare agent data
+    const agentData = {
+      first_name: firstName,
+      second_name: secondName,
+      agent_country: agentCountry,
+      agent_email: agentEmail,
+      company_id: user.id
+    };
+    
+    // Insert agent into database
+    const { data, error } = await supabase
+      .from('agents')
+      .insert([agentData]);
+    
+    if (error) throw error;
+    
+    Alert.alert(
+      'Success',
+      'Agent created successfully!',
+      [{ text: 'OK' }]
+    );
+    
+    // Reset form
+    setFirstName('');
+    setSecondName('');
+    setAgentEmail('');
+    setAgentCountry('');
+    
+  } catch (error) {
+    console.error('Error creating agent:', error);
+    Alert.alert('Error', error.message || 'Failed to create agent. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   if (loading && !countries.length) {
     return (

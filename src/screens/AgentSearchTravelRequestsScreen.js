@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, Alert } from 'react-native';
 import { Button } from 'react-native-elements';
 import { Dropdown } from 'react-native-element-dropdown';
-import { checkUserRole } from '../utils/auth';
+import { checkUserRole,getCurrentUser } from '../utils/auth';
 import  supabase  from '../config/supabase';
 import { useNavigation } from '@react-navigation/native';
 
@@ -53,7 +53,7 @@ const AgentSearchTravelRequestsScreen = () => {
 
   const fetchAgentData = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user= await getCurrentUser();
       if (!user) return;
 
       const { data, error } = await supabase
@@ -95,22 +95,37 @@ const AgentSearchTravelRequestsScreen = () => {
   }
 
   try {
-    // Get tomorrow's date
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0);
-    const { data: { user } } = await supabase.auth.getUser();
+   
+    const user = await getCurrentUser();
     if (!user) {
       Alert.alert('Error', 'User not authenticated');
       return;
     }
-      let response;
+      // First verify the country exists
+    const { data: countryCheck, error: countryError } = await supabase
+      .from('countries')
+      .select('id')
+      .eq('id', selectedCountry)
+      .single();
     
+    if (!countryCheck) {
+      console.error('Country validation error:', countryError);
+      // Re-fetch countries as they might have changed
+      await fetchCountries();
+      Alert.alert('Error', 'Selected country is no longer available. Please select another country.');
+      return;
+    }
+      let response;
+    // Create a proper date object and format it correctly for PostgreSQL
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const formattedDate = today.toISOString(); // Convert to ISO string format
     if (requestOption === 'prefered requests') {
       // Call the RPC function for preferred requests
       response = await supabase.rpc('agent_preferred_travel_requests', {
         p_agent_id: user.id,
         p_request_country: selectedCountry,
+        p_start_date:formattedDate, // Use the formatted date
         p_agent_country: agent?.agent_country || null, // Agent's country ID
         p_max_offers: maxOffers // Maximum number of offers allowed
       });
@@ -119,6 +134,7 @@ const AgentSearchTravelRequestsScreen = () => {
       response = await supabase.rpc('agent_available_travel_requests', {
         p_agent_id: user.id,
         p_request_country: selectedCountry,
+        p_start_date:formattedDate, // Use the formatted date
         p_max_offers: maxOffers // Maximum number of offers allowed
       });
     }

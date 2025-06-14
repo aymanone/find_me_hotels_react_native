@@ -658,26 +658,25 @@ export default function AppNavigator() {
         navigation.navigate('Signin');
       }
     };
-      let channels = [];
+      
     switch (role) {
       case 'client':
         //channels = setupClientChannels(userId, handleSignOut);
         break;
       case 'agent':
-        channels = setupAgentChannels(userId, handleSignOut);
+        
         break;
       case 'company':
-        channels = setupCompanyChannels(userId, handleSignOut);
+      
         break;
       case 'admin':
-        channels = setupAdminChannels(userId, handleSignOut);
         break;
       default:
         console.log('Unknown user role:', role);
     }
 
     // Store channels for later cleanup
-    channelsRef.current = channels;
+
     console.log(`Set up ${channels.length} channels for ${role} user`);
   };
 

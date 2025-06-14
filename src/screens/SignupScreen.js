@@ -3,7 +3,7 @@ import { View, StyleSheet,TextInput, ScrollView,
   KeyboardAvoidingView, Platform} from 'react-native';
 import { Button, Input, Text } from 'react-native-elements';
 import { Dropdown } from 'react-native-element-dropdown';
-import {signOut} from '../utils/auth';
+import {signOut,notAllowedAuthenticatedUser} from '../utils/auth';
 import { validEmail, validPasswordSignup, validPhoneNumber } from '../utils/validation';
 import supabase from '../config/supabase';
 
@@ -53,6 +53,10 @@ export default function SignupScreen({ navigation }) {
     { label: 'WhatsApp', value: 'whatsapp' },
     { label: 'Telegram', value: 'telegram' }
     ];
+     useEffect(() => {
+        
+        notAllowedAuthenticatedUser();
+      }, [navigation]);
   // Fetch countries from Supabase
   useEffect(() => {
     const fetchCountries = async () => {

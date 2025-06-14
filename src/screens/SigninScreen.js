@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Button, Input, Text } from 'react-native-elements';
 import supabase from '../config/supabase';
+import { checkUserRole, getCurrentUser,notAllowedAuthenticatedUser } from '../utils/auth';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+ 
 
   const handleLogin = async () => {
     
@@ -26,7 +28,11 @@ export default function LoginScreen({ navigation }) {
       setLoading(false);
     }
   };
-
+ 
+  useEffect(() => {
+    
+    notAllowedAuthenticatedUser();
+  }, [navigation]);
   return (
     <View style={styles.container}>
       <Text h3 style={styles.title}>Find Me Hotels</Text>

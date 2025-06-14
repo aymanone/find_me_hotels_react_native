@@ -63,7 +63,7 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
     }
     
     // Check if agent is permitted to work
-    const { data: { user } } = await supabase.auth.getUser();
+    const user  = await getCurrentUser();
     if (user?.app_metadata?.permitted_to_work === false) {
       setIsPermittedToWork(false);
       // We don't navigate away, just disable offer functionality
@@ -402,7 +402,7 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
         </Card>
       )}
       {/* Not Permitted Warning */}
-      {user?.user_metadata?.permitted_to_work === false && (
+      {user?.app_metadata?.permitted_to_work === false && (
         <Card containerStyle={styles.warningCard}>
           <Text style={styles.warningText}>
             You are not permitted to work on this request.
