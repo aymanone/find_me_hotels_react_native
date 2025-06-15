@@ -5,7 +5,7 @@ import { Button, Input, Text, CheckBox } from 'react-native-elements';
 import { Dropdown } from 'react-native-element-dropdown';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
-import { checkUserRole, getCurrentUser } from '../utils/auth';
+import { checkUserRole, getCurrentUser,signOut } from '../utils/auth';
 import { removeFirstOccurrence } from '../utils/arrayUtils';  
 import {unsubscribeChannels} from '../utils/channelUtils.js'; // Import the unsubscribe function
 export default function TravelRequestForm({ navigation }) {
@@ -227,7 +227,16 @@ const handleSubmit = async () => {
     }
     
     setLoading(true);
+     const user= await getCurrentUser();
+            if(!user) {
+              Alert.alert('Error', 'User not found. Please log in again.');
+              await signOut(navigation);
+              
+              return;
     
+            }
+            
+            
     // Refresh all countries data to ensure we have the latest status
     const { data: refreshedCountries, error: countriesError } = await supabase
       .from('minimum_countries_info')
@@ -331,7 +340,7 @@ const handleSubmit = async () => {
     }
 
     // If all validations pass, proceed with the insert
-    const { data: { user } } = await supabase.auth.getUser();
+    
     const { error } = await supabase
       .from('travel_requests')
       .insert([

@@ -6,7 +6,9 @@ import {
   ActivityIndicator, 
   TouchableOpacity, 
   TextInput,
-  Alert
+  Alert,
+  KeyboardAvoidingView,
+  Platform
 } from 'react-native';
 import { 
   Text, 
@@ -20,7 +22,7 @@ import {
 import { Dropdown } from 'react-native-element-dropdown';
 import supabase from '../config/supabase';
 import { checkUserRole } from '../utils/auth';
-import { getCurrentUser } from '../utils/auth';
+import { getCurrentUser,signOut } from '../utils/auth';
 
 const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
   const { requestId } = route.params;
@@ -86,8 +88,16 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
       if (!isValidAgent) return;
         
         // Get current user
-        const { data: { user: currentUser } } = await supabase.auth.getUser();
-        setUser(currentUser);
+        
+        const user= await getCurrentUser();
+        if(!user) {
+          Alert.alert('Error', 'User not found. Please log in again.');
+          await signOut(navigation);
+          
+          return;
+
+        }
+        
         
         // Get request details
         const { data, error } = await supabase
@@ -186,7 +196,14 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
       const ratings = offerHotels.map(hotel => hotel.rating);
       const minRating = Math.min(...ratings);
       const maxRating = Math.max(...ratings);
-      
+       const user= await getCurrentUser();
+        if(!user) {
+          Alert.alert('Error', 'User not found. Please log in again.');
+          await signOut(navigation);
+          
+          return;
+
+        }
       // Insert offer into database
       const { data, error } = await supabase
         .from('offers')
@@ -237,7 +254,15 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
                           request?.offers_number < 30;
 
   return (
-    <ScrollView style={styles.container}>
+    <KeyboardAvoidingView 
+    style={{ flex: 1 }}
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+    keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 40}
+  >
+    <ScrollView
+     style={styles.container}
+     keyboardShouldPersistTaps="handled"
+     >
       {/* Request Section */}
       <Card containerStyle={styles.card}>
         <TouchableOpacity 
@@ -481,6 +506,10 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
           value={hotelNotes}
           onChangeText={setHotelNotes}
           multiline
+          numberOfLines={4}
+          textAlignVertical="top"
+          inputContainerStyle={styles.notesInputContainer}
+          inputStyle={styles.notesInput}
         />
         
         {/* Meals in one row */}
@@ -579,6 +608,7 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
 
       
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 const styles = StyleSheet.create({
@@ -783,6 +813,18 @@ hotelDetailText: {
 },
 divider: {
   marginVertical: 10,
+},
+notesInputContainer: {
+  borderWidth: 1,
+  borderColor: '#ccc',
+  borderRadius: 8,
+  paddingHorizontal: 8,
+  maxHeight: 150,
+},
+notesInput: {
+  minHeight: 100,
+  textAlignVertical: 'top',
+  paddingTop: 8,
 },
 });
 

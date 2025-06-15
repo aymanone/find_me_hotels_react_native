@@ -3,7 +3,7 @@ import { View, StyleSheet, ScrollView, ActivityIndicator,TouchableOpacity } from
 import { Text, Card, Button, Divider,Icon } from 'react-native-elements';
 import { format } from 'date-fns';
 import supabase from '../config/supabase';
-import { checkUserRole } from '../utils/auth';
+import { checkUserRole,signOut ,getCurrentUser} from '../utils/auth';
 
 export default function ClientTravelRequestDetailsScreen({ route, navigation }) {
   const { id } = route.params;
@@ -31,11 +31,15 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
     const fetchRequestDetails = async () => {
       try {
         setLoading(true);
+         const user= await getCurrentUser();
+                if(!user) {
+                  Alert.alert('Error', 'User not found. Please log in again.');
+                  await signOut(navigation);
+                  
+                  return;
         
-        // Get current user
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error('User not authenticated');
-
+                }
+              
         // Fetch travel request
         const { data: requestData, error: requestError } = await supabase
           .from('travel_requests_agent')

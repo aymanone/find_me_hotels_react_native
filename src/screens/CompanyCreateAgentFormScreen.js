@@ -3,7 +3,7 @@ import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity, Alert 
 import { ActivityIndicator } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import supabase from '../config/supabase';
-import { checkUserRole,getCurrentUser } from '../utils/auth';
+import { checkUserRole,getCurrentUser ,signOut} from '../utils/auth';
 import { validEmail } from '../utils/validation';
 
 const CompanyCreateAgentFormScreen = ({ navigation }) => {
@@ -120,9 +120,16 @@ const CompanyCreateAgentFormScreen = ({ navigation }) => {
     setLoading(true);
      // Get current user
     const  user  = await getCurrentUser();
+  
+        if(!user) {
+          Alert.alert('Error', 'User not found. Please log in again.');
+          await signOut(navigation);
+          
+          return;
+
+        }
     
-    if (!user) throw 'user is not validated';
-    
+        
     // Re-fetch countries to ensure we have the latest data
     const { data: refreshedCountries, error: countriesError } = await supabase
       .from('countries')
