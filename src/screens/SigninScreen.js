@@ -21,6 +21,7 @@ export default function LoginScreen({ navigation }) {
 
       if (error) throw error;
       const { data: { user } } = await supabase.auth.getUser();
+   
       // The navigation will be handled automatically by our AppNavigator
     } catch (error) {
       alert(error.message);

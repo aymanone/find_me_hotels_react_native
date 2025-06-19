@@ -21,10 +21,11 @@ const ClientOfferDetailsScreen = ({ route, navigation }) => {
   const { offerId } = route.params;
   const [loading, setLoading] = useState(true);
   const [offer, setOffer] = useState(null);
-  const [hotelsSectionCollapsed, setHotelsSectionCollapsed] = useState(false);
-  const [agentSectionCollapsed, setAgentSectionCollapsed] = useState(false);
+  const [hotelsSectionCollapsed, setHotelsSectionCollapsed] = useState(true);
+  const [agentSectionCollapsed, setAgentSectionCollapsed] = useState(true);
 
   useEffect(() => {
+    
     const fetchOfferDetails = async () => {
       try {
         // First check if user is a client with proper permissions

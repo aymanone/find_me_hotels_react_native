@@ -29,7 +29,7 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
   const [loading, setLoading] = useState(true);
   const [request, setRequest] = useState(null);
   const [user, setUser] = useState(null);
-  const [requestSectionCollapsed, setRequestSectionCollapsed] = useState(false);
+  const [requestSectionCollapsed, setRequestSectionCollapsed] = useState(true);
   const [offerHotels, setOfferHotels] = useState([]);
   const [isPermittedToWork, setIsPermittedToWork] = useState(true);
   // Form fields for new hotel
@@ -45,8 +45,8 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
     lunch: false,
     dinner: false
   });
-  const [addHotelSectionCollapsed, setAddHotelSectionCollapsed] = useState(false);
-
+  const [addHotelSectionCollapsed, setAddHotelSectionCollapsed] = useState(true);
+  const [hotelsSectionCollapsed,setHotelsSectionCollapsed]= useState(false);
   // Rating dropdown data
   const ratingData = Array.from({ length: 8 }, (_, i) => ({
     label: `${i} stars`,
@@ -120,10 +120,15 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
     fetchData();
   }, [requestId]);
 
-  const toggleRequestSection = () => {
-    setRequestSectionCollapsed(!requestSectionCollapsed);
-  };
+ 
+const toggleRequestSection = () => {
+     setRequestSectionCollapsed(!requestSectionCollapsed);
+     
+};
+const toggleHotelsSection = () => {
+    setHotelsSectionCollapsed(!hotelsSectionCollapsed);
 
+};
   const addHotel = () => {
     if (offerHotels.length >= 3) {
       Alert.alert('Limit Reached', 'You can only add up to 3 hotels per offer');
@@ -547,10 +552,17 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
     {/* Offer Hotels Section */}
 {offerHotels.length > 0 && (
   <Card containerStyle={styles.card}>
-    <Text style={styles.sectionTitle}>Added Hotels</Text>
-    <Divider style={styles.divider} />
-    
-    {offerHotels.map((hotel, index) => (
+      <TouchableOpacity 
+          style={styles.sectionHeader} 
+          onPress={toggleHotelsSection}
+        >
+          <Text style={styles.sectionTitle}>Added Hotels:</Text>
+          <Icon 
+            name={hotelsSectionCollapsed ? 'chevron-down' : 'chevron-up'} 
+            type="ionicon" 
+          />
+        </TouchableOpacity>
+    {hotelsSectionCollapsed && offerHotels.map((hotel, index) => (
       <Card key={`${hotel.name}+${hotel.address}`} containerStyle={styles.hotelItemCard}>
         <View style={styles.hotelHeader}>
           <Text style={styles.hotelName}>{hotel.name}</Text>

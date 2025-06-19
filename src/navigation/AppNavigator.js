@@ -71,7 +71,25 @@ function PlaceholderScreen({ title }) {
 
 // CLIENT NAVIGATION
 // -----------------
+const ClientRequestStack = Stack;
 
+function ClientRequestFlow() {
+  return (
+  
+       <ClientRequestStack.Navigator 
+      initialRouteName="ClientTravelRequestDetails"
+      screenOptions={{ headerShown: false }}
+    >
+      <ClientRequestStack.Screen 
+        name="ClientTravelRequestDetails" 
+        component={ClientTravelRequestDetailsScreen} 
+      />
+      <ClientRequestStack.Screen 
+        name="ClientOfferDetailsScreen" 
+        component={ClientOfferDetailsScreen} 
+      />
+    </ClientRequestStack.Navigator>
+  );}
 // Client tabs
 function ClientTabs() {
   return (
@@ -150,8 +168,8 @@ function ClientDrawer() {
       
       {/* CLIENT-SPECIFIC NESTED SCREENS */}
       <Drawer.Screen 
-        name="ClientTravelRequestDetails" 
-        component={ClientTravelRequestDetailsScreen}
+        name="ClientRequest" 
+        component={ClientRequestFlow}
         options={{
           title: 'Request Details',
           drawerIcon: ({ color }) => (
@@ -161,17 +179,7 @@ function ClientDrawer() {
         }}
       />
       
-      <Drawer.Screen 
-        name="OfferDetailsScreen" 
-        component={ClientOfferDetailsScreen}
-        options={{
-          title: 'Offer Details',
-          drawerIcon: ({ color }) => (
-            <Icon name="pricetag-outline" type="ionicon" size={22} color={color} />
-          ),
-          drawerItemStyle: { display: 'none' }, // Hide from drawer menu but keep accessible
-        }}
-      />
+      
       
       {/* CLIENT PROFILE */}
       <Drawer.Screen 
@@ -675,9 +683,8 @@ export default function AppNavigator() {
         console.log('Unknown user role:', role);
     }
 
-    // Store channels for later cleanup
+    
 
-    console.log(`Set up ${channels.length} channels for ${role} user`);
   };
 
   //auth state management

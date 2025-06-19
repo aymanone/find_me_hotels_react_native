@@ -128,7 +128,7 @@ export default function SignupScreen({ navigation }) {
           break;
 
         case 'agent':
-          if (!first_name || !second_name || !company_email || !agent_phone) {
+          if (!first_name || !second_name || !company_email || !agent_phone || !messaging_app) {
             throw new Error('Please fill in all agent fields');
           }
           if (!validEmail(company_email)) {
@@ -327,7 +327,7 @@ export default function SignupScreen({ navigation }) {
                 (company_email && !validEmail(company_email)) ? 'Please enter a valid email' : ''}
             />
             <>
-            <Text style={styles.label}>Messaging App:</Text>
+            <Text style={styles.label}>Messaging App for Clients to contact you:</Text>
     <Dropdown
       data={messaging_apps}
       labelField="label"

@@ -225,6 +225,9 @@ const handleSubmit = async () => {
     if (!formData.travelersNationality) {
       throw new Error('Please select travelers nationality');
     }
+     if (formData.preferredAgentsCountries.length === 0) {
+      throw new Error('Please choose at least one country where you can pay agents');
+    }
     
     setLoading(true);
      const user= await getCurrentUser();
@@ -663,7 +666,7 @@ const handleSubmit = async () => {
     {/* Preferred Agents Countries Row */}
 <View style={styles.row}>
   <View style={styles.fullWidth}>
-    <Text style={styles.label}>Preferred Agents Countries</Text>
+    <Text style={styles.label}>Countries where you can pay Agents</Text>
     <Dropdown
     ref={preferredAgentsDropdownRef}
       data={allCountries.map(country => ({

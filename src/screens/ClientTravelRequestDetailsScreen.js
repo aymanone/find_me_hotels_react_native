@@ -10,8 +10,8 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
   const [request, setRequest] = useState(null);
   const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(true);
-   const [requestSectionExpanded, setRequestSectionExpanded] = useState(true);
-   const [offersSectionExpanded, setOffersSectionExpanded] = useState(true);
+   const [requestSectionExpanded, setRequestSectionExpanded] = useState(false);
+   const [offersSectionExpanded, setOffersSectionExpanded] = useState(false);
    const [refreshingOffers, setRefreshingOffers] = useState(false);
   // Check if user is a client
   useEffect(() => {
@@ -333,7 +333,9 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
               title="View Details"
               icon={<Icon name="eye-outline" type="ionicon" color="#fff" size={16} style={styles.buttonIcon} />}
               buttonStyle={styles.viewDetailsButton}
-              onPress={() => navigation.navigate('OfferDetailsScreen', { offerId: offer.id })}
+              onPress={() => navigation.navigate('ClientRequest', 
+                {screen: 'ClientOfferDetailsScreen',
+                  params: {offerId: offer.id }})}
             />
           </Card>
         ))

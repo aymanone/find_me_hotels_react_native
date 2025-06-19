@@ -174,7 +174,9 @@ const fetchTravelRequests = async () => {
     }
     
     // Navigate to details
-    navigation.navigate('ClientTravelRequestDetails', { id: item.id });
+    navigation.navigate("ClientRequest",{screen:'ClientTravelRequestDetails', 
+    params:  { id: item.id }
+  });
   };
 
   const renderTravelRequest = ({ item }) => {
