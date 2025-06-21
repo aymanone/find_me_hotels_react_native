@@ -13,6 +13,7 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
    const [requestSectionExpanded, setRequestSectionExpanded] = useState(false);
    const [offersSectionExpanded, setOffersSectionExpanded] = useState(false);
    const [refreshingOffers, setRefreshingOffers] = useState(false);
+  const [visitedOffers, setVisitedOffers] = useState({});  // Using an object
   // Check if user is a client
   useEffect(() => {
     const checkRole = async () => {
@@ -81,6 +82,17 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
       </View>
     );
   }
+    // Modify your existing code where you navigate to offer details
+  const viewOfferDetails = (offerId) => {
+    // Mark this offer as visited
+    setVisitedOffers(prev => ({...prev, [offerId]: true}));
+    
+    // Navigate to the offer details screen
+    navigation.navigate('ClientRequest', {
+      screen: 'ClientOfferDetailsScreen',
+      params: { offerId }
+    });
+  };
   const refreshOffers = async () => {
   try {
     setRefreshingOffers(true);
@@ -298,7 +310,7 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
             <View style={styles.offerHeader}>
               <Text style={styles.offerTitle}>Offer #{index + 1}</Text>
               <View style={styles.statusContainer}>
-                <Text style={[styles.statusText, { color: offer.status === 'pending' ? '#FFA500' : '#28a745' }]}>
+                <Text style={[styles.statusText, { color: offer.status === 'not viewed' ? '#FFA500' : '#28a745' }]}>
                   {offer.status}
                 </Text>
               </View>
@@ -332,10 +344,11 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
             <Button
               title="View Details"
               icon={<Icon name="eye-outline" type="ionicon" color="#fff" size={16} style={styles.buttonIcon} />}
-              buttonStyle={styles.viewDetailsButton}
-              onPress={() => navigation.navigate('ClientRequest', 
-                {screen: 'ClientOfferDetailsScreen',
-                  params: {offerId: offer.id }})}
+              buttonStyle={[
+                    styles.viewDetailsButton,
+                    visitedOffers[offer.id] && styles.visitedButton
+                  ]}
+              onPress={() => viewOfferDetails(offer.id)}
             />
           </Card>
         ))
@@ -516,4 +529,7 @@ refreshButtonText: {
   fontSize: 12,
   color: '#007bff',
 },
+ visitedButton: {
+    backgroundColor: '#6c757d',  // Gray color for visited buttons
+  },
 });

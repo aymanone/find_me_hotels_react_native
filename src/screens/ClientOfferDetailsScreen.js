@@ -43,8 +43,11 @@ const ClientOfferDetailsScreen = ({ route, navigation }) => {
     num_of_hotels, hotels,status, min_rating, max_rating, min_cost, max_cost,
     agents!offers_agent_id_fkey (
       first_name, second_name, id, phone_number, messaging_app,
-      companies!agents_company_id_fkey (company_name, url),
-        countries!agents_agent_country_fkey(country_name)
+    
+        countries!agents_agent_country_fkey(country_name),
+          companies!agents_company_id_fkey (company_name, url,
+          company_country:countries!companies_company_country_id_fkey(country_name)
+          )
     )
   `)
   .eq('id', offerId)
@@ -60,7 +63,7 @@ const ClientOfferDetailsScreen = ({ route, navigation }) => {
         // Test if you can query agents directly
 
         // Mark offer as viewed if not already
-        if (offer.status !== 'viewed') {
+        if (offer.status === 'not viewed') {
           await supabase.rpc('mark_offer_as_viewed', { p_offer_id: offerId, p_status: 'viewed' });
         }
       } catch (error) {
@@ -81,7 +84,11 @@ const ClientOfferDetailsScreen = ({ route, navigation }) => {
   const toggleAgentSection = () => {
     setAgentSectionCollapsed(!agentSectionCollapsed);
   };
-
+const appHasLink =(messagingApp) =>{
+  if(!messagingApp) return false;
+  const validApps=['whatsapp','telegram'];
+  return validApps.includes(messagingApp.toLowerCase());
+};
   const openUrl = (url) => {
     if (!url) return;
     
@@ -101,6 +108,45 @@ const ClientOfferDetailsScreen = ({ route, navigation }) => {
       })
       .catch(err => console.error('Error opening URL:', err));
   };
+  const openMessagingApp = (phoneNumber, app) => {
+  if (!phoneNumber) {
+    Alert.alert('Error', 'No phone number available');
+    return;
+  }
+  
+  // Format phone number (remove spaces, ensure it starts with +)
+  const formattedPhone = phoneNumber.replace(/\s+/g, '');
+  
+  let url;
+  switch(app.toLowerCase()) {
+    case 'whatsapp':
+      url = `whatsapp://send?phone=${formattedPhone}`;
+      break;
+    case 'telegram':
+      url = `tg://resolve?domain=${formattedPhone}`;
+      break;
+    default:
+      url = `tel:${formattedPhone}`;
+  }
+  
+  Linking.canOpenURL(url)
+    .then(supported => {
+      if (supported) {
+        return Linking.openURL(url);
+      } else {
+        if (app.toLowerCase() === 'whatsapp') {
+          // Fallback to web WhatsApp
+          return Linking.openURL(`https://wa.me/${formattedPhone}`);
+        } else {
+          Alert.alert('Error', `${app} is not installed on your device`);
+        }
+      }
+    })
+    .catch(err => {
+      console.error(`Error opening ${app}:`, err);
+      Alert.alert('Error', `Could not open ${app}`);
+    });
+};
 
   if (loading) {
     return (
@@ -273,16 +319,26 @@ const ClientOfferDetailsScreen = ({ route, navigation }) => {
             <View style={styles.infoRow}>
               <View style={styles.fullWidth}>
                 <Text style={styles.label}>Contact:</Text>
+                  
+                 <TouchableOpacity 
+                 onPress={() => openMessagingApp(agent.phone_number, agent.messaging_app)}>
+                   <View style={styles.contactButtonContent}>
                 <Text style={styles.value}>Phone: {agent.phone_number}</Text>
                 <Text style={styles.value}>Messaging App: {agent.messaging_app}</Text>
+             { appHasLink(agent.messaging_app) &&  (<View style={styles.contactHint}>
+          <Icon name="chatbubble-outline" type="ionicon" size={14} color="#007bff" />
+          <Text style={styles.contactHintText}>Tap to contact via {agent.messaging_app}</Text>
+           </View>)}
+           </View>
+                </TouchableOpacity>
               </View>
             </View>
             
             {/* Agent Country */}
             <View style={styles.infoRow}>
               <View style={styles.fullWidth}>
-                <Text style={styles.label}>Country:</Text>
-                <Text style={styles.value}>{agent.countries?.country_name || 'Not specified'}</Text>
+                <Text style={styles.label}>Agent Location:</Text>
+                <Text style={styles.value}>{agent.countries.country_name || 'Not specified'}</Text>
               </View>
             </View>
             
@@ -293,7 +349,13 @@ const ClientOfferDetailsScreen = ({ route, navigation }) => {
                 <Text style={styles.value}>{agent.companies?.company_name || 'Not specified'}</Text>
               </View>
             </View>
-            
+             {/* Company headquarter*/}
+            <View style={styles.infoRow}>
+              <View style={styles.fullWidth}>
+                <Text style={styles.label}>Company Headquarter:</Text>
+                <Text style={styles.value}>{agent.companies?.company_country?.country_name || 'Not specified'}</Text>
+              </View>
+            </View>
             {/* Company Address */}
             <View style={styles.infoRow}>
               <View style={styles.fullWidth}>
@@ -405,6 +467,28 @@ const styles = StyleSheet.create({
   hotelDetailLabel: {
     fontWeight: 'bold',
   },
+  // Add to your existing styles object
+contactButton: {
+  backgroundColor: '#f0f8ff',  // Light blue background
+  borderRadius: 8,
+  padding: 10,
+  borderWidth: 1,
+  borderColor: '#cce5ff',
+},
+contactButtonContent: {
+  flexDirection: 'column',
+},
+contactHint: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginTop: 8,
+},
+contactHintText: {
+  color: '#007bff',
+  fontSize: 14,
+  marginLeft: 5,
+  fontStyle: 'italic',
+},
 });
 
 export default ClientOfferDetailsScreen;
