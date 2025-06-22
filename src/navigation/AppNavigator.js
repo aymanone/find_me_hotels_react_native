@@ -17,6 +17,8 @@ import CompanyCreateAgentFormScreen from '../screens/CompanyCreateAgentFormScree
 import AgentSearchTravelRequestsScreen from '../screens/AgentSearchTravelRequestsScreen';
 import AgentTravelRequestDetailsScreen from '../screens/AgentTravelRequestDetailsScreen';
 import ClientOfferDetailsScreen from '../screens/ClientOfferDetailsScreen';
+import CompanyAgentsListScreen from '../screens/CompanyAgentsListScreen';
+import CompanyAgentProfileScreen from '../screens/CompanyAgentProfileScreen';
 import { View, Text } from 'react-native';
 import {signOut} from '../utils/auth';
 import { 
@@ -372,7 +374,7 @@ function CompanyTabs() {
       />
       <Tab.Screen 
         name="Agents" 
-        component={() => <PlaceholderScreen title="Company Agents" />}
+        component={CompanyAgentsListScreen}
         options={{ title: 'My Agents', headerShown: false }}
       />
       <Tab.Screen 
@@ -432,10 +434,10 @@ function CompanyDrawer() {
       
       {/* COMPANY-SPECIFIC NESTED SCREENS */}
       <Drawer.Screen 
-        name="AgentDetails" 
-        component={() => <PlaceholderScreen title="Agent Details" />}
+        name="CompanyAgentProfile" 
+        component={CompanyAgentProfileScreen}
         options={{
-          title: 'Agent Details',
+          title: 'Agent Profile',
           drawerIcon: ({ color }) => (
             <Icon name="person-outline" type="ionicon" size={22} color={color} />
           ),
