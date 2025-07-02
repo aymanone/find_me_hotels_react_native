@@ -10,7 +10,7 @@ import { Icon, Button } from 'react-native-elements';
 import SigninScreen from '../screens/SigninScreen';
 import ClientTravelRequestList from '../screens/ClientTravelRequestListScreen';
 import ClientTravelRequestDetailsScreen from '../screens/ClientTravelRequestDetailsScreen';
-import TravelRequestForm from '../screens/TravelRequestForm'; 
+import TravelRequestForm from '../screens/travel_request_form'; 
 import OfferDetailsScreen from '../screens/OfferDetailsScreen';
 import AdminCreateCompanyFormScreen from '../screens/AdminCreateCompanyFormScreen';
 import CompanyCreateAgentFormScreen from '../screens/CompanyCreateAgentFormScreen';
@@ -19,6 +19,11 @@ import AgentTravelRequestDetailsScreen from '../screens/AgentTravelRequestDetail
 import ClientOfferDetailsScreen from '../screens/ClientOfferDetailsScreen';
 import CompanyAgentsListScreen from '../screens/CompanyAgentsListScreen';
 import CompanyAgentProfileScreen from '../screens/CompanyAgentProfileScreen';
+import CompanyCompanyProfileScreen from  '../screens/CompanyCompanyProfileScreen';
+import AgentAgentProfileScreen from '../screens/AgentAgentProfileScreen';
+import AgentAgentOffersScreen from '../screens/AgentAgentOffersScreen';
+import AdminCompanyProfileScreen from '../screens/AdminCompanyProfileScreen';
+import AdminCompaniesListScreen from '../screens/AdminCompaniesListScreen';
 import { View, Text } from 'react-native';
 import {signOut} from '../utils/auth';
 import { 
@@ -239,7 +244,7 @@ function AgentTabs() {
       />
       <Tab.Screen 
         name="MyOffers" 
-        component={() => <PlaceholderScreen title="My Offers" />}
+        component={AgentAgentOffersScreen}
         options={{ title: 'My Offers', headerShown: false }}
       />
     </Tab.Navigator>
@@ -320,7 +325,7 @@ function AgentDrawer() {
       {/* AGENT PROFILE */}
       <Drawer.Screen 
         name="Profile" 
-        component={AgentProfileScreen}
+        component={AgentAgentProfileScreen}
         options={{
           title: 'My Profile',
           drawerIcon: ({ color }) => (
@@ -348,7 +353,22 @@ function AgentDrawer() {
 }
 
 // COMPANY NAVIGATION
-// -----------------
+// company AgentFlow
+const CompanyAgentStack = Stack;
+function CompanyAgentFlow() {
+  return (
+  
+       <CompanyAgentStack.Navigator 
+      initialRouteName="CompanyAgentProfile"
+      screenOptions={{ headerShown: false }}
+    >
+      <CompanyAgentStack.Screen 
+        name="CompanyAgentProfile" 
+        component={CompanyAgentProfileScreen} 
+      />
+    
+    </CompanyAgentStack.Navigator>
+  );}
 
 // Company tabs
 function CompanyTabs() {
@@ -359,7 +379,7 @@ function CompanyTabs() {
           let iconName;
           if (route.name === 'Create Agent') {
             iconName = focused ? 'people' : 'people-outline';
-          } else if (route.name === 'Requests') {
+          } else if (route.name === 'Agents') {
             iconName = focused ? 'list' : 'list-outline';
           }
           return <Icon name={iconName} type="ionicon" size={size} color={color} />;
@@ -460,7 +480,7 @@ function CompanyDrawer() {
       {/* COMPANY PROFILE */}
       <Drawer.Screen 
         name="Profile" 
-        component={CompanyProfileScreen}
+        component={CompanyCompanyProfileScreen}
         options={{
           title: 'My Profile',
           drawerIcon: ({ color }) => (
@@ -513,9 +533,9 @@ function AdminTabs() {
         
       />
       <Tab.Screen 
-        name="Analytics" 
-        component={() => <PlaceholderScreen title="Admin Analytics" />}
-        options={{ title: 'Analytics', headerShown: false }}
+        name="My Companies" 
+        component={AdminCompaniesListScreen}
+        options={{ title: 'My Companies', headerShown: false }}
       />
     </Tab.Navigator>
   );
@@ -569,10 +589,10 @@ function AdminDrawer() {
       
       {/* ADMIN-SPECIFIC NESTED SCREENS */}
       <Drawer.Screen 
-        name="UserDetails" 
-        component={() => <PlaceholderScreen title="User Details" />}
+        name="AdminCompanyProfile" 
+        component={AdminCompanyProfileScreen}
         options={{
-          title: 'User Details',
+          title: 'Company Profile',
           drawerIcon: ({ color }) => (
             <Icon name="person-outline" type="ionicon" size={22} color={color} />
           ),

@@ -1,19 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, ActivityIndicator,TouchableOpacity } from 'react-native';
-import { Text, Card, Button, Divider,Icon } from 'react-native-elements';
+import { View, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
+import { Text, Card, Button, Divider, Icon } from 'react-native-elements';
 import { format } from 'date-fns';
 import supabase from '../config/supabase';
-import { checkUserRole,signOut ,getCurrentUser} from '../utils/auth';
+import {inDateReq} from '../utils/dateUtils';
+import { checkUserRole, signOut, getCurrentUser } from '../utils/auth';
 
 export default function ClientTravelRequestDetailsScreen({ route, navigation }) {
   const { id } = route.params;
   const [request, setRequest] = useState(null);
   const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(true);
-   const [requestSectionExpanded, setRequestSectionExpanded] = useState(false);
-   const [offersSectionExpanded, setOffersSectionExpanded] = useState(false);
-   const [refreshingOffers, setRefreshingOffers] = useState(false);
+  const [requestSectionExpanded, setRequestSectionExpanded] = useState(false);
+  const [offersSectionExpanded, setOffersSectionExpanded] = useState(false);
+  const [refreshingOffers, setRefreshingOffers] = useState(false);
   const [visitedOffers, setVisitedOffers] = useState({});  // Using an object
+ 
+  const offerUpToDateState = (offer) => {
+    // Check if the offer is new or updated
+    if (new Date(offer.updated_at) < new Date(request.updated_at)) {
+      return 'before last update ';
+    }
+    if( offer.new_update) {
+      return 'new updates ';
+    }
+    return 'up to date ';
+  };
   // Check if user is a client
   useEffect(() => {
     const checkRole = async () => {
@@ -23,24 +35,21 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
         navigation.goBack();
       }
     };
-    
+
     checkRole();
   }, []);
-
   // Fetch travel request details and offers
   useEffect(() => {
     const fetchRequestDetails = async () => {
       try {
         setLoading(true);
-         const user= await getCurrentUser();
-                if(!user) {
-                  Alert.alert('Error', 'User not found. Please log in again.');
-                  await signOut(navigation);
-                  
-                  return;
-        
-                }
-              
+        const user = await getCurrentUser();
+        if (!user) {
+          Alert.alert('Error', 'User not found. Please log in again.');
+          await signOut(navigation);
+          return;
+        }
+
         // Fetch travel request
         const { data: requestData, error: requestError } = await supabase
           .from('travel_requests_agent')
@@ -51,8 +60,9 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
 
         if (requestError) throw requestError;
         if (!requestData) throw new Error('Travel request not found');
-        
+
         setRequest(requestData);
+        
 
         // Fetch offers for this request
         const { data: offersData, error: offersError } = await supabase
@@ -82,74 +92,186 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
       </View>
     );
   }
-    // Modify your existing code where you navigate to offer details
+
+  // Modify your existing code where you navigate to offer details
   const viewOfferDetails = (offerId) => {
     // Mark this offer as visited
-    setVisitedOffers(prev => ({...prev, [offerId]: true}));
-    
+    setVisitedOffers(prev => ({ ...prev, [offerId]: true }));
+
     // Navigate to the offer details screen
     navigation.navigate('ClientRequest', {
       screen: 'ClientOfferDetailsScreen',
       params: { offerId }
     });
   };
+
   const refreshOffers = async () => {
-  try {
-    setRefreshingOffers(true);
-    
-    // Get the most recent offer's creation date if we have offers
-    let createdAtFilter = '';
-    if (offers.length > 0) {
-      // Sort offers by created_at to find the most recent one
-      const sortedOffers = [...offers].sort((a, b) => 
-        new Date(b.created_at) - new Date(a.created_at)
-      );
-      createdAtFilter = sortedOffers[0].created_at;
-      
-      // Fetch only new offers (created after our most recent one)
-      const { data: newOffersData, error: newOffersError } = await supabase
-        .from('offers')
-        .select('*')
-        .eq('request_id', id)
-        .gt('created_at', createdAtFilter)
-        .order('created_at', { ascending: false });
-      
-      if (newOffersError) throw newOffersError;
-      
-      // If we have new offers, add them to the existing ones
-      if (newOffersData && newOffersData.length > 0) {
-        setOffers(prevOffers => [...newOffersData, ...prevOffers]);
-        alert(`${newOffersData.length} new offer(s) found!`);
+    try {
+      setRefreshingOffers(true);
+
+      // Get the most recent offer's creation date if we have offers
+      let updatedAtFilter = '';
+      if (offers.length > 0) {
+        // Sort offers by created_at to find the most recent one
+        const sortedOffers = [...offers].sort((a, b) =>
+          new Date(b.updated_at) - new Date(a.updated_at)
+        );
+        updatedAtFilter = sortedOffers[0].updated_at;
+
+        // Fetch only new offers (created after our most recent one)
+        const { data: newOffersData, error: newOffersError } = await supabase
+          .from('offers')
+          .select(`num_of_hotels,status, min_rating, max_rating, min_cost, max_cost,
+    updated_at, created_at, new_update`)
+          .eq('request_id', id)
+          .gt('updated_at', updatedAtFilter)
+          .order('created_at', { ascending: false });
+
+        if (newOffersError) throw newOffersError;
+
+        // If we have new offers, update the existing ones or add new ones
+        if (newOffersData && newOffersData.length > 0) {
+          setOffers(prevOffers => {
+            // Create a map of existing offers by ID for quick lookup
+            const existingOffersMap = {};
+            prevOffers.forEach(offer => {
+              existingOffersMap[offer.id] = true;
+            });
+            
+            // Count how many are updates vs. new offers
+            let updateCount = 0;
+            let newCount = 0;
+            
+            // Process each new/updated offer
+            const updatedOffers = newOffersData.map(newOffer => {
+              if (existingOffersMap[newOffer.id]) {
+                updateCount++;
+                return newOffer; // This will replace the existing offer
+              } else {
+                newCount++;
+                return newOffer; // This is a completely new offer
+              }
+            });
+            
+            // Create a new array with updated offers replacing old ones
+            const result = prevOffers.filter(offer => 
+              !updatedOffers.some(updatedOffer => updatedOffer.id === offer.id)
+            );
+            
+            // Add all the new/updated offers
+            result.push(...updatedOffers);
+            
+            // Sort by updated_at (newest first)
+            result.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+            
+            // Show appropriate message
+            if (updateCount > 0 && newCount > 0) {
+              alert(`${newCount} new offer(s) and ${updateCount} updated offer(s) found!`);
+            } else if (updateCount > 0) {
+              alert(`${updateCount} offer(s) have been updated!`);
+            } else if (newCount > 0) {
+              alert(`${newCount} new offer(s) found!`);
+            }
+            
+            return result;
+          });
+        } else {
+          alert('No offers updates available');
+        }
       } else {
-        alert('No new offers available');
+        // If we don't have any offers yet, fetch all offers
+        const { data: allOffersData, error: allOffersError } = await supabase
+          .from('offers')
+          .select(`num_of_hotels,status, min_rating, max_rating, min_cost, max_cost,
+    updated_at, created_at, new_update`)
+          .eq('request_id', id)
+          .order('created_at', { ascending: false });
+
+        if (allOffersError) throw allOffersError;
+        setOffers(allOffersData || []);
+
+        if (allOffersData.length === 0) {
+          alert('No offers available yet');
+        }
       }
-    } else {
-      // If we don't have any offers yet, fetch all offers
-      const { data: allOffersData, error: allOffersError } = await supabase
-        .from('offers')
-        .select('*')
-        .eq('request_id', id)
-        .order('created_at', { ascending: false });
-      
-      if (allOffersError) throw allOffersError;
-      setOffers(allOffersData || []);
-      
-      if (allOffersData.length === 0) {
-        alert('No offers available yet');
-      }
+    } catch (error) {
+      console.error('Error refreshing offers:', error.message);
+      alert('Failed to refresh offers');
+    } finally {
+      setRefreshingOffers(false);
     }
-  } catch (error) {
-    console.error('Error refreshing offers:', error.message);
-    alert('Failed to refresh offers');
-  } finally {
-    setRefreshingOffers(false);
-  }
-};
+  };
+
+  const handleDeleteRequest = () => {
+    Alert.alert(
+      "Delete Request",
+      "Are you sure you want to delete this travel request?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setLoading(true);
+              
+              // Delete the request from Supabase
+              const { error } = await supabase
+                .from('travel_requests')
+                .delete()
+                .eq('id', id);
+                
+              if (error) throw error;
+              
+              Alert.alert("Success", "Travel request deleted successfully");
+              navigation.goBack();
+            } catch (error) {
+              console.error('Error deleting travel request:', error.message);
+              Alert.alert("Error", "Failed to delete travel request. Please try again.");
+            } finally {
+              setLoading(false);
+            }
+          }
+        }
+      ]
+    );
+  };
 
   return (
     <ScrollView style={styles.container}>
+      {/* Action Buttons Row */}
+      <View style={styles.actionButtonsContainer}>
+     {  inDateReq(request) &&  ( <TouchableOpacity
+          style={[styles.actionButton, styles.editButton]}
+          onPress={() => {
+            // Navigate to the ClientApp drawer first, then to the Home tab, then to the NewRequest tab
+            navigation.navigate('ClientApp', {
+              screen: 'Home',
+              params: {
+                screen: 'NewRequest',
+                params: { requestId: id }
+              }
+            });
+          }}
+        > 
+          <Icon name="edit" type="font-awesome" size={14} color="#007bff" />
+          <Text style={styles.actionButtonText}>Edit</Text>
+        </TouchableOpacity>)}
+
+        <TouchableOpacity
+          style={[styles.actionButton, styles.deleteButton]}
+          onPress={handleDeleteRequest}
+        >
+          <Icon name="trash" type="font-awesome" size={14} color="#dc3545" />
+          <Text style={styles.actionButtonText}>Delete</Text>
+        </TouchableOpacity>
+      </View>
+
       <Card containerStyle={styles.card}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.sectionHeader}
           onPress={() => setRequestSectionExpanded(!requestSectionExpanded)}
         >
@@ -161,7 +283,7 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
             color="#007bff"
           />
         </TouchableOpacity>
-         {requestSectionExpanded && (
+        {requestSectionExpanded && (
           <View style={styles.sectionContent}>
             {/* Dates Row */}
             <View style={styles.infoRow}>
@@ -178,9 +300,9 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
                 </Text>
               </View>
             </View>
-            
+
             <Divider style={styles.divider} />
-            
+
             {/* Destinations Row */}
             <View style={styles.infoRow}>
               <View style={styles.fullWidth}>
@@ -191,16 +313,15 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
                 )}
               </View>
             </View>
-            
+
             <Divider style={styles.divider} />
-             <View style={styles.infoRow}>
+            <View style={styles.infoRow}>
               <View style={styles.fullWidth}>
                 <Text style={styles.infoLabel}>Nationality</Text>
                 <Text style={styles.infoValue}>{request.travelers_nationality_name}</Text>
-               
               </View>
             </View>
-             <Divider style={styles.divider} />
+            <Divider style={styles.divider} />
             {/* Travelers Column */}
             <View style={styles.infoRow}>
               <View style={styles.fullWidth}>
@@ -208,23 +329,22 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
                 <Text style={styles.infoValue}>
                   {request.adults} {request.adults === 1 ? 'Adult' : 'Adults'}
                 </Text>
-                
               </View>
             </View>
             {request.children && request.children.length > 0 ? (
-  <View>
-    <Text style={styles.infoValue}>
-      {request.children.length} {request.children.length === 1 ? 'Child' : 'Children'}
-    </Text>
-    <Text style={[styles.infoValue, styles.childrenAges]}>
-      Ages: {request.children.join(', ')}
-    </Text>
-  </View>
-) : (
-  <Text style={styles.infoValue}>No children</Text>
-)}
+              <View>
+                <Text style={styles.infoValue}>
+                  {request.children.length} {request.children.length === 1 ? 'Child' : 'Children'}
+                </Text>
+                <Text style={[styles.infoValue, styles.childrenAges]}>
+                  Ages: {request.children.join(', ')}
+                </Text>
+              </View>
+            ) : (
+              <Text style={styles.infoValue}>No children</Text>
+            )}
             <Divider style={styles.divider} />
-            
+
             {/* Hotel Info Column */}
             <View style={styles.infoRow}>
               <View style={styles.fullWidth}>
@@ -244,9 +364,9 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
                 )}
               </View>
             </View>
-            
+
             <Divider style={styles.divider} />
-            
+
             {/* Budget Row */}
             <View style={styles.infoRow}>
               <View style={styles.infoColumn}>
@@ -258,9 +378,9 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
                 <Text style={styles.infoValue}>${request.max_budget}</Text>
               </View>
             </View>
-            
+
             <Divider style={styles.divider} />
-            
+
             {/* Notes Row */}
             {request.notes && (
               <View style={styles.infoRow}>
@@ -274,90 +394,90 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
             )}
           </View>
         )}
-  
+
       </Card>
       <Card containerStyle={styles.card}>
-      
-  <TouchableOpacity 
-    style={styles.sectionHeader}
-    onPress={() => setOffersSectionExpanded(!offersSectionExpanded)}
-  >
-    <Text h4 style={styles.sectionTitle}>Offers ({offers.length})</Text>
-    <Icon
-      name={offersSectionExpanded ? 'chevron-up' : 'chevron-down'}
-      type="font-awesome"
-      size={18}
-      color="#007bff"
-    />
-  </TouchableOpacity>
-  
-  <View style={styles.refreshButtonContainer}>
-    <Button
-      title={refreshingOffers ? "Loading..." : "Get New Offers"}
-      type="outline"
-      disabled={refreshingOffers}
-      buttonStyle={styles.refreshButton}
-      titleStyle={styles.refreshButtonText}
-      onPress={refreshOffers}
-    />
-  </View>
 
-  {offersSectionExpanded && (
-    <View style={styles.sectionContent}>
-      {offers.length > 0 ? (
-        offers.map((offer, index) => (
-          <Card key={index} containerStyle={styles.offerCard}>
-            <View style={styles.offerHeader}>
-              <Text style={styles.offerTitle}>Offer #{index + 1}</Text>
-              <View style={styles.statusContainer}>
-                <Text style={[styles.statusText, { color: offer.status === 'not viewed' ? '#FFA500' : '#28a745' }]}>
-                  {offer.status}
-                </Text>
-              </View>
-            </View>
-            
-            <Divider style={styles.divider} />
-            
-            <View style={styles.offerDetailsContainer}>
-              <View style={styles.offerDetailRow}>
-                <Icon name="cash-outline" type="ionicon" size={16} color="#28a745" />
-                <Text style={styles.offerDetailText}>
-                  Price Range: ${offer.min_cost} - ${offer.max_cost}
-                </Text>
-              </View>
-              
-              <View style={styles.offerDetailRow}>
-                <Icon name="star" type="ionicon" size={16} color="#FFD700" />
-                <Text style={styles.offerDetailText}>
-                  Hotels Rating: {offer.min_rating} - {offer.max_rating} stars
-                </Text>
-              </View>
-              
-              <View style={styles.offerDetailRow}>
-                <Icon name="business" type="ionicon" size={16} color="#007bff" />
-                <Text style={styles.offerDetailText}>
-                  Number of Hotels: {offer.num_of_hotels}
-                </Text>
-              </View>
-            </View>
-            
-            <Button
-              title="View Details"
-              icon={<Icon name="eye-outline" type="ionicon" color="#fff" size={16} style={styles.buttonIcon} />}
-              buttonStyle={[
-                    styles.viewDetailsButton,
-                    visitedOffers[offer.id] && styles.visitedButton
-                  ]}
-              onPress={() => viewOfferDetails(offer.id)}
-            />
-          </Card>
-        ))
-      ) : (
-        <Text style={styles.noOffersText}>No offers yet for this request</Text>
-      )}
-    </View>
-  )}
-</Card>
+        <TouchableOpacity
+          style={styles.sectionHeader}
+          onPress={() => setOffersSectionExpanded(!offersSectionExpanded)}
+        >
+          <Text h4 style={styles.sectionTitle}>Offers ({offers.length})</Text>
+          <Icon
+            name={offersSectionExpanded ? 'chevron-up' : 'chevron-down'}
+            type="font-awesome"
+            size={18}
+            color="#007bff"
+          />
+        </TouchableOpacity>
+
+        <View style={styles.refreshButtonContainer}>
+          <Button
+            title={refreshingOffers ? "Loading..." : "Refresh Offers"}
+            type="outline"
+            disabled={refreshingOffers}
+            buttonStyle={styles.refreshButton}
+            titleStyle={styles.refreshButtonText}
+            onPress={refreshOffers}
+          />
+        </View>
+
+        {offersSectionExpanded && (
+          <View style={styles.sectionContent}>
+            {offers.length > 0 ? (
+              offers.map((offer, index) => (
+                <Card key={index} containerStyle={styles.offerCard}>
+                  <View style={styles.offerHeader}>
+                    <Text style={styles.offerTitle}>Offer #{index + 1}</Text>
+                    <View style={styles.statusContainer}>
+                      <Text style={[styles.statusText, { color: offer.status === 'not viewed' ? '#FFA500' : '#28a745' }]}>
+                        {offerUpToDateState(offer)}  {offer.status}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <Divider style={styles.divider} />
+
+                  <View style={styles.offerDetailsContainer}>
+                    <View style={styles.offerDetailRow}>
+                      <Icon name="cash-outline" type="ionicon" size={16} color="#28a745" />
+                      <Text style={styles.offerDetailText}>
+                        Price Range: ${offer.min_cost} - ${offer.max_cost}
+                      </Text>
+                    </View>
+
+                    <View style={styles.offerDetailRow}>
+                      <Icon name="star" type="ionicon" size={16} color="#FFD700" />
+                      <Text style={styles.offerDetailText}>
+                        Hotels Rating: {offer.min_rating} - {offer.max_rating} stars
+                      </Text>
+                    </View>
+
+                    <View style={styles.offerDetailRow}>
+                      <Icon name="business" type="ionicon" size={16} color="#007bff" />
+                      <Text style={styles.offerDetailText}>
+                        Number of Hotels: {offer.num_of_hotels}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <Button
+                    title="View Details"
+                    icon={<Icon name="eye-outline" type="ionicon" color="#fff" size={16} style={styles.buttonIcon} />}
+                    buttonStyle={[
+                      styles.viewDetailsButton,
+                      visitedOffers[offer.id] && styles.visitedButton
+                    ]}
+                    onPress={() => viewOfferDetails(offer.id)}
+                  />
+                </Card>
+              ))
+            ) : (
+              <Text style={styles.noOffersText}>No offers yet for this request</Text>
+            )}
+          </View>
+        )}
+      </Card>
     </ScrollView>
   );
 }
@@ -380,9 +500,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
-    marginBottom:40,
+    marginBottom: 40,
   },
-   sectionHeader: {
+  sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -409,9 +529,9 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   childrenAges: {
-  flexWrap: 'wrap',
-  marginTop: 2,
-},
+    flexWrap: 'wrap',
+    marginTop: 2,
+  },
   infoLabel: {
     fontSize: 14,
     color: '#666',
@@ -454,82 +574,111 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   offerCard: {
-  borderRadius: 8,
-  marginBottom: 15,
-  padding: 0,
-  overflow: 'hidden',
-},
-offerHeader: {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  padding: 12,
-  backgroundColor: '#f9f9f9',
-},
-offerTitle: {
-  fontSize: 16,
-  fontWeight: 'bold',
-},
-statusContainer: {
-  paddingHorizontal: 8,
-  paddingVertical: 4,
-  borderRadius: 12,
-  backgroundColor: '#f8f9fa',
-},
-statusText: {
-  fontSize: 12,
-  fontWeight: 'bold',
-},
-offerDetailsContainer: {
-  padding: 12,
-},
-offerDetailRow: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  marginBottom: 8,
-},
-offerDetailText: {
-  marginLeft: 8,
-  fontSize: 14,
-},
-viewDetailsButton: {
-  backgroundColor: '#007bff',
-  borderRadius: 0,
-  marginTop: 8,
-},
-buttonIcon: {
-  marginRight: 8,
-},
-sectionHeaderWithButton: {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  padding: 16,
-  backgroundColor: '#f9f9f9',
-},
-sectionTitleContainer: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  flex: 1,
-},
-refreshButtonContainer: {
-  flexDirection: 'row',
-  justifyContent: 'flex-end',
-  paddingHorizontal: 16,
-  paddingTop: 0,
-  paddingBottom: 8,
-  backgroundColor: '#f9f9f9',
-},
-refreshButton: {
-  paddingHorizontal: 10,
-  height: 36,
-  borderColor: '#007bff',
-},
-refreshButtonText: {
-  fontSize: 12,
-  color: '#007bff',
-},
- visitedButton: {
+    borderRadius: 8,
+    marginBottom: 15,
+    padding: 0,
+    overflow: 'hidden',
+  },
+  offerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 12,
+    backgroundColor: '#f9f9f9',
+  },
+  offerTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  statusContainer: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    backgroundColor: '#f8f9fa',
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  offerDetailsContainer: {
+    padding: 12,
+  },
+  offerDetailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  offerDetailText: {
+    marginLeft: 8,
+    fontSize: 14,
+  },
+  viewDetailsButton: {
+    backgroundColor: '#007bff',
+    borderRadius: 0,
+    marginTop: 8,
+  },
+  buttonIcon: {
+    marginRight: 8,
+  },
+  sectionHeaderWithButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#f9f9f9',
+  },
+  sectionTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  refreshButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingHorizontal: 16,
+    paddingTop: 0,
+    paddingBottom: 8,
+    backgroundColor: '#f9f9f9',
+  },
+  refreshButton: {
+    paddingHorizontal: 10,
+    height: 36,
+    borderColor: '#007bff',
+  },
+  refreshButtonText: {
+    fontSize: 12,
+    color: '#007bff',
+  },
+  visitedButton: {
     backgroundColor: '#6c757d',  // Gray color for visited buttons
+  },
+  actionButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    backgroundColor: '#fff',
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 4,
+    marginLeft: 10,
+    borderWidth: 1,
+  },
+  editButton: {
+    backgroundColor: '#f8f9fa',
+    borderColor: '#007bff',
+  },
+  deleteButton: {
+    backgroundColor: '#f8f9fa',
+    borderColor: '#dc3545',
+  },
+  actionButtonText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    marginLeft: 5,
   },
 });

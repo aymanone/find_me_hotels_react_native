@@ -21,8 +21,48 @@ const CompanyAgentsListScreen = ({ navigation }) => {
   const [agents, setAgents] = useState([]);
   const [filteredAgents, setFilteredAgents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
   const [user, setUser] = useState(null);
+
+  const fetchAgents = async () => {
+    try {
+      setRefreshing(true);
+      
+      // Get current user
+      const currentUser = await getCurrentUser();
+      if (!currentUser) {
+        Alert.alert('Error', 'User not found. Please log in again.');
+        navigation.navigate('Login');
+        return;
+      }
+      
+      // Fetch agents for this company
+      const { data, error } = await supabase
+        .from('agents')
+        .select(`
+          id,
+          first_name,
+          second_name,
+          agent_country,
+          countries (
+            country_name
+          )
+        `)
+        .eq('company_id', currentUser.id);
+
+      if (error) throw error;
+      
+      setAgents(data);
+      setFilteredAgents(data);
+    } catch (error) {
+      console.error('Error fetching agents:', error);
+      Alert.alert('Error', 'Failed to load agents list');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
     const checkUserAndFetchAgents = async () => {
@@ -45,28 +85,11 @@ const CompanyAgentsListScreen = ({ navigation }) => {
         
         setUser(currentUser);
 
-        // Fetch agents for this company
-        const { data, error } = await supabase
-          .from('agents')
-          .select(`
-            id,
-            first_name,
-            second_name,
-            agent_country,
-            countries (
-              country_name
-            )
-          `)
-          .eq('company_id', currentUser.id);
-
-        if (error) throw error;
-        
-        setAgents(data);
-        setFilteredAgents(data);
+        // Fetch agents
+        await fetchAgents();
       } catch (error) {
         console.error('Error fetching agents:', error);
         Alert.alert('Error', 'Failed to load agents list');
-      } finally {
         setLoading(false);
       }
     };
@@ -156,6 +179,17 @@ const CompanyAgentsListScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+        <Text h4 style={styles.headerTitle}>Your Agents</Text>
+        <Button
+         title="Refresh Agents"
+          type="clear"
+          loading={refreshing}
+          onPress={fetchAgents}
+          buttonStyle={styles.refreshButton}
+        />
+      </View>
+      
       <SearchBar
         placeholder="Search agents..."
         onChangeText={updateSearch}
@@ -191,7 +225,8 @@ const CompanyAgentsListScreen = ({ navigation }) => {
                   title="View Profile"
                   type="outline"
                   buttonStyle={styles.viewButton}
-                  onPress={() => navigation.navigate('CompanyAgentProfile', { agentId: agent.id })}
+                  onPress={() => navigation.navigate("CompanyAgentProfile",
+                    { agentId: agent.id })}
                 />
                 
                 <Button
@@ -212,6 +247,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    paddingTop: 15,
+    paddingBottom: 5,
+  },
+  headerTitle: {
+    fontSize: 22,
+  },
+  refreshButton: {
+    padding: 8,
   },
   loadingContainer: {
     flex: 1,

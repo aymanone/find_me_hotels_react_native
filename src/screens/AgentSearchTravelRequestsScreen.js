@@ -4,6 +4,7 @@ import { Button } from 'react-native-elements';
 import { Dropdown } from 'react-native-element-dropdown';
 import { checkUserRole,getCurrentUser } from '../utils/auth';
 import  supabase  from '../config/supabase';
+import {MAXIMUM_OFFERS} from '../config/CONSTANTS';
 import { useNavigation } from '@react-navigation/native';
 
 const AgentSearchTravelRequestsScreen = () => {
@@ -17,7 +18,7 @@ const AgentSearchTravelRequestsScreen = () => {
   const [sortField, setSortField] = useState('min_budget');
   const [showSortOptions, setShowSortOptions] = useState(false);
   const [requestsWithDetails, setRequestsWithDetails] = useState([]);
-  const maxOffers=30;
+  
 
   // Options for dropdowns
   const requestOptions = [
@@ -127,7 +128,7 @@ const AgentSearchTravelRequestsScreen = () => {
         p_request_country: selectedCountry,
         p_start_date:formattedDate, // Use the formatted date
         p_agent_country: agent?.agent_country || null, // Agent's country ID
-        p_max_offers: maxOffers // Maximum number of offers allowed
+        p_max_offers: MAXIMUM_OFFERS // Maximum number of offers allowed
       });
     } else {
       // Call the RPC function for all available requests
@@ -135,7 +136,7 @@ const AgentSearchTravelRequestsScreen = () => {
         p_agent_id: user.id,
         p_request_country: selectedCountry,
         p_start_date:formattedDate, // Use the formatted date
-        p_max_offers: maxOffers // Maximum number of offers allowed
+        p_max_offers: MAXIMUM_OFFERS // Maximum number of offers allowed
       });
     }
     
@@ -237,11 +238,11 @@ const AgentSearchTravelRequestsScreen = () => {
   };
 
   const navigateToRequestDetails = (requestId) => {
-    navigation.navigate('AgentTravelRequestDetails', { requestId });
+    navigation.navigate('AgentTravelRequestDetails', { requestId: requestId });
   };
 
   const renderTravelRequest = ({ item }) => {
-     const hasMaxOffers = item.offers_number >= maxOffers;
+     const hasMaxOffers = item.offers_number >= MAXIMUM_OFFERS;
     return (
       <TouchableOpacity 
         style={[styles.requestCard,
@@ -279,9 +280,9 @@ const AgentSearchTravelRequestsScreen = () => {
           <Text style={styles.label}>Offers:</Text>
           <Text style={[styles.value
             , hasMaxOffers && styles.maxOffersCard
-          ]}>${item.offers_number}
+          ]}>{item.offers_number}
             {' Offers'}
-            {item.offers_number >= 30 ?  "can't make new offers" : ''}
+            {item.offers_number >= MAXIMUM_OFFERS ?  "can't make new offers" : ''}
           </Text>
         </View>
          <View style={styles.detailsButtonContainer}>
@@ -378,7 +379,7 @@ const AgentSearchTravelRequestsScreen = () => {
 
       {/* Travel Requests Details Section */}
        <View style={styles.row}>
-          <Text style={styles.label}>maximum {maxOffers} per request :</Text>
+          <Text style={styles.label}>maximum {MAXIMUM_OFFERS} per request :</Text>
           
         </View>
       <FlatList

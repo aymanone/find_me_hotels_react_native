@@ -21,17 +21,22 @@ import {
 } from 'react-native-elements';
 import { Dropdown } from 'react-native-element-dropdown';
 import supabase from '../config/supabase';
+import {MAXIMUM_OFFERS, MAXIMUM_HOTELS} from '../config/CONSTANTS';
+import {outDatedReq} from '../utils/dateUtils';
 import { checkUserRole } from '../utils/auth';
 import { getCurrentUser,signOut } from '../utils/auth';
-
+import {inDateReq} from '../utils/dateUtils';
 const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
-  const { requestId } = route.params;
+  const { requestId, offerId } = route.params; // Added offerId parameter
   const [loading, setLoading] = useState(true);
   const [request, setRequest] = useState(null);
   const [user, setUser] = useState(null);
   const [requestSectionCollapsed, setRequestSectionCollapsed] = useState(true);
   const [offerHotels, setOfferHotels] = useState([]);
   const [isPermittedToWork, setIsPermittedToWork] = useState(true);
+  const [isEditMode, setIsEditMode] = useState(false); // Track if we're editing
+  const [existingOffer, setExistingOffer] = useState(null); // Store existing offer
+  
   // Form fields for new hotel
   const [hotelName, setHotelName] = useState('');
   const [hotelAddress, setHotelAddress] = useState('');
@@ -47,57 +52,90 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
   });
   const [addHotelSectionCollapsed, setAddHotelSectionCollapsed] = useState(true);
   const [hotelsSectionCollapsed,setHotelsSectionCollapsed]= useState(false);
+  const [editingHotelIndex, setEditingHotelIndex] = useState(-1); // Track which hotel is being edited
+  
   // Rating dropdown data
   const ratingData = Array.from({ length: 8 }, (_, i) => ({
     label: `${i} stars`,
     value: i
   }));
+  
   const checkAgentStatus = async () => {
-  try {
-    // Check if user is an agent
-    const isUserAgent = await checkUserRole('agent');
-    //setIsAgent(isUserAgent);
-    
-    if (!isUserAgent) {
-      Alert.alert('Access Denied', 'You must be an agent to access this screen.');
+    try {
+      // Check if user is an agent
+      const isUserAgent = await checkUserRole('agent');
+      //setIsAgent(isUserAgent);
+      
+      if (!isUserAgent) {
+        Alert.alert('Access Denied', 'You must be an agent to access this screen.');
+        navigation.goBack();
+        return false;
+      }
+      
+      // Check if agent is permitted to work
+      const user  = await getCurrentUser();
+      if (user?.app_metadata?.permitted_to_work === false) {
+        setIsPermittedToWork(false);
+        // We don't navigate away, just disable offer functionality
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error checking agent status:', error);
+      Alert.alert('Error', 'Failed to verify your permissions.');
       navigation.goBack();
       return false;
     }
-    
-    // Check if agent is permitted to work
-    const user  = await getCurrentUser();
-    if (user?.app_metadata?.permitted_to_work === false) {
-      setIsPermittedToWork(false);
-      // We don't navigate away, just disable offer functionality
-    }
-    
-    return true;
-  } catch (error) {
-    console.error('Error checking agent status:', error);
-    Alert.alert('Error', 'Failed to verify your permissions.');
-    navigation.goBack();
-    return false;
-  }
-};
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-          // First check if user is an agent with proper permissions
-      const isValidAgent = await checkAgentStatus();
-      if (!isValidAgent) return;
+       // Reset state when component mounts or dependencies change
+       setOfferHotels([]);
+       setExistingOffer(null);
+        // First check if user is an agent with proper permissions
+        const isValidAgent = await checkAgentStatus();
+        if (!isValidAgent) return;
         
         // Get current user
-        
         const user= await getCurrentUser();
         if(!user) {
           Alert.alert('Error', 'User not found. Please log in again.');
           await signOut(navigation);
-          
           return;
-
         }
         
+        // Check if we're in edit mode
+        if (offerId) {
+          setIsEditMode(true);
+          
+          // Fetch existing offer
+          const { data: offerData, error: offerError } = await supabase
+            .from('offers')
+            .select('*')
+            .eq('id', offerId)
+            .single();
+            
+          if (offerError) throw offerError;
+          
+          setExistingOffer(offerData);
+          setOfferHotels(offerData.hotels || []);
+        } else{
+          // check if there's an offer even when we don't have 
+          // an offerId
+          const {data:offerData,error:offerError} = await supabase.from('offers')
+          .select('*')
+          .eq('agent_id', user.id)
+          .eq('request_id',requestId)
+          .single();
+          if (!offerError && offerData?.id){
+            console.log(existingOffer);
+             setIsEditMode(true);
+             setExistingOffer(offerData);
+             setOfferHotels(offerData.hotels || []);
+          }
+        }
         
         // Get request details
         const { data, error } = await supabase
@@ -107,7 +145,7 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
           .single();
           
         if (error) throw error;
-        console.log(data);
+        
         setRequest(data);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -118,20 +156,94 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
     };
     
     fetchData();
-  }, [requestId]);
+  }, [requestId, offerId,navigation]);
 
- 
-const toggleRequestSection = () => {
-     setRequestSectionCollapsed(!requestSectionCollapsed);
-     
-};
-const toggleHotelsSection = () => {
+  const toggleRequestSection = () => {
+    setRequestSectionCollapsed(!requestSectionCollapsed);
+  };
+  
+  const toggleHotelsSection = () => {
     setHotelsSectionCollapsed(!hotelsSectionCollapsed);
+  };
 
-};
+  const startEditingHotel = (index) => {
+    const hotel = offerHotels[index];
+    setHotelName(hotel.name);
+    setHotelAddress(hotel.address);
+    setHotelRooms(hotel.rooms.toString());
+    setHotelRoomSize(hotel.room_size.toString());
+    setHotelRating(hotel.rating);
+    setHotelCost(hotel.cost.toString());
+    setHotelNotes(hotel.notes || '');
+    
+    // Set meals
+    const meals = {
+      breakfast: hotel.meals.includes('breakfast'),
+      lunch: hotel.meals.includes('lunch'),
+      dinner: hotel.meals.includes('dinner')
+    };
+    setSelectedMeals(meals);
+    
+    setEditingHotelIndex(index);
+    setAddHotelSectionCollapsed(false);
+  };
+
+  const cancelEditingHotel = () => {
+    // Reset form
+    setHotelName('');
+    setHotelAddress('');
+    setHotelRooms('');
+    setHotelRoomSize('');
+    setHotelRating(null);
+    setHotelCost('');
+    setHotelNotes('');
+    setSelectedMeals({
+      breakfast: false,
+      lunch: false,
+      dinner: false
+    });
+    setEditingHotelIndex(-1);
+    setAddHotelSectionCollapsed(true);
+  };
+
+  const updateHotel = () => {
+    // Validate inputs
+    if (!hotelName || !hotelAddress || !hotelRooms || !hotelRoomSize || 
+        hotelRating === null || !hotelCost) {
+      Alert.alert('Missing Information', 'Please fill all required fields');
+      return;
+    }
+    
+    // Create meals array
+    const meals = [];
+    if (selectedMeals.breakfast) meals.push('breakfast');
+    if (selectedMeals.lunch) meals.push('lunch');
+    if (selectedMeals.dinner) meals.push('dinner');
+    
+    // Create updated hotel object
+    const updatedHotel = {
+      name: hotelName,
+      address: hotelAddress,
+      rooms: parseInt(hotelRooms),
+      room_size: parseInt(hotelRoomSize),
+      rating: hotelRating,
+      meals: meals,
+      notes: hotelNotes,
+      cost: parseFloat(hotelCost)
+    };
+    
+    // Update hotels array
+    const updatedHotels = [...offerHotels];
+    updatedHotels[editingHotelIndex] = updatedHotel;
+    setOfferHotels(updatedHotels);
+    
+    // Reset form and exit edit mode
+    cancelEditingHotel();
+  };
+
   const addHotel = () => {
-    if (offerHotels.length >= 3) {
-      Alert.alert('Limit Reached', 'You can only add up to 3 hotels per offer');
+    if (offerHotels.length >= MAXIMUM_HOTELS) {
+      Alert.alert(`Limit Reached, You can only add up to ${MAXIMUM_HOTELS} hotels per offer`);
       return;
     }
     
@@ -179,10 +291,17 @@ const toggleHotelsSection = () => {
     setAddHotelSectionCollapsed(true); // Collapse the add hotel section
   };
 
-  const deleteHotel = (hotelKey) => {
-    setOfferHotels(offerHotels.filter(hotel => 
-      `${hotel.name}+${hotel.address}` !== hotelKey
-    ));
+  const deleteHotel = (hotelIndex) => {
+    const updatedHotels = offerHotels.filter((_, index) => index !== hotelIndex);
+    setOfferHotels(updatedHotels);
+    
+    // If we were editing this hotel, cancel the edit
+    if (editingHotelIndex === hotelIndex) {
+      cancelEditingHotel();
+    } else if (editingHotelIndex > hotelIndex) {
+      // Adjust editing index if necessary
+      setEditingHotelIndex(editingHotelIndex - 1);
+    }
   };
 
   const makeOffer = async () => {
@@ -201,36 +320,71 @@ const toggleHotelsSection = () => {
       const ratings = offerHotels.map(hotel => hotel.rating);
       const minRating = Math.min(...ratings);
       const maxRating = Math.max(...ratings);
-       const user= await getCurrentUser();
-        if(!user) {
-          Alert.alert('Error', 'User not found. Please log in again.');
-          await signOut(navigation);
-          
-          return;
+      
+      const user= await getCurrentUser();
+      if(!user) {
+        Alert.alert('Error', 'User not found. Please log in again.');
+        await signOut(navigation);
+        return;
+      }
+      if(user?.app_metadata?.permitted_to_work === false) {
+        Alert.alert('Access Denied', 'You are not permitted to make offers.');
+        return;
 
-        }
-      // Insert offer into database
-      const { data, error } = await supabase
-        .from('offers')
-        .insert({
-          min_cost: minCost,
-          max_cost: maxCost,
-          min_rating: minRating,
-          max_rating: maxRating,
-          num_of_hotels: offerHotels.length,
-          hotels: offerHotels,
-          agent_id: user.id,
-          request_id: requestId,
-          request_creator: request.creator_id
-        });
-      
-      if (error) throw error;
-      
-      Alert.alert(
-        'Success', 
-        'Your offer has been submitted successfully',
-        [{ text: 'OK', onPress: () => navigation.navigate('Home') }]
-      );
+      }
+      if(! inDateReq(request)) {
+        Alert.alert('Request Outdated', 'This request is no longer valid.');
+        return;
+      }
+      if (isEditMode && existingOffer) {
+        // Update existing offer
+        
+        const { data, error } = await supabase
+          .from('offers')
+          .update({
+            min_cost: minCost,
+            max_cost: maxCost,
+            min_rating: minRating,
+            max_rating: maxRating,
+            num_of_hotels: offerHotels.length,
+            hotels: offerHotels,
+            new_update:true,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingOffer.id);
+        
+        if (error) throw error;
+        
+        Alert.alert(
+          'Success', 
+          'Your offer has been updated successfully',
+          [{ text: 'OK', onPress: () => navigation.goBack() }]
+        );
+      } else {
+        // Insert new offer into database
+        const { data, error } = await supabase
+          .from('offers')
+          .insert({
+            min_cost: minCost,
+            max_cost: maxCost,
+            min_rating: minRating,
+            max_rating: maxRating,
+            num_of_hotels: offerHotels.length,
+            hotels: offerHotels,
+            agent_id: user.id,
+            request_id: requestId,
+            request_creator: request.creator_id
+  
+          });
+        
+        if (error) throw error;
+        
+        Alert.alert(
+          'Success', 
+          'Your offer has been submitted successfully',
+          [{ text: 'OK', onPress: () => navigation.navigate('Home') }]
+        );
+      }
     } catch (error) {
       console.error('Error making offer:', error);
       Alert.alert('Error', 'Failed to submit offer. Please try again.');
@@ -256,370 +410,403 @@ const toggleHotelsSection = () => {
   const maxRating = ratings.length > 0 ? Math.max(...ratings) : 0;
 
   const userCanMakeOffer = user?.app_metadata?.permitted_to_work !== false && 
-                          request?.offers_number < 30;
+                          (isEditMode || request?.offers_number < MAXIMUM_OFFERS)
+                          && inDateReq(request);
+  
 
   return (
     <KeyboardAvoidingView 
-    style={{ flex: 1 }}
-    behavior={Platform.OS === "ios" ? "padding" : "height"}
-    keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 40}
-  >
-    <ScrollView
-     style={styles.container}
-     keyboardShouldPersistTaps="handled"
-     >
-      {/* Request Section */}
-      <Card containerStyle={styles.card}>
-        <TouchableOpacity 
-          style={styles.sectionHeader} 
-          onPress={toggleRequestSection}
-        >
-          <Text style={styles.sectionTitle}>Request Details</Text>
-          <Icon 
-            name={requestSectionCollapsed ? 'chevron-down' : 'chevron-up'} 
-            type="ionicon" 
-          />
-        </TouchableOpacity>
-        
-        {!requestSectionCollapsed && request && (
-          <View style={styles.sectionContent}>
-            {/* Dates */}
-            <View style={styles.infoRow}>
-              <View style={styles.infoColumn}>
-                <Text style={styles.label}>Start Date:</Text>
-                <Text>{new Date(request.start_date).toLocaleDateString()}</Text>
-              </View>
-              <View style={styles.infoColumn}>
-                <Text style={styles.label}>End Date:</Text>
-                <Text>{new Date(request.end_date).toLocaleDateString()}</Text>
-              </View>
-            </View>
-            
-            {/* Destinations */}
-            <View style={styles.infoRow}>
-              <View style={styles.fullWidth}>
-                <Text style={styles.label}>Country:</Text>
-                <Text>{request.country_name}</Text>
-              </View>
-            </View>
-            <View style={styles.infoRow}>
-              <View style={styles.fullWidth}>
-                <Text style={styles.label}>Area:</Text>
-                <Text>{request.area_name}</Text>
-              </View>
-            </View>
-           
-            {/* Travelers */}
-            <View style={styles.infoRow}>
-              <View style={styles.fullWidth}>
-                <Text style={styles.label}>Travelers:</Text>
-                <Text>Adults: {request.adults}</Text>
-                {request.children && request.children > 0 ? (
-                  <View>
-                    <Text>Children: {request.children}</Text>
-                    {request.children_ages && (
-                      <View style={styles.childrenAges}>
-                        <Text>Ages: {request.children_ages.join(', ')}</Text>
-                      </View>
-                    )}
-                  </View>
-                ) : (
-                  <Text>No children</Text>
-                )}
-              </View>
-              {/* travelers nationality */}
-            </View>
-              <View style={styles.infoRow}>
-              <View style={styles.fullWidth}>
-                <Text style={styles.label}>nationality:</Text>
-                <Text>{request.travelers_nationality_name}</Text>
-              </View>
-            </View>
-            {/* Hotels Info */}
-            <View style={styles.infoRow}>
-              <View style={styles.fullWidth}>
-                <Text style={styles.label}>Hotel Information:</Text>
-                <Text>Rating: {request.hotels_rating} stars</Text>
-                <Text>Rooms: {request.rooms} rooms</Text>
-                <Text>Meals: {request.meals?.join(', ') || 'None'}</Text>
-              </View>
-            </View>
-            
-            {/* Budget */}
-            <View style={styles.infoRow}>
-              <View style={styles.infoColumn}>
-                <Text style={styles.label}>Min Budget:</Text>
-                <Text>${request.min_budget}</Text>
-              </View>
-              <View style={styles.infoColumn}>
-                <Text style={styles.label}>Max Budget:</Text>
-                <Text>${request.max_budget}</Text>
-              </View>
-            </View>
-            
-            {/* Notes */}
-            <View style={styles.infoRow}>
-              <View style={styles.fullWidth}>
-                <Text style={styles.label}>Notes:</Text>
-                <ScrollView style={styles.notesContainer}>
-                  <Text>{request.notes || 'No notes provided'}</Text>
-                </ScrollView>
-              </View>
-            </View>
-          </View>
-        )}
-      </Card>
-      
-      {/* Warning Section */}
-      {request.offers_number >= 30 && (
-        <Card containerStyle={styles.warningCard}>
-          <Text style={styles.warningText}>
-            This request already has the maximum number of offers (30).
-            You cannot make additional offers.
-          </Text>
-        </Card>
-      )}
-      {/* Not Permitted Warning */}
-    {!isPermittedToWork && (
-  <Card containerStyle={styles.warningCard}>
-    <Text style={styles.warningText}>
-      You are not permitted to work on this request.
-    </Text>
-  </Card>
-    )}
-      {/* Offers Info Section */}
-      {offerHotels.length > 0 && (
-        <Card containerStyle={styles.card}>
-          <Text style={styles.sectionTitle}>Offer Summary</Text>
-          
-          <View style={styles.infoRow}>
-            <View style={styles.infoColumn}>
-              <Text style={styles.label}>Min Cost:</Text>
-              <Text>${minCost}</Text>
-            </View>
-            <View style={styles.infoColumn}>
-              <Text style={styles.label}>Max Cost:</Text>
-              <Text>${maxCost}</Text>
-            </View>
-          </View>
-          
-          <View style={styles.infoRow}>
-            <View style={styles.infoColumn}>
-              <Text style={styles.label}>Min Rating:</Text>
-              <Text>{minRating} stars</Text>
-            </View>
-            <View style={styles.infoColumn}>
-              <Text style={styles.label}>Max Rating:</Text>
-              <Text>{maxRating} stars</Text>
-            </View>
-          </View>
-          
-          <View style={styles.infoRow}>
-            <View style={styles.infoColumn}>
-              <Text style={styles.label}>Number of Hotels:</Text>
-              <Text>{offerHotels.length}</Text>
-            </View>
-            <View style={styles.infoColumn}>
-              {userCanMakeOffer && (
-                <Button
-                  title="Make Offer"
-                  onPress={makeOffer}
-                  buttonStyle={styles.makeOfferButton}
-                />
-              )}
-            </View>
-          </View>
-        </Card>
-      )}
-      {/* Not Permitted Warning */}
-      {user?.app_metadata?.permitted_to_work === false && (
-        <Card containerStyle={styles.warningCard}>
-          <Text style={styles.warningText}>
-            You are not permitted to work on this request.
-          </Text>
-        </Card>
-      )}
-
-    {/* Add Hotel Section - Collapsible */}
-{userCanMakeOffer && (
-  <Card containerStyle={styles.card}>
-    <TouchableOpacity 
-      style={styles.sectionHeader} 
-      onPress={() => setAddHotelSectionCollapsed(!addHotelSectionCollapsed)}
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 40}
     >
-      <Text style={styles.sectionTitle}>Add Hotel to Offer</Text>
-      <Icon 
-        name={addHotelSectionCollapsed ? 'chevron-down' : 'chevron-up'} 
-        type="ionicon" 
-      />
-    </TouchableOpacity>
-    
-    {!addHotelSectionCollapsed && (
-      <View style={styles.sectionContent}>
-        {/* Hotel Form */}
-        <Input
-          label="Hotel Name"
-          value={hotelName}
-          onChangeText={setHotelName}
-        />
-        <Input
-          label="Hotel Address"
-          value={hotelAddress}
-          onChangeText={setHotelAddress}
-        />
-        <Input
-          label="Number of Rooms"
-          value={hotelRooms}
-          onChangeText={setHotelRooms}
-          keyboardType="numeric"
-        />
-        <Input
-          label="Room Size"
-          value={hotelRoomSize}
-          onChangeText={setHotelRoomSize}
-          keyboardType="numeric"
-        />
-        
-        {/* Rating and Cost in same row */}
-        <View style={styles.row}>
-          <View style={styles.halfWidth}>
-            <Text style={styles.dropdownLabel}>Hotel Rating</Text>
-            <Dropdown
-              style={styles.dropdown}
-              data={ratingData}
-              labelField="label"
-              valueField="value"
-              value={hotelRating}
-              onChange={item => setHotelRating(item.value)}
-              placeholder="Select rating"
-            />
-          </View>
-          <View style={styles.halfWidth}>
-            <Text style={styles.dropdownLabel}>Total Cost in $</Text>
-            <Input
-              value={hotelCost}
-              onChangeText={setHotelCost}
-              keyboardType="numeric"
-              containerStyle={styles.inputContainer}
-              inputContainerStyle={styles.inputInnerContainer}
-            />
-          </View>
-        </View>
-        
-        <Input
-          label="Notes"
-          value={hotelNotes}
-          onChangeText={setHotelNotes}
-          multiline
-          numberOfLines={4}
-          textAlignVertical="top"
-          inputContainerStyle={styles.notesInputContainer}
-          inputStyle={styles.notesInput}
-        />
-        
-        {/* Meals in one row */}
-        <Text style={styles.mealsLabel}>Meals</Text>
-        <View style={styles.mealsContainer}>
-          <CheckBox
-            title="Breakfast"
-            checked={selectedMeals.breakfast}
-            onPress={() => setSelectedMeals({ ...selectedMeals, breakfast: !selectedMeals.breakfast })}
-            containerStyle={styles.mealCheckbox}
-          />
-          <CheckBox
-            title="Lunch"
-            checked={selectedMeals.lunch}
-            onPress={() => setSelectedMeals({ ...selectedMeals, lunch: !selectedMeals.lunch })}
-            containerStyle={styles.mealCheckbox}
-          />
-          <CheckBox
-            title="Dinner"
-            checked={selectedMeals.dinner}
-            onPress={() => setSelectedMeals({ ...selectedMeals, dinner: !selectedMeals.dinner })}
-            containerStyle={styles.mealCheckbox}
-          />
-        </View>
-        
-        <Button
-          title="Add Hotel"
-          onPress={addHotel}
-          buttonStyle={styles.addButton}
-        />
-      </View>
-    )}
-  </Card>
-)}
-    {/* Offer Hotels Section */}
-{offerHotels.length > 0 && (
-  <Card containerStyle={styles.card}>
-      <TouchableOpacity 
-          style={styles.sectionHeader} 
-          onPress={toggleHotelsSection}
-        >
-          <Text style={styles.sectionTitle}>Added Hotels:</Text>
-          <Icon 
-            name={hotelsSectionCollapsed ? 'chevron-down' : 'chevron-up'} 
-            type="ionicon" 
-          />
-        </TouchableOpacity>
-    {hotelsSectionCollapsed && offerHotels.map((hotel, index) => (
-      <Card key={`${hotel.name}+${hotel.address}`} containerStyle={styles.hotelItemCard}>
-        <View style={styles.hotelHeader}>
-          <Text style={styles.hotelName}>{hotel.name}</Text>
+      <ScrollView
+        style={styles.container}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Request Section */}
+        <Card containerStyle={styles.card}>
           <TouchableOpacity 
-            onPress={() => deleteHotel(`${hotel.name}+${hotel.address}`)}
-            style={styles.deleteIconContainer}
+            style={styles.sectionHeader} 
+            onPress={toggleRequestSection}
           >
-            <Icon name="trash-outline" type="ionicon" color="#dc3545" size={20} />
+            <Text style={styles.sectionTitle}>Request Details</Text>
+            <Icon 
+              name={requestSectionCollapsed ? 'chevron-down' : 'chevron-up'} 
+              type="ionicon" 
+            />
           </TouchableOpacity>
-        </View>
-        
-        <Divider style={styles.hotelDivider} />
-        
-        <View style={styles.hotelDetailsContainer}>
-          <View style={styles.hotelDetailRow}>
-            <Icon name="location-outline" type="ionicon" size={16} color="#007bff" />
-            <Text style={styles.hotelDetailText}>{hotel.address}</Text>
-          </View>
           
-          <View style={styles.hotelDetailRow}>
-            <Icon name="bed-outline" type="ionicon" size={16} color="#007bff" />
-            <Text style={styles.hotelDetailText}>
-              {hotel.rooms} {hotel.rooms === 1 ? 'room' : 'rooms'}, {hotel.room_size} meters²
-            </Text>
-          </View>
-          
-          <View style={styles.hotelDetailRow}>
-            <Icon name="star" type="ionicon" size={16} color="#FFD700" />
-            <Text style={styles.hotelDetailText}>{hotel.rating} stars</Text>
-          </View>
-          
-          <View style={styles.hotelDetailRow}>
-            <Icon name="restaurant-outline" type="ionicon" size={16} color="#007bff" />
-            <Text style={styles.hotelDetailText}>
-              Meals: {hotel.meals.length > 0 ? hotel.meals.join(', ') : 'None'}
-            </Text>
-          </View>
-          
-          <View style={styles.hotelDetailRow}>
-            <Icon name="cash-outline" type="ionicon" size={16} color="#28a745" />
-            <Text style={styles.hotelDetailText}>Total Cost: ${hotel.cost}</Text>
-          </View>
-          
-          {hotel.notes && (
-            <View style={styles.hotelDetailRow}>
-              <Icon name="document-text-outline" type="ionicon" size={16} color="#007bff" />
-              <Text style={styles.hotelDetailText}>Notes: {hotel.notes}</Text>
+          {!requestSectionCollapsed && request && (
+            <View style={styles.sectionContent}>
+              {/* Dates */}
+              <View style={styles.infoRow}>
+                <View style={styles.infoColumn}>
+                  <Text style={styles.label}>Start Date:</Text>
+                  <Text>{new Date(request.start_date).toLocaleDateString()}</Text>
+                </View>
+                <View style={styles.infoColumn}>
+                  <Text style={styles.label}>End Date:</Text>
+                  <Text>{new Date(request.end_date).toLocaleDateString()}</Text>
+                </View>
+              </View>
+              
+              {/* Destinations */}
+              <View style={styles.infoRow}>
+                <View style={styles.fullWidth}>
+                  <Text style={styles.label}>Country:</Text>
+                  <Text>{request.country_name}</Text>
+                </View>
+              </View>
+              <View style={styles.infoRow}>
+                <View style={styles.fullWidth}>
+                  <Text style={styles.label}>Area:</Text>
+                  <Text>{request.area_name}</Text>
+                </View>
+              </View>
+             
+              {/* Travelers */}
+              <View style={styles.infoRow}>
+                <View style={styles.fullWidth}>
+                  <Text style={styles.label}>Travelers:</Text>
+                  <Text>Adults: {request.adults}</Text>
+                  {request.children && request.children > 0 ? (
+                    <View>
+                      <Text>Children: {request.children.length}</Text>
+                      {request.children && (
+                        <View style={styles.childrenAges}>
+                        <Text>Ages: {request.children.join(', ')} Years</Text>
+                        </View>
+                      )}
+                    </View>
+                  ) : (
+                    <Text>No children</Text>
+                  )}
+                </View>
+                {/* travelers nationality */}
+              </View>
+              <View style={styles.infoRow}>
+                <View style={styles.fullWidth}>
+                  <Text style={styles.label}>nationality:</Text>
+                  <Text>{request.travelers_nationality_name}</Text>
+                </View>
+              </View>
+              {/* Hotels Info */}
+              <View style={styles.infoRow}>
+                <View style={styles.fullWidth}>
+                  <Text style={styles.label}>Hotel Information:</Text>
+                  <Text>Rating: {request.hotels_rating} stars</Text>
+                  <Text>Rooms: {request.rooms} rooms</Text>
+                  <Text>Meals: {request.meals?.join(', ') || 'None'}</Text>
+                </View>
+              </View>
+              
+              {/* Budget */}
+              <View style={styles.infoRow}>
+                <View style={styles.infoColumn}>
+                  <Text style={styles.label}>Min Budget:</Text>
+                  <Text>${request.min_budget}</Text>
+                </View>
+                <View style={styles.infoColumn}>
+                  <Text style={styles.label}>Max Budget:</Text>
+                  <Text>${request.max_budget}</Text>
+                </View>
+              </View>
+              
+              {/* Notes */}
+              <View style={styles.infoRow}>
+                <View style={styles.fullWidth}>
+                  <Text style={styles.label}>Notes:</Text>
+                  <ScrollView style={styles.notesContainer}>
+                    <Text>{request.notes || 'No notes provided'}</Text>
+                  </ScrollView>
+                </View>
+              </View>
             </View>
           )}
-        </View>
-      </Card>
-    ))}
-  </Card>
-)}
+        </Card>
+        
+        {/* Warning Section */}
+        {!isEditMode && inDateReq(request) && request?.offers_number >= MAXIMUM_OFFERS && (
+          <Card containerStyle={styles.warningCard}>
+            <Text style={styles.warningText}>
+              This request already has the maximum number of offers ({MAXIMUM_OFFERS}).
+              You cannot make additional offers.
+            </Text>
+          </Card>
+        )}
+        
+        {/* Not Permitted Warning */}
+        {!isPermittedToWork && (
+          <Card containerStyle={styles.warningCard}>
+            <Text style={styles.warningText}>
+              You are not permitted to work on this request.
+            </Text>
+          </Card>
+        )}
+        
+        {/* Offers Info Section */}
+        {offerHotels.length > 0 && (
+          <Card containerStyle={styles.card}>
+            <Text style={styles.sectionTitle}>Offer Summary</Text>
+            
+            <View style={styles.infoRow}>
+              <View style={styles.infoColumn}>
+                <Text style={styles.label}>Min Cost:</Text>
+                <Text>${minCost}</Text>
+              </View>
+              <View style={styles.infoColumn}>
+                <Text style={styles.label}>Max Cost:</Text>
+                <Text>${maxCost}</Text>
+              </View>
+            </View>
+            
+            <View style={styles.infoRow}>
+              <View style={styles.infoColumn}>
+                <Text style={styles.label}>Min Rating:</Text>
+                <Text>{minRating} stars</Text>
+              </View>
+              <View style={styles.infoColumn}>
+                <Text style={styles.label}>Max Rating:</Text>
+                <Text>{maxRating} stars</Text>
+              </View>
+            </View>
+            
+            <View style={styles.infoRow}>
+              <View style={styles.infoColumn}>
+                <Text style={styles.label}>Number of Hotels:</Text>
+                <Text>{offerHotels.length}</Text>
+              </View>
+              <View style={styles.infoColumn}>
+                {userCanMakeOffer && (
+                  <Button
+                    title={isEditMode ? "Update Offer" : "Make Offer"}
+                    onPress={makeOffer}
+                    buttonStyle={styles.makeOfferButton}
+                  />
+                )}
+              </View>
+            </View>
+          </Card>
+        )}
 
-      
-    </ScrollView>
+        {/* Add/Edit Hotel Section - Collapsible */}
+        {userCanMakeOffer && (
+          <Card containerStyle={styles.card}>
+            <TouchableOpacity 
+              style={styles.sectionHeader} 
+              onPress={() => setAddHotelSectionCollapsed(!addHotelSectionCollapsed)}
+            >
+              <Text style={styles.sectionTitle}>
+                {editingHotelIndex >= 0 ? 'Edit Hotel' : 'Add Hotel to Offer'}
+              </Text>
+              <Icon 
+                name={addHotelSectionCollapsed ? 'chevron-down' : 'chevron-up'} 
+                type="ionicon" 
+              />
+            </TouchableOpacity>
+            
+            {!addHotelSectionCollapsed && (
+              <View style={styles.sectionContent}>
+                {/* Hotel Form */}
+                <Input
+                  label="Hotel Name"
+                  value={hotelName}
+                  onChangeText={setHotelName}
+                />
+                <Input
+                  label="Hotel Address"
+                  value={hotelAddress}
+                  onChangeText={setHotelAddress}
+                />
+                <Input
+                  label="Number of Rooms"
+                  value={hotelRooms}
+                  onChangeText={setHotelRooms}
+                  keyboardType="numeric"
+                />
+                <Input
+                  label="Room Size in Meter"
+                  value={hotelRoomSize}
+                  onChangeText={setHotelRoomSize}
+                  keyboardType="numeric"
+                />
+                
+                {/* Rating and Cost in same row */}
+                <View style={styles.row}>
+                  <View style={styles.halfWidth}>
+                    <Text style={styles.dropdownLabel}>Hotel Rating</Text>
+                    <Dropdown
+                      style={styles.dropdown}
+                      data={ratingData}
+                      labelField="label"
+                      valueField="value"
+                      value={hotelRating}
+                      onChange={item => setHotelRating(item.value)}
+                      placeholder="Select rating"
+                    />
+                  </View>
+                  <View style={styles.halfWidth}>
+                    <Text style={styles.dropdownLabel}>Total Cost in $</Text>
+                    <Input
+                      value={hotelCost}
+                      onChangeText={setHotelCost}
+                      keyboardType="numeric"
+                      containerStyle={styles.inputContainer}
+                      inputContainerStyle={styles.inputInnerContainer}
+                    />
+                  </View>
+                </View>
+                
+                <Input
+                  label="Notes"
+                  value={hotelNotes}
+                  onChangeText={setHotelNotes}
+                  multiline
+                  numberOfLines={4}
+                  textAlignVertical="top"
+                  inputContainerStyle={styles.notesInputContainer}
+                  inputStyle={styles.notesInput}
+                />
+                
+                {/* Meals in one row */}
+                <Text style={styles.mealsLabel}>Meals</Text>
+                <View style={styles.mealsContainer}>
+                  <CheckBox
+                    title="Breakfast"
+                    checked={selectedMeals.breakfast}
+                    onPress={() => setSelectedMeals({ ...selectedMeals, breakfast: !selectedMeals.breakfast })}
+                    containerStyle={styles.mealCheckbox}
+                  />
+                  <CheckBox
+                    title="Lunch"
+                    checked={selectedMeals.lunch}
+                    onPress={() => setSelectedMeals({ ...selectedMeals, lunch: !selectedMeals.lunch })}
+                    containerStyle={styles.mealCheckbox}
+                  />
+                  <CheckBox
+                    title="Dinner"
+                    checked={selectedMeals.dinner}
+                    onPress={() => setSelectedMeals({ ...selectedMeals, dinner: !selectedMeals.dinner })}
+                    containerStyle={styles.mealCheckbox}
+                  />
+                </View>
+                
+                {/* Action Buttons */}
+                <View style={styles.buttonRow}>
+                  {editingHotelIndex >= 0 ? (
+                    <>
+                      <Button
+                        title="Update Hotel"
+                        onPress={updateHotel}
+                        buttonStyle={[styles.addButton, { backgroundColor: '#007bff' }]}
+                        containerStyle={styles.buttonContainer}
+                      />
+                      <Button
+                        title="Cancel"
+                        onPress={cancelEditingHotel}
+                        buttonStyle={[styles.addButton, { backgroundColor: '#6c757d' }]}
+                        containerStyle={styles.buttonContainer}
+                      />
+                    </>
+                  ) : (
+                    <Button
+                      title="Add Hotel"
+                      onPress={addHotel}
+                      buttonStyle={styles.addButton}
+                      containerStyle={styles.buttonContainer}
+                    />
+                  )}
+                </View>
+              </View>
+            )}
+          </Card>
+        )}
+        
+        {/* Hotels Section - Now showing as editable forms */}
+        {offerHotels.length > 0 && (
+          <Card containerStyle={styles.card}>
+            <TouchableOpacity 
+              style={styles.sectionHeader} 
+              onPress={toggleHotelsSection}
+            >
+              <Text style={styles.sectionTitle}>
+                {isEditMode ? 'Current Hotels in Offer:' : 'Added Hotels:'}
+              </Text>
+              <Icon 
+                name={hotelsSectionCollapsed ? 'chevron-down' : 'chevron-up'} 
+                type="ionicon" 
+              />
+            </TouchableOpacity>
+            
+            {hotelsSectionCollapsed && offerHotels.map((hotel, index) => (
+              <Card key={index} containerStyle={styles.hotelItemCard}>
+                <View style={styles.hotelHeader}>
+                  <Text style={styles.hotelName}>{hotel.name}</Text>
+                  <View style={styles.hotelActions}>
+                    {userCanMakeOffer && (
+                      <TouchableOpacity 
+                        onPress={() => startEditingHotel(index)}
+                        style={styles.editIconContainer}
+                      >
+                        <Icon name="pencil" type="ionicon" color="#007bff" size={20} />
+                      </TouchableOpacity>
+                    )}
+                    {userCanMakeOffer && (
+                      <TouchableOpacity 
+                        onPress={() => deleteHotel(index)}
+                        style={styles.deleteIconContainer}
+                      >
+                        <Icon name="trash-outline" type="ionicon" color="#dc3545" size={20} />
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </View>
+                
+                <Divider style={styles.hotelDivider} />
+                
+                <View style={styles.hotelDetailsContainer}>
+                  <View style={styles.hotelDetailRow}>
+                    <Icon name="location-outline" type="ionicon" size={16} color="#007bff" />
+                    <Text style={styles.hotelDetailText}>{hotel.address}</Text>
+                  </View>
+                  
+                  <View style={styles.hotelDetailRow}>
+                    <Icon name="bed-outline" type="ionicon" size={16} color="#007bff" />
+                    <Text style={styles.hotelDetailText}>
+                      {hotel.rooms} {hotel.rooms === 1 ? 'room' : 'rooms'}, {hotel.room_size} meters²
+                    </Text>
+                  </View>
+                  
+                  <View style={styles.hotelDetailRow}>
+                    <Icon name="star" type="ionicon" size={16} color="#FFD700" />
+                    <Text style={styles.hotelDetailText}>{hotel.rating} stars</Text>
+                  </View>
+                  
+                  <View style={styles.hotelDetailRow}>
+                    <Icon name="restaurant-outline" type="ionicon" size={16} color="#007bff" />
+                    <Text style={styles.hotelDetailText}>
+                      Meals: {hotel.meals.length > 0 ? hotel.meals.join(', ') : 'None'}
+                    </Text>
+                  </View>
+                  
+                  <View style={styles.hotelDetailRow}>
+                    <Icon name="cash-outline" type="ionicon" size={16} color="#28a745" />
+                    <Text style={styles.hotelDetailText}>Total Cost: ${hotel.cost}</Text>
+                  </View>
+                  
+                  {hotel.notes && (
+                    <View style={styles.hotelDetailRow}>
+                      <Icon name="document-text-outline" type="ionicon" size={16} color="#007bff" />
+                      <Text style={styles.hotelDetailText}>Notes: {hotel.notes}</Text>
+                    </View>
+                  )}
+                </View>
+              </Card>
+            ))}
+          </Card>
+        )}
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 };
@@ -675,101 +862,81 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 5,
   },
+  childrenAges: {
+    marginTop: 5,
+    paddingLeft: 2,
+  },
   notesContainer: {
     maxHeight: 100,
     borderWidth: 1,
     borderColor: '#ddd',
     borderRadius: 5,
     padding: 10,
+    backgroundColor: '#f9f9f9',
   },
-  offerSummary: {
-    backgroundColor: '#e9ecef',
-    padding: 10,
+  makeOfferButton: {
+    backgroundColor: '#28a745',
     borderRadius: 5,
-    marginBottom: 15,
-  },
-  summaryTitle: {
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  hotelCard: {
-    padding: 10,
-    marginBottom: 10,
-  },
-  hotelHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 5,
-  },
-  hotelName: {
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  deleteButton: {
-    padding: 5,
-  },
-  addHotelForm: {
-    marginTop: 15,
-  },
-  formTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 10,
+    paddingHorizontal: 20,
   },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-     marginHorizontal: 10,
+    marginHorizontal:10,
     marginBottom: 10,
   },
   halfWidth: {
-    width: '48%',
-  },
-  inputLabel: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#86939e',
-    marginBottom: 5,
-  },
-  inputContainer: {
-    paddingHorizontal: 0,
-    height: 50,
-  },
-  inputInnerContainer: {
-    borderColor: '#86939e',
-    borderWidth: 0.5,
-    borderRadius: 8,
-    paddingHorizontal: 8,
+    flex: 0.48,
   },
   dropdownLabel: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#86939e',
-    marginLeft: 10,
     marginBottom: 5,
+    marginLeft: 10,
   },
   dropdown: {
     height: 50,
     borderColor: '#86939e',
     borderWidth: 0.5,
-    borderRadius: 8,
+    borderRadius: 5,
     paddingHorizontal: 8,
-    marginBottom: 15,
+     marginBottom: 15,
     marginHorizontal: 10,
+    
+  },
+  inputContainer: {
+    paddingHorizontal: 0,
+    height:50,
+  },
+  inputInnerContainer: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#86939e',
+  },
+  notesInputContainer: {
+     borderWidth: 1,
+  borderColor: '#ccc',
+  borderRadius: 8,
+  paddingHorizontal: 8,
+  maxHeight: 150,
+  },
+  notesInput: {
+    textAlignVertical: 'top',
+    minHeight: 100,
+    paddingTop:8,
   },
   mealsLabel: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#86939e',
+    marginBottom: 10,
     marginLeft: 10,
-    marginBottom: 5,
   },
   mealsContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexWrap:'wrap',
     justifyContent: 'space-between',
-    marginHorizontal: 10,
+    marginHorizontal:10,
     marginBottom: 15,
   },
   mealCheckbox: {
@@ -779,65 +946,74 @@ const styles = StyleSheet.create({
     margin: 0,
     width: '30%',
   },
-  addButton: {
-    backgroundColor: '#28a745',
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
     marginTop: 10,
   },
-  submitButton: {
-    backgroundColor: '#007bff',
-    marginTop: 20,
+  buttonContainer: {
+    flex: 1,
+    marginHorizontal: 5,
   },
-  childrenAges: {
-    marginLeft: 10,
+  addButton: {
+    backgroundColor: '#28a745',
+    borderRadius: 5,
+    paddingVertical: 12,
   },
-  // Add these to your styles object
-hotelItemCard: {
-  borderRadius: 8,
-  marginBottom: 10,
-  padding: 10,
-  borderWidth: 1,
-  borderColor: '#e1e1e1',
-},
-hotelHeader: {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  marginBottom: 8,
-},
-deleteIconContainer: {
-  padding: 5,
-},
-hotelDivider: {
-  marginVertical: 8,
-},
-hotelDetailsContainer: {
-  marginTop: 5,
-},
-hotelDetailRow: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  marginBottom: 6,
-},
-hotelDetailText: {
-  marginLeft: 8,
-  fontSize: 14,
-  color: '#333',
-},
-divider: {
-  marginVertical: 10,
-},
-notesInputContainer: {
-  borderWidth: 1,
-  borderColor: '#ccc',
-  borderRadius: 8,
-  paddingHorizontal: 8,
-  maxHeight: 150,
-},
-notesInput: {
-  minHeight: 100,
-  textAlignVertical: 'top',
-  paddingTop: 8,
-},
+  hotelItemCard: {
+    borderRadius: 8,
+    marginBottom: 10,
+    backgroundColor: '#ffffff',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  hotelHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  hotelName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    flex: 1,
+  },
+  hotelActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  editIconContainer: {
+    padding: 8,
+    marginRight: 5,
+  },
+  deleteIconContainer: {
+    padding: 8,
+  },
+  hotelDivider: {
+    backgroundColor: '#e1e8ed',
+    height: 1,
+    marginVertical: 10,
+  },
+  hotelDetailsContainer: {
+    paddingTop: 5,
+  },
+  hotelDetailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  hotelDetailText: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: '#333',
+    flex: 1,
+  },
 });
-
 export default AgentTravelRequestDetailsScreen;

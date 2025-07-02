@@ -195,7 +195,8 @@ export default function TravelRequestForm({ navigation }) {
 const handleSubmit = async () => {
   try {
     // Basic form validation
-     if (formData.startDate < new Date().setHours(0,0,0,0)) {
+    const today= new Date().setHours(0,0,0,0);
+     if (formData.startDate < new Date(today)) {
       throw new Error('The Dates are not valid');
     }
      if (formData.startDate >= formData.endDate) {
@@ -601,7 +602,7 @@ const handleSubmit = async () => {
       {/* Budget Row */}
       <View style={styles.row}>
         <View style={styles.halfWidth}>
-          <Text style={styles.label}>Minimum Budget</Text>
+          <Text style={styles.label}>Minimum Budget in $</Text>
           <Input
             keyboardType="numeric"
             value={formData.minBudget}
@@ -616,7 +617,7 @@ const handleSubmit = async () => {
         </View>
         
         <View style={styles.halfWidth}>
-          <Text style={styles.label}>Maximum Budget</Text>
+          <Text style={styles.label}>Maximum Budget in $</Text>
           <Input
             keyboardType="numeric"
             value={formData.maxBudget}

@@ -269,7 +269,7 @@ const AdminCreateCompanyFormScreen = () => {
       </View>
       
       <View style={styles.formGroup}>
-  <Text style={styles.label}>Country *</Text>
+  <Text style={styles.label}>Company Headquarter *</Text>
   <Dropdown
     style={[styles.dropdown, errors.companyCountry ? styles.inputError : null]}
     placeholderStyle={styles.placeholderStyle}

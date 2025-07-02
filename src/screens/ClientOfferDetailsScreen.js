@@ -15,6 +15,7 @@ import {
   Divider 
 } from 'react-native-elements';
 import supabase from '../config/supabase';
+import {MESSAGING_APPS} from '../config/CONSTANTS';
 import { checkUserRole } from '../utils/auth';
 
 const ClientOfferDetailsScreen = ({ route, navigation }) => {
@@ -41,6 +42,7 @@ const ClientOfferDetailsScreen = ({ route, navigation }) => {
       .from('offers')
   .select(`
     num_of_hotels, hotels,status, min_rating, max_rating, min_cost, max_cost,
+    updated_at, created_at,
     agents!offers_agent_id_fkey (
       first_name, second_name, id, phone_number, messaging_app,
     
@@ -86,8 +88,10 @@ const ClientOfferDetailsScreen = ({ route, navigation }) => {
   };
 const appHasLink =(messagingApp) =>{
   if(!messagingApp) return false;
-  const validApps=['whatsapp','telegram'];
-  return validApps.includes(messagingApp.toLowerCase());
+
+  //const validApps=['whatsapp','telegram'];
+  return MESSAGING_APPS.map(app=> app.toUpperCase())
+  .includes(messagingApp.toUpperCase());
 };
   const openUrl = (url) => {
     if (!url) return;
@@ -124,6 +128,15 @@ const appHasLink =(messagingApp) =>{
       break;
     case 'telegram':
       url = `tg://resolve?domain=${formattedPhone}`;
+      break;
+    case 'signal':
+      url = `signal://chat?phone=${formattedPhone}`;
+      break;
+    case 'wechat':
+      url = `weixin://dl/chat?${formattedPhone}`;
+      break;
+    case 'imo':
+      url = `imo://chat?phone=${formattedPhone}`;
       break;
     default:
       url = `tel:${formattedPhone}`;

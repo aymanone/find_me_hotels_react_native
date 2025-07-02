@@ -105,7 +105,7 @@ const CompanyCreateAgentFormScreen = ({ navigation }) => {
 
     // Validate country
     if (!agentCountry) {
-      newErrors.agentCountry = 'Please select a country';
+      newErrors.agentCountry = 'Please select a work Location';
       isValid = false;
     }
 
@@ -246,7 +246,7 @@ const PermissionWarning = () => (
      
       
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Country *</Text>
+        <Text style={styles.label}>work Location *</Text>
         <Dropdown
           style={[styles.dropdown, errors.agentCountry ? styles.inputError : null]}
           placeholderStyle={styles.placeholderStyle}

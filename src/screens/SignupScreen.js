@@ -6,6 +6,7 @@ import { Dropdown } from 'react-native-element-dropdown';
 import {signOut,notAllowedAuthenticatedUser} from '../utils/auth';
 import { validEmail, validPasswordSignup, validPhoneNumber } from '../utils/validation';
 import supabase from '../config/supabase';
+import {MESSAGING_APPS} from '../config/CONSTANTS'
 
 // Custom debounce hook
 const useDebounce = (value, delay) => {
@@ -49,14 +50,11 @@ export default function SignupScreen({ navigation }) {
     { label: 'Company', value: 'company' },
     { label: 'Admin', value: 'admin' }
   ];
-  const messaging_apps = [
-    { label: 'WhatsApp', value: 'whatsapp' },
-    { label: 'Telegram', value: 'telegram' }
-    ];
-     useEffect(() => {
-        
-        notAllowedAuthenticatedUser();
-      }, [navigation]);
+  const messaging_apps = MESSAGING_APPS.map(app => { return { label: app, value: app }});
+  useEffect(() => {
+
+      notAllowedAuthenticatedUser();
+    }, [navigation]);
   // Fetch countries from Supabase
   useEffect(() => {
     const fetchCountries = async () => {
