@@ -495,7 +495,7 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
               <View style={styles.infoRow}>
                 <View style={styles.fullWidth}>
                   <Text style={styles.label}>Hotel Information:</Text>
-                  <Text>Rating: {request.hotels_rating} stars</Text>
+                  <Text>Rating: {request.hotel_rating} stars</Text>
                   <Text>Rooms: {request.rooms} rooms</Text>
                   <Text>Meals: {request.meals?.join(', ') || 'None'}</Text>
                 </View>

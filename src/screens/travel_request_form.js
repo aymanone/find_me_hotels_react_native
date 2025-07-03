@@ -109,7 +109,7 @@ export default function TravelRequestForm({ navigation, route }) {
           return;
         }
 
-        if (offers && offers.length > 0) {
+        if (offers && offers.length > 0 && false) {
           Alert.alert(
             'Cannot Edit',
             'This request has received offers and cannot be edited. Please contact the agents directly or create a new request.',

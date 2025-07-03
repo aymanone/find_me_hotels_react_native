@@ -67,7 +67,7 @@ export default function AgentAgentOffersScreen() {
       if (error) {
         console.error('Error fetching offers:', error);
       } else {
-        console.log('Agent offers:', offers);
+        
         setOffers(offers);
       }
     } catch (error) {

@@ -24,6 +24,7 @@ import AgentAgentProfileScreen from '../screens/AgentAgentProfileScreen';
 import AgentAgentOffersScreen from '../screens/AgentAgentOffersScreen';
 import AdminCompanyProfileScreen from '../screens/AdminCompanyProfileScreen';
 import AdminCompaniesListScreen from '../screens/AdminCompaniesListScreen';
+import AgentUpdatedRequestsScreen from '../screens/AgentUpdatedRequestsScreen';
 import { View, Text } from 'react-native';
 import {signOut} from '../utils/auth';
 import { 
@@ -310,17 +311,7 @@ function AgentDrawer() {
         }}
       />
       
-      <Drawer.Screen 
-        name="CreateOffer" 
-        component={() => <PlaceholderScreen title="Create Offer" />}
-        options={{
-          title: 'Create Offer',
-          drawerIcon: ({ color }) => (
-            <Icon name="add-circle-outline" type="ionicon" size={22} color={color} />
-          ),
-          drawerItemStyle: { display: 'none' }, // Hide from drawer menu but keep accessible
-        }}
-      />
+     
       
       {/* AGENT PROFILE */}
       <Drawer.Screen 
@@ -333,7 +324,17 @@ function AgentDrawer() {
           ),
         }}
       />
-      
+      {/* AGENT UPDATED REQUESTS */}
+      <Drawer.Screen 
+        name="AgentUpdatedRequests" 
+        component={AgentUpdatedRequestsScreen}
+        options={{
+          title: 'Updated Requests',
+          drawerIcon: ({ color }) => (
+            <Icon name="person-outline" type="ionicon" size={22} color={color} />
+          ),
+        }}
+      />
       {/* SIGN OUT */}
       <Drawer.Screen 
         name="SignOut" 
