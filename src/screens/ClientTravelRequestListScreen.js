@@ -178,9 +178,8 @@ const fetchTravelRequests = async () => {
     }
     
     // Navigate to details
-    navigation.navigate("ClientRequest",{screen:'ClientTravelRequestDetails', 
-    params:  { id: item.id }
-  });
+    navigation.navigate('ClientTravelRequestDetails', { id: item.id }
+  );
   };
 
   const handleDeleteRequest = async (requestId) => {

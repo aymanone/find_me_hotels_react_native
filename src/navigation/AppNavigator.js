@@ -1,16 +1,17 @@
-import React, { useState, useEffect,useRef } from 'react';
-import {AppState} from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { AppState, View, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createDrawerNavigator } from '@react-navigation/drawer';
-import SignupScreen from '../screens/SignupScreen';
-import supabase from '../config/supabase';
 import { Icon, Button } from 'react-native-elements';
+
+// Import screens
+import SignupScreen from '../screens/SignupScreen';
 import SigninScreen from '../screens/SigninScreen';
 import ClientTravelRequestList from '../screens/ClientTravelRequestListScreen';
 import ClientTravelRequestDetailsScreen from '../screens/ClientTravelRequestDetailsScreen';
-import TravelRequestForm from '../screens/travel_request_form'; 
+import TravelRequestForm from '../screens/travel_request_form';
 import OfferDetailsScreen from '../screens/OfferDetailsScreen';
 import AdminCreateCompanyFormScreen from '../screens/AdminCreateCompanyFormScreen';
 import CompanyCreateAgentFormScreen from '../screens/CompanyCreateAgentFormScreen';
@@ -19,45 +20,50 @@ import AgentTravelRequestDetailsScreen from '../screens/AgentTravelRequestDetail
 import ClientOfferDetailsScreen from '../screens/ClientOfferDetailsScreen';
 import CompanyAgentsListScreen from '../screens/CompanyAgentsListScreen';
 import CompanyAgentProfileScreen from '../screens/CompanyAgentProfileScreen';
-import CompanyCompanyProfileScreen from  '../screens/CompanyCompanyProfileScreen';
+import CompanyCompanyProfileScreen from '../screens/CompanyCompanyProfileScreen';
 import AgentAgentProfileScreen from '../screens/AgentAgentProfileScreen';
 import AgentAgentOffersScreen from '../screens/AgentAgentOffersScreen';
 import AdminCompanyProfileScreen from '../screens/AdminCompanyProfileScreen';
 import AdminCompaniesListScreen from '../screens/AdminCompaniesListScreen';
 import AgentUpdatedRequestsScreen from '../screens/AgentUpdatedRequestsScreen';
-import { View, Text } from 'react-native';
-import {signOut} from '../utils/auth';
+
+import { signOut } from '../utils/auth';
 import { 
   setupClientChannels, 
   setupAgentChannels, 
   setupCompanyChannels, 
   setupAdminChannels 
 } from '../utils/channelUtils';
-import { Alert } from 'react-native';
+import supabase from '../config/supabase';
 
 // Create navigators
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 const Drawer = createDrawerNavigator();
 
-// Simple placeholder screen for sign out functionality
+// Optimize screen components with React.memo
+const MemoizedTravelRequestForm = React.memo(TravelRequestForm);
+const MemoizedClientTravelRequestList = React.memo(ClientTravelRequestList);
+const MemoizedAgentSearchTravelRequests = React.memo(AgentSearchTravelRequestsScreen);
+const MemoizedAgentAgentOffers = React.memo(AgentAgentOffersScreen);
+const MemoizedCompanyCreateAgentForm = React.memo(CompanyCreateAgentFormScreen);
+const MemoizedCompanyAgentsList = React.memo(CompanyAgentsListScreen);
+const MemoizedAdminCreateCompanyForm = React.memo(AdminCreateCompanyFormScreen);
+const MemoizedAdminCompaniesList = React.memo(AdminCompaniesListScreen);
 
-// Simple placeholder screen for sign out functionality
+// Sign Out Screen
 function SignOutScreen({ navigation }) {
   useEffect(() => {
     const handleSignOut = async () => {
       try {
-        // Use the existing signOut function with navigation
         await signOut(navigation, 'Signin');
       } catch (error) {
         console.error('Error signing out:', error.message);
-        // Fallback if signOut fails
         navigation.navigate('Signin');
       }
     };
     
     handleSignOut();
-    
     return () => {};
   }, [navigation]);
   
@@ -68,7 +74,7 @@ function SignOutScreen({ navigation }) {
   );
 }
 
-// Placeholder component for screens not yet implemented
+// Placeholder component
 function PlaceholderScreen({ title }) {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -78,26 +84,19 @@ function PlaceholderScreen({ title }) {
 }
 
 // CLIENT NAVIGATION
-// -----------------
-const ClientRequestStack = Stack;
+// =================
 
-function ClientRequestFlow() {
+// CLIENT STACK - Contains client screens with history reset
+function ClientStack() {
   return (
-  
-       <ClientRequestStack.Navigator 
-      initialRouteName="ClientTravelRequestDetails"
-      screenOptions={{ headerShown: false }}
-    >
-      <ClientRequestStack.Screen 
-        name="ClientTravelRequestDetails" 
-        component={ClientTravelRequestDetailsScreen} 
-      />
-      <ClientRequestStack.Screen 
-        name="ClientOfferDetailsScreen" 
-        component={ClientOfferDetailsScreen} 
-      />
-    </ClientRequestStack.Navigator>
-  );}
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="ClientTabs" component={ClientTabs} />
+      <Stack.Screen name="ClientTravelRequestDetails" component={ClientTravelRequestDetailsScreen} />
+      <Stack.Screen name="ClientOfferDetails" component={ClientOfferDetailsScreen} />
+    </Stack.Navigator>
+  );
+}
+
 // Client tabs
 function ClientTabs() {
   return (
@@ -105,35 +104,38 @@ function ClientTabs() {
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
-           if (route.name === 'Requests') {
-            iconName = focused ? 'list' : 'list-outline';
-          } else if (route.name === 'NewRequest') {
+          if (route.name === 'NewRequest') {
             iconName = focused ? 'add-circle' : 'add-circle-outline';
+          } else if (route.name === 'Requests') {
+            iconName = focused ? 'list' : 'list-outline';
           }
           return <Icon name={iconName} type="ionicon" size={size} color={color} />;
         },
+        headerShown: false,
+      })}
+      screenListeners={({ navigation }) => ({
+        tabPress: (e) => {
+          // Reset stack when switching tabs to avoid keeping many screens
+          const targetRouteName = e.target.split('-')[0];
+          navigation.navigate(targetRouteName);
+        },
       })}
     >
-       <Tab.Screen 
+      <Tab.Screen 
         name="NewRequest" 
-        component={TravelRequestForm}
-        options={{ title: 'New Request', headerShown: false }}
+        component={MemoizedTravelRequestForm}
+        options={{ title: 'New Request' }}
       />
       <Tab.Screen 
         name="Requests" 
-        component={ClientTravelRequestList}
-        options={{ title: 'My Requests', headerShown: false }}
+        component={MemoizedClientTravelRequestList}
+        options={{ title: 'My Requests' }}
       />
     </Tab.Navigator>
   );
 }
 
-// Client Profile Screen (specific to clients only)
-function ClientProfileScreen() {
-  return <PlaceholderScreen title="Client Profile - My Bookings & Settings" />;
-}
-
-// CLIENT DRAWER - Contains ALL client screens
+// CLIENT DRAWER
 function ClientDrawer() {
   return (
     <Drawer.Navigator
@@ -162,37 +164,29 @@ function ClientDrawer() {
         swipeEnabled: true,
       })}
     >
-      {/* HOME - Contains the main client tabs */}
       <Drawer.Screen 
         name="Home" 
-        component={ClientTabs} 
+        component={ClientStack} 
         options={{
-          title: 'Find Me Hotels',
+          title: 'Home',
           drawerIcon: ({ color }) => (
             <Icon name="home-outline" type="ionicon" size={22} color={color} />
           ),
         }}
+        listeners={({ navigation }) => ({
+          drawerItemPress: () => {
+            // Reset to initial state when pressing drawer item
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'Home', state: { routes: [{ name: 'ClientTabs' }] } }],
+            });
+          },
+        })}
       />
       
-      {/* CLIENT-SPECIFIC NESTED SCREENS */}
-      <Drawer.Screen 
-        name="ClientRequest" 
-        component={ClientRequestFlow}
-        options={{
-          title: 'Request Details',
-          drawerIcon: ({ color }) => (
-            <Icon name="document-text-outline" type="ionicon" size={22} color={color} />
-          ),
-          drawerItemStyle: { display: 'none' }, // Hide from drawer menu but keep accessible
-        }}
-      />
-      
-      
-      
-      {/* CLIENT PROFILE */}
       <Drawer.Screen 
         name="Profile" 
-        component={ClientProfileScreen}
+        component={PlaceholderScreen}
         options={{
           title: 'My Profile',
           drawerIcon: ({ color }) => (
@@ -201,7 +195,6 @@ function ClientDrawer() {
         }}
       />
       
-      {/* SIGN OUT */}
       <Drawer.Screen 
         name="SignOut" 
         component={SignOutScreen}
@@ -220,7 +213,17 @@ function ClientDrawer() {
 }
 
 // AGENT NAVIGATION
-// ---------------
+// ===============
+
+// AGENT STACK
+function AgentStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="AgentTabs" component={AgentTabs} />
+      <Stack.Screen name="AgentTravelRequestDetails" component={AgentTravelRequestDetailsScreen} />
+    </Stack.Navigator>
+  );
+}
 
 // Agent tabs
 function AgentTabs() {
@@ -229,35 +232,38 @@ function AgentTabs() {
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
-          if (route.name === 'AvailableRequests') {
-            iconName = focused ? 'list' : 'list-outline';
+          if (route.name === 'SearchRequests') {
+            iconName = focused ? 'search' : 'search-outline';
           } else if (route.name === 'MyOffers') {
             iconName = focused ? 'pricetag' : 'pricetag-outline';
           }
           return <Icon name={iconName} type="ionicon" size={size} color={color} />;
         },
+        headerShown: false,
+      })}
+      screenListeners={({ navigation }) => ({
+        tabPress: (e) => {
+          // Reset stack when switching tabs
+          const targetRouteName = e.target.split('-')[0];
+          navigation.navigate(targetRouteName);
+        },
       })}
     >
       <Tab.Screen 
-        name="AvailableRequests" 
-        component={AgentSearchTravelRequestsScreen}
-        options={{ title: 'Available Requests', headerShown: false }}
+        name="SearchRequests" 
+        component={MemoizedAgentSearchTravelRequests}
+        options={{ title: 'Search Requests' }}
       />
       <Tab.Screen 
         name="MyOffers" 
-        component={AgentAgentOffersScreen}
-        options={{ title: 'My Offers', headerShown: false }}
+        component={MemoizedAgentAgentOffers}
+        options={{ title: 'My Offers' }}
       />
     </Tab.Navigator>
   );
 }
 
-// Agent Profile Screen (specific to agents only)
-function AgentProfileScreen() {
-  return <PlaceholderScreen title="Agent Profile - My Performance & Earnings" />;
-}
-
-// AGENT DRAWER - Contains ALL agent screens
+// AGENT DRAWER
 function AgentDrawer() {
   return (
     <Drawer.Navigator
@@ -286,34 +292,37 @@ function AgentDrawer() {
         swipeEnabled: true,
       })}
     >
-      {/* HOME - Contains the main agent tabs */}
       <Drawer.Screen 
         name="Home" 
-        component={AgentTabs} 
+        component={AgentStack} 
         options={{
           title: 'Search Requests',
           drawerIcon: ({ color }) => (
             <Icon name="home-outline" type="ionicon" size={22} color={color} />
           ),
         }}
+        listeners={({ navigation }) => ({
+          drawerItemPress: () => {
+            // Reset to initial state when pressing drawer item
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'Home', state: { routes: [{ name: 'AgentTabs' }] } }],
+            });
+          },
+        })}
       />
       
-      {/* AGENT-SPECIFIC NESTED SCREENS */}
       <Drawer.Screen 
-        name="AgentTravelRequestDetails" 
-        component={AgentTravelRequestDetailsScreen}
+        name="AgentUpdatedRequests" 
+        component={AgentUpdatedRequestsScreen}
         options={{
-          title: 'Request Details',
+          title: 'Updated Requests',
           drawerIcon: ({ color }) => (
-            <Icon name="document-text-outline" type="ionicon" size={22} color={color} />
+            <Icon name="refresh-outline" type="ionicon" size={22} color={color} />
           ),
-          drawerItemStyle: { display: 'none' }, // Hide from drawer menu but keep accessible
         }}
       />
       
-     
-      
-      {/* AGENT PROFILE */}
       <Drawer.Screen 
         name="Profile" 
         component={AgentAgentProfileScreen}
@@ -324,18 +333,7 @@ function AgentDrawer() {
           ),
         }}
       />
-      {/* AGENT UPDATED REQUESTS */}
-      <Drawer.Screen 
-        name="AgentUpdatedRequests" 
-        component={AgentUpdatedRequestsScreen}
-        options={{
-          title: 'Updated Requests',
-          drawerIcon: ({ color }) => (
-            <Icon name="person-outline" type="ionicon" size={22} color={color} />
-          ),
-        }}
-      />
-      {/* SIGN OUT */}
+      
       <Drawer.Screen 
         name="SignOut" 
         component={SignOutScreen}
@@ -358,7 +356,6 @@ function AgentDrawer() {
 const CompanyAgentStack = Stack;
 function CompanyAgentFlow() {
   return (
-  
        <CompanyAgentStack.Navigator 
       initialRouteName="CompanyAgentProfile"
       screenOptions={{ headerShown: false }}
@@ -389,13 +386,13 @@ function CompanyTabs() {
     > 
       <Tab.Screen 
         name="Create Agent"
-        component={CompanyCreateAgentFormScreen} 
+        component={MemoizedCompanyCreateAgentForm}
         options={{ title: 'Create Agent', headerShown: false }}
         
       />
       <Tab.Screen 
         name="Agents" 
-        component={CompanyAgentsListScreen}
+        component={MemoizedCompanyAgentsList}
         options={{ title: 'My Agents', headerShown: false }}
       />
       <Tab.Screen 
@@ -529,13 +526,13 @@ function AdminTabs() {
     >
       <Tab.Screen 
         name="Create Company"
-        component={AdminCreateCompanyFormScreen} 
+        component={MemoizedAdminCreateCompanyForm} 
         options={{ title: 'Create Company', headerShown: false }}
         
       />
       <Tab.Screen 
         name="My Companies" 
-        component={AdminCompaniesListScreen}
+        component={MemoizedAdminCompaniesList}
         options={{ title: 'My Companies', headerShown: false }}
       />
     </Tab.Navigator>

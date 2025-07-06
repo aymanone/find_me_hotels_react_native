@@ -99,10 +99,8 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
     setVisitedOffers(prev => ({ ...prev, [offerId]: true }));
 
     // Navigate to the offer details screen
-    navigation.navigate('ClientRequest', {
-      screen: 'ClientOfferDetailsScreen',
-      params: { offerId }
-    });
+    navigation.navigate( 'ClientOfferDetails',{ offerId }
+    );
   };
 
   const refreshOffers = async () => {
