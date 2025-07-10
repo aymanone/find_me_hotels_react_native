@@ -234,7 +234,9 @@ const fetchTravelRequests = async () => {
       <TouchableOpacity onPress={() => handleRequestPress(item)}>
         <Card containerStyle={getCardStyle(item)}>
           {/* Delete Button Row */}
+            
           <View style={styles.deleteButtonContainer}>
+        
             <TouchableOpacity 
               onPress={(e) => {
                 e.stopPropagation(); // Prevent triggering the card's onPress

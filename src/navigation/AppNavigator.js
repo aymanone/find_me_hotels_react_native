@@ -28,7 +28,7 @@ import AdminCompaniesListScreen from '../screens/AdminCompaniesListScreen';
 import AgentUpdatedRequestsScreen from '../screens/AgentUpdatedRequestsScreen';
 import ClientClientProfileScreen from '../screens/ClientClientProfileScreen';
 import AdminAdminProfileScreen from '../screens/AdminAdminProfileScreen';
-
+import ClientUpdatedRequestsScreen from '../screens/ClientUpdatedRequestsScreen';
 import { signOut } from '../utils/auth';
 import { 
   setupClientChannels, 
@@ -38,6 +38,7 @@ import {
 } from '../utils/channelUtils';
 import supabase from '../config/supabase';
 import UpdatedRequestsBadge from '../components/UpdatedRequestsBadge';
+import ClientNewOffersBadge from '../components/ClientNewOffersBadge';
 // Create navigators - Move outside component to prevent recreation
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -95,6 +96,7 @@ const createTabScreenOptions = () => (route) => ({
       'Agents': focused ? 'list' : 'list-outline',
       'Create Company': focused ? 'people' : 'people-outline',
       'Analytics': focused ? 'analytics' : 'analytics-outline',
+      'My Companies': focused ? 'analytics' : 'analytics-outline',
     };
     
     const iconName = iconMap[route.name] || 'help-outline';
@@ -150,6 +152,7 @@ const ClientStack = React.memo(function ClientStack() {
       <Stack.Screen name="ClientTabs" component={ClientTabs} />
       <Stack.Screen name="ClientTravelRequestDetails" component={ClientTravelRequestDetailsScreen} />
       <Stack.Screen name="ClientOfferDetails" component={ClientOfferDetailsScreen} />
+     <Stack.Screen name="ClientUpdatedRequests" component={ClientUpdatedRequestsScreen} />
     </Stack.Navigator>
   );
 });
@@ -194,16 +197,62 @@ const ClientDrawer = React.memo(function ClientDrawer() {
             <Icon name="home-outline" type="ionicon" size={22} color={color} />
           ),
         }}
-        listeners={({ navigation }) => ({
-          drawerItemPress: () => {
-            navigation.reset({
-              index: 0,
-              routes: [{ name: 'Home', state: { routes: [{ name: 'ClientTabs' }] } }],
-            });
-          },
-        })}
-      />
+       listeners={({ navigation }) => ({
+    drawerItemPress: (e) => {
+      // Prevent default drawer navigation
+      e.preventDefault();
       
+      // Reset the entire stack to the initial state
+      navigation.reset({
+        index: 0,
+        routes: [
+          {
+            name: 'Home',
+            state: {
+              routes: [
+                {
+                  name: 'ClientTabs',
+                  state: {
+                    index: 0,
+                    routes: [{ name: 'NewRequest' }]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      });
+      
+      // Close the drawer
+      navigation.closeDrawer();
+    },
+  })}
+      />
+         <Drawer.Screen 
+  name="ClientUpdatedRequestsDrawer" // Different name to avoid conflicts
+  component={ClientUpdatedRequestsScreen}
+  options={{
+    title: 'Updated Requests',
+    drawerIcon: ({ color }) => (
+     // <Icon name="refresh-outline" type="ionicon" size={22} color={color} />
+      <View style={{ position: 'relative' }}>
+              <Icon name="refresh-outline" type="ionicon" size={22} color={color} />
+              <ClientNewOffersBadge />
+            </View>
+    ),
+  }}
+  listeners={({ navigation }) => ({
+    drawerItemPress: (e) => {
+      // Prevent default drawer navigation
+      e.preventDefault();
+      
+      // Navigate to the stack version instead
+      navigation.navigate('Home', {
+        screen: 'ClientUpdatedRequests'
+      });
+    },
+  })}
+/>
       <Drawer.Screen 
         name="Profile" 
         component={ClientClientProfileScreen}
@@ -284,13 +333,35 @@ const AgentDrawer = React.memo(function AgentDrawer() {
           ),
         }}
         listeners={({ navigation }) => ({
-          drawerItemPress: () => {
-            navigation.reset({
-              index: 0,
-              routes: [{ name: 'Home', state: { routes: [{ name: 'AgentTabs' }] } }],
-            });
-          },
-        })}
+    drawerItemPress: (e) => {
+      // Prevent default drawer navigation
+      e.preventDefault();
+      
+      // Reset the entire stack to the initial state
+      navigation.reset({
+        index: 0,
+        routes: [
+          {
+            name: 'Home',
+            state: {
+              routes: [
+                {
+                  name: 'AgentTabs',
+                  state: {
+                    index: 0,
+                    routes: [{ name: 'SearchRequests' }]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      });
+      
+      // Close the drawer
+      navigation.closeDrawer();
+    },
+  })}
       />
       
     <Drawer.Screen 
@@ -299,7 +370,11 @@ const AgentDrawer = React.memo(function AgentDrawer() {
   options={{
     title: 'Updated Requests',
     drawerIcon: ({ color }) => (
-      <Icon name="refresh-outline" type="ionicon" size={22} color={color} />
+     // <Icon name="refresh-outline" type="ionicon" size={22} color={color} />
+      <View style={{ position: 'relative' }}>
+              <Icon name="refresh-outline" type="ionicon" size={22} color={color} />
+              <UpdatedRequestsBadge />
+            </View>
     ),
   }}
   listeners={({ navigation }) => ({
