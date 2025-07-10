@@ -8,10 +8,14 @@ import { format } from 'date-fns';
 import { checkUserRole, getCurrentUser,signOut } from '../utils/auth';
 import { removeFirstOccurrence } from '../utils/arrayUtils';  
 import {unsubscribeChannels} from '../utils/channelUtils.js'; // Import the unsubscribe function
-export default function TravelRequestForm({ navigation }) {
+
+export default function TravelRequestForm({ navigation, route }) {
+  // Check if we're editing an existing request
+  const requestId = route?.params?.requestId;
+  const isEditing = !!requestId;
+
   // Check if user is client
   useEffect(() => {
-    
     checkUserRole("client", navigation, "Signin");
   }, [navigation]);
 
@@ -20,9 +24,11 @@ export default function TravelRequestForm({ navigation }) {
   const [allCountries, setAllCountries] = useState([]);
   const [areas, setAreas] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(isEditing);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
-   // References to dropdowns for resetting
+  
+  // References to dropdowns for resetting
   const countryDropdownRef = useRef(null);
   const areaDropdownRef = useRef(null);
   const nationalityDropdownRef = useRef(null);
@@ -56,6 +62,90 @@ export default function TravelRequestForm({ navigation }) {
     label: `${i} years`,
     value: i
   }));
+  const resetForm = ()=>{
+         setIsEditing(false);
+         setRequestId(null);
+  }
+  // Fetch existing request data when editing
+  useEffect(() => {
+    const fetchRequestData = async () => {
+      if (!isEditing) return;
+
+      try {
+        setInitialLoading(true);
+        const user = await getCurrentUser();
+        if (!user) {
+          Alert.alert('Error', 'User not found. Please log in again.');
+          await signOut(navigation);
+          return;
+        }
+
+        const { data: request, error } = await supabase
+          .from('travel_requests')
+          .select('*')
+          .eq('id', requestId)
+          .eq('creator_id', user.id)
+          .single();
+
+        if (error) {
+          if (error.code === 'PGRST116') {
+            Alert.alert('Error', 'Request not found or you do not have permission to edit it.');
+          } else {
+            Alert.alert('Error', 'Failed to load request data.');
+          }
+          navigation.goBack();
+          return;
+        }
+
+        // Check if request has offers (prevent editing)
+        const { data: offers, error: offersError } = await supabase
+          .from('offers')
+          .select('id')
+          .eq('request_id', requestId);
+
+        if (offersError) {
+          Alert.alert('Error', 'Failed to check request status.');
+          navigation.goBack();
+          return;
+        }
+
+        if (offers && offers.length > 0 && false) {
+          Alert.alert(
+            'Cannot Edit',
+            'This request has received offers and cannot be edited. Please contact the agents directly or create a new request.',
+            [{ text: 'OK', onPress: () => navigation.goBack() }]
+          );
+          return;
+        }
+
+        // Populate form with existing data
+        setFormData({
+          startDate: new Date(request.start_date),
+          endDate: new Date(request.end_date),
+          requestCountry: request.request_country,
+          requestArea: request.request_area,
+          numOfAdults: request.adults.toString(),
+          requestChildren: request.children || [],
+          hotelRating: request.hotel_rating,
+          numOfRooms: request.rooms.toString(),
+          meals: request.meals || [],
+          minBudget: request.min_budget.toString(),
+          maxBudget: request.max_budget.toString(),
+          travelersNationality: request.travelers_nationality,
+          preferredAgentsCountries: request.preferred_agents_countries || [],
+          notes: request.notes || ''
+        });
+
+      } catch (error) {
+        Alert.alert('Error', error.message);
+        navigation.goBack();
+      } finally {
+        setInitialLoading(false);
+      }
+    };
+
+    fetchRequestData();
+  }, [isEditing, requestId, navigation]);
 
   // Fetch countries data
   useEffect(() => {
@@ -75,10 +165,8 @@ export default function TravelRequestForm({ navigation }) {
 
     fetchCountries();
 
-   
-
     return () => {
-   unsubscribeChannels(channelsRef.current);
+      unsubscribeChannels(channelsRef.current);
     };
   }, []);
 
@@ -142,20 +230,19 @@ export default function TravelRequestForm({ navigation }) {
 
   // Handle adding/removing children
   const addChild = (age) => {
-  
-      setFormData({
-        ...formData,
-        requestChildren: [...formData.requestChildren, age]
-      });
-    
+    setFormData({
+      ...formData,
+      requestChildren: [...formData.requestChildren, age]
+    });
   };
 
   const removeChild = (age) => {
     setFormData({
       ...formData,
       requestChildren: removeFirstOccurrence(formData.requestChildren, age)
-  });
+    });
   }
+
   // Handle meal selection
   const toggleMeal = (meal) => {
     const meals = [...formData.meals];
@@ -191,569 +278,603 @@ export default function TravelRequestForm({ navigation }) {
   };
 
   // Submit form
-  // Add this to the handleSubmit function as part of the validation process
-const handleSubmit = async () => {
-  try {
-    // Basic form validation
-    const today= new Date().setHours(0,0,0,0);
-     if (formData.startDate < new Date(today)) {
-      throw new Error('The Dates are not valid');
-    }
-     if (formData.startDate >= formData.endDate) {
-      throw new Error('The Dates are not valid');
-    }
-    if (!formData.requestCountry) {
-      throw new Error('Please select a destination country');
-    }
-    if (!formData.requestArea) {
-      throw new Error('Please select a destination area');
-    }
-    if (!formData.numOfAdults || parseInt(formData.numOfAdults) < 1) {
-      throw new Error('Please enter at least 1 adult');
-    }
-    if (!formData.hotelRating && formData.hotelRating !== 0) {
-      throw new Error('Please select a hotel rating');
-    }
-    if (!formData.numOfRooms || parseInt(formData.numOfRooms) < 1) {
-      throw new Error('Please enter at least 1 room');
-    }
-    if (!formData.minBudget || !formData.maxBudget) {
-      throw new Error('Please enter both minimum and maximum budget');
-    }
-    if (parseInt(formData.minBudget) > parseInt(formData.maxBudget)) {
-      throw new Error('Minimum budget cannot be greater than maximum budget');
-    }
-    if (!formData.travelersNationality) {
-      throw new Error('Please select travelers nationality');
-    }
-     if (formData.preferredAgentsCountries.length === 0) {
-      throw new Error('Please choose at least one country where you can pay agents');
-    }
-    
-    setLoading(true);
-     const user= await getCurrentUser();
-            if(!user) {
-              Alert.alert('Error', 'User not found. Please log in again.');
-              await signOut(navigation);
-              
-              return;
-    
-            }
-            
-            
-    // Refresh all countries data to ensure we have the latest status
-    const { data: refreshedCountries, error: countriesError } = await supabase
-      .from('minimum_countries_info')
-      .select('*')
-      .order('country_name');
-    
-    if (countriesError) throw new Error('Failed to validate countries. Please try again.');
-    
-    // Update the countries state with fresh data
-    setAllCountries(refreshedCountries);
-    
-    // Validate destination country
-    const destinationCountry = refreshedCountries.find(c => c.id === formData.requestCountry);
-    if (!destinationCountry || !destinationCountry.can_visit) {
-      // Reset country and area selections
-      setFormData(prev => ({
-        ...prev,
-        requestCountry: null,
-        requestArea: null
-      }));
-      
-      // Reset dropdown UI states
-      if (countryDropdownRef.current) {
-        countryDropdownRef.current.reset();
+  const handleSubmit = async () => {
+    try {
+      // Basic form validation
+      const today= new Date().setHours(0,0,0,0);
+      if (formData.startDate < new Date(today)) {
+        throw new Error('The Dates are not valid');
       }
-      if (areaDropdownRef.current) {
-        areaDropdownRef.current.reset();
+      if (formData.startDate >= formData.endDate) {
+        throw new Error('The Dates are not valid');
+      }
+      if (!formData.requestCountry) {
+        throw new Error('Please select a destination country');
+      }
+      if (!formData.requestArea) {
+        throw new Error('Please select a destination area');
+      }
+      if (!formData.numOfAdults || parseInt(formData.numOfAdults) < 1) {
+        throw new Error('Please enter at least 1 adult');
+      }
+      if (!formData.hotelRating && formData.hotelRating !== 0) {
+        throw new Error('Please select a hotel rating');
+      }
+      if (!formData.numOfRooms || parseInt(formData.numOfRooms) < 1) {
+        throw new Error('Please enter at least 1 room');
+      }
+      if (!formData.minBudget || !formData.maxBudget) {
+        throw new Error('Please enter both minimum and maximum budget');
+      }
+      if (parseInt(formData.minBudget) > parseInt(formData.maxBudget)) {
+        throw new Error('Minimum budget cannot be greater than maximum budget');
+      }
+      if (!formData.travelersNationality) {
+        throw new Error('Please select travelers nationality');
+      }
+      if (formData.preferredAgentsCountries.length === 0) {
+        throw new Error('Please choose at least one country where you can pay agents');
       }
       
-      throw new Error('The selected destination country is no longer available for visits. Please select another country.');
-    }
-    
-    // Validate nationality country
-    const nationalityCountry = refreshedCountries.find(c => c.id === formData.travelersNationality);
-    if (!nationalityCountry || !nationalityCountry.citizens_can_travel) {
-      // Reset nationality selection
-      console.log(nationalityCountry);
-      setFormData(prev => ({
-        ...prev,
-        travelersNationality: null
-      }));
-      
-      // Reset dropdown UI state
-      if (nationalityDropdownRef.current) {
-        nationalityDropdownRef.current.reset();
+      setLoading(true);
+      const user = await getCurrentUser();
+      if (!user) {
+        Alert.alert('Error', 'User not found. Please log in again.');
+        await signOut(navigation);
+        return;
       }
       
-      throw new Error('The selected nationality is no longer allowed to travel. Please select another nationality.');
-    }
-    
-    // Validate preferred agent countries
-    if (formData.preferredAgentsCountries.length > 0) {
-      const invalidAgentCountries = formData.preferredAgentsCountries.filter(
-        countryId => !refreshedCountries.some(c => c.id === countryId)
-      );
+      // Refresh all countries data to ensure we have the latest status
+      const { data: refreshedCountries, error: countriesError } = await supabase
+        .from('minimum_countries_info')
+        .select('*')
+        .order('country_name');
       
-      if (invalidAgentCountries.length > 0) {
-        // Reset invalid preferred agent countries
+      if (countriesError) throw new Error('Failed to validate countries. Please try again.');
+      
+      // Update the countries state with fresh data
+      setAllCountries(refreshedCountries);
+      
+      // Validate destination country
+      const destinationCountry = refreshedCountries.find(c => c.id === formData.requestCountry);
+      if (!destinationCountry || !destinationCountry.can_visit) {
+        // Reset country and area selections
         setFormData(prev => ({
           ...prev,
-          preferredAgentsCountries: []
+          requestCountry: null,
+          requestArea: null
+        }));
+        
+        // Reset dropdown UI states
+        if (countryDropdownRef.current) {
+          countryDropdownRef.current.reset();
+        }
+        if (areaDropdownRef.current) {
+          areaDropdownRef.current.reset();
+        }
+        
+        throw new Error('The selected destination country is no longer available for visits. Please select another country.');
+      }
+      
+      // Validate nationality country
+      const nationalityCountry = refreshedCountries.find(c => c.id === formData.travelersNationality);
+      if (!nationalityCountry || !nationalityCountry.citizens_can_travel) {
+        // Reset nationality selection
+        setFormData(prev => ({
+          ...prev,
+          travelersNationality: null
         }));
         
         // Reset dropdown UI state
-        if (preferredAgentsDropdownRef.current) {
-          preferredAgentsDropdownRef.current.reset();
+        if (nationalityDropdownRef.current) {
+          nationalityDropdownRef.current.reset();
         }
         
-        throw new Error('Some preferred agent countries are no longer available. They have been removed from your selection.');
-      }
-    }
-    
-    // Refresh areas data for the selected country
-    const { data: refreshedAreas, error: areasError } = await supabase
-      .from('areas')
-      .select('*')
-      .eq('country_id', formData.requestCountry)
-      .eq('can_visit', true)
-      .order('area_name');
-    
-    if (areasError) throw new Error('Failed to validate areas. Please try again.');
-    
-    // Update the areas state with fresh data
-    setAreas(refreshedAreas);
-    
-    // Validate area
-    const selectedArea = refreshedAreas.find(a => a.id === formData.requestArea);
-    if (!selectedArea) {
-      // Reset area selection
-      setFormData(prev => ({
-        ...prev,
-        requestArea: null
-      }));
-      
-      // Reset dropdown UI state
-      if (areaDropdownRef.current) {
-        areaDropdownRef.current.reset();
+        throw new Error('The selected nationality is no longer allowed to travel. Please select another nationality.');
       }
       
-      throw new Error('The selected area is no longer available for visits. Please select another area.');
-    }
-
-    // If all validations pass, proceed with the insert
-    
-    const { error } = await supabase
-      .from('travel_requests')
-      .insert([
-        {
-          adults: parseInt(formData.numOfAdults),
-          children: formData.requestChildren,
-          min_budget: parseInt(formData.minBudget),
-          max_budget: parseInt(formData.maxBudget),
-          notes: formData.notes,
-          start_date: format(formData.startDate, 'yyyy-MM-dd'),
-          end_date: format(formData.endDate, 'yyyy-MM-dd'),
-          rooms: parseInt(formData.numOfRooms),
-          hotel_rating: formData.hotelRating,
-          request_country: formData.requestCountry,
-          request_area: formData.requestArea,
-          travelers_nationality: formData.travelersNationality,
-          meals: formData.meals,
-          preferred_agents_countries: formData.preferredAgentsCountries,
-          creator_id: user?.id
+      // Validate preferred agent countries
+      if (formData.preferredAgentsCountries.length > 0) {
+        const invalidAgentCountries = formData.preferredAgentsCountries.filter(
+          countryId => !refreshedCountries.some(c => c.id === countryId)
+        );
+        
+        if (invalidAgentCountries.length > 0) {
+          // Reset invalid preferred agent countries
+          setFormData(prev => ({
+            ...prev,
+            preferredAgentsCountries: []
+          }));
+          
+          // Reset dropdown UI state
+          if (preferredAgentsDropdownRef.current) {
+            preferredAgentsDropdownRef.current.reset();
+          }
+          
+          throw new Error('Some preferred agent countries are no longer available. They have been removed from your selection.');
         }
-      ]);
+      }
+      
+      // Refresh areas data for the selected country
+      const { data: refreshedAreas, error: areasError } = await supabase
+        .from('areas')
+        .select('*')
+        .eq('country_id', formData.requestCountry)
+        .eq('can_visit', true)
+        .order('area_name');
+      
+      if (areasError) throw new Error('Failed to validate areas. Please try again.');
+      
+      // Update the areas state with fresh data
+      setAreas(refreshedAreas);
+      
+      // Validate area
+      const selectedArea = refreshedAreas.find(a => a.id === formData.requestArea);
+      if (!selectedArea) {
+        // Reset area selection
+        setFormData(prev => ({
+          ...prev,
+          requestArea: null
+        }));
+        
+        // Reset dropdown UI state
+        if (areaDropdownRef.current) {
+          areaDropdownRef.current.reset();
+        }
+        
+        throw new Error('The selected area is no longer available for visits. Please select another area.');
+      }
 
-    if (error) throw error;
-    
-    Alert.alert('Success', 'Travel request submitted successfully!');
-    
-    // Wait for 3 seconds before navigating
-    setTimeout(() => {
-      navigation.navigate('Requests');
-    }, 3000);
-    
-  } catch (error) {
-    Alert.alert('Error', error.message);
-  } finally {
-    setLoading(false);
+      // Prepare data for insert/update
+      const requestData = {
+        adults: parseInt(formData.numOfAdults),
+        children: formData.requestChildren,
+        min_budget: parseInt(formData.minBudget),
+        max_budget: parseInt(formData.maxBudget),
+        notes: formData.notes,
+        start_date: format(formData.startDate, 'yyyy-MM-dd'),
+        end_date: format(formData.endDate, 'yyyy-MM-dd'),
+        rooms: parseInt(formData.numOfRooms),
+        hotel_rating: formData.hotelRating,
+        request_country: formData.requestCountry,
+        request_area: formData.requestArea,
+        travelers_nationality: formData.travelersNationality,
+        meals: formData.meals,
+        preferred_agents_countries: formData.preferredAgentsCountries,
+        updated_at : new Date().toISOString(),
+            };
+
+      let error;
+      
+      if (isEditing) {
+        // Update existing request
+        const updateResult = await supabase
+          .from('travel_requests')
+          .update(requestData)
+          .eq('id', requestId)
+          .eq('creator_id', user.id);
+        error = updateResult.error;
+      } else {
+        // Create new request
+        const insertResult = await supabase
+          .from('travel_requests')
+          .insert([{
+            ...requestData,
+            creator_id: user.id
+          }]);
+        error = insertResult.error;
+      }
+
+      if (error) throw error;
+      
+      Alert.alert(
+        'Success', 
+        isEditing ? 'Travel request updated successfully!' : 'Travel request submitted successfully!'
+      );
+      
+      // Wait for 3 seconds before navigating
+      
+      setTimeout(() => {
+          navigation.reset({
+          index: 0,
+          routes: [{ name: 'Requests' }],
+  });
+      }, 3000);
+      
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Show loading screen while fetching request data
+  if (initialLoading) {
+    return (
+      <View style={[styles.container, styles.loadingContainer]}>
+        <Text>Loading request data...</Text>
+      </View>
+    );
   }
-};
-
   
   return (
-     <KeyboardAvoidingView 
-    style={{ flex: 1 }}
-    behavior={Platform.OS === "ios" ? "padding" : "height"}
-    keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 40}
-  >
-    <ScrollView style={styles.container} 
-    keyboardShouldPersistTaps="handled"
+    <KeyboardAvoidingView 
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 40}
     >
-      <Text h4 style={styles.title}>New Travel Request</Text>
-      
-      {/* Dates Row */}
-      <View style={styles.row}>
-        <View style={styles.halfWidth}>
-          <Text style={styles.label}>Start Date</Text>
-          <Button
-            title={format(formData.startDate, 'yyyy-MM-dd')}
-            onPress={() => setShowStartDatePicker(true)}
-            type="outline"
-          />
-          {showStartDatePicker && (
-            <DateTimePicker
-              value={formData.startDate}
-              mode="date"
-              display="default"
-              onChange={onStartDateChange}
-              minimumDate={new Date()}
+      <ScrollView style={styles.container} 
+        keyboardShouldPersistTaps="handled"
+      >
+        <Text h4 style={styles.title}>
+          {isEditing ? 'Edit Travel Request' : 'New Travel Request'}
+        </Text>
+        
+        {/* Dates Row */}
+        <View style={styles.row}>
+          <View style={styles.halfWidth}>
+            <Text style={styles.label}>Start Date</Text>
+            <Button
+              title={format(formData.startDate, 'yyyy-MM-dd')}
+              onPress={() => setShowStartDatePicker(true)}
+              type="outline"
+              buttonStyle={styles.dateButton}
             />
-          )}
+            {showStartDatePicker && (
+              <DateTimePicker
+                value={formData.startDate}
+                mode="date"
+                display="default"
+                onChange={onStartDateChange}
+                minimumDate={new Date()}
+                style={styles.datePickerContainer}
+              />
+            )}
+          </View>
+          
+          <View style={styles.halfWidth}>
+            <Text style={styles.label}>End Date</Text>
+            <Button
+              title={format(formData.endDate, 'yyyy-MM-dd')}
+              onPress={() => setShowEndDatePicker(true)}
+              type="outline"
+              buttonStyle={styles.dateButton}
+            />
+            {showEndDatePicker && (
+              <DateTimePicker
+                value={formData.endDate}
+                mode="date"
+                display="default"
+                onChange={onEndDateChange}
+                minimumDate={new Date(formData.startDate.getTime() + 86400000)} // startDate + 1 day
+                style={styles.datePickerContainer}
+              />
+            )}
+          </View>
         </View>
         
-        <View style={styles.halfWidth}>
-          <Text style={styles.label}>End Date</Text>
-          <Button
-            title={format(formData.endDate, 'yyyy-MM-dd')}
-            onPress={() => setShowEndDatePicker(true)}
-            type="outline"
-          />
-          {showEndDatePicker && (
-            <DateTimePicker
-              value={formData.endDate}
-              mode="date"
-              display="default"
-              onChange={onEndDateChange}
-              minimumDate={new Date(formData.startDate.getTime() + 86400000)} // startDate + 1 day
+        {/* Destinations Row */}
+        <View style={styles.row}>
+          <View style={styles.halfWidth}>
+            <Text style={styles.label}>Destination Country</Text>
+            <Dropdown
+              ref={countryDropdownRef}
+              data={allCountries
+                .filter(country => country.can_visit)
+                .map(country => ({
+                  label: country.country_name,
+                  value: country.id
+                }))}
+              labelField="label"
+              valueField="value"
+              value={formData.requestCountry}
+              onChange={item => {
+                setFormData({
+                  ...formData,
+                  requestCountry: item.value,
+                  requestArea: null
+                });
+              }}
+              placeholder="Select country"
+              style={styles.dropdown}
+              placeholderStyle={styles.placeholderStyle}
+              selectedTextStyle={styles.selectedTextStyle}
+              search
+              searchPlaceholder="Search country..."
             />
-          )}
+          </View>
+          
+          <View style={styles.halfWidth}>
+            <Text style={styles.label}>Destination Area</Text>
+            <Dropdown
+              ref={areaDropdownRef}
+              data={areas.map(area => ({
+                label: area.area_name,
+                value: area.id
+              }))}
+              labelField="label"
+              valueField="value"
+              value={formData.requestArea}
+              onChange={item => {
+                setFormData({
+                  ...formData,
+                  requestArea: item.value
+                });
+              }}
+              placeholder="Select area"
+              style={styles.dropdown}
+              placeholderStyle={styles.placeholderStyle}
+              selectedTextStyle={styles.selectedTextStyle}
+              search
+              searchPlaceholder="Search area..."
+              disabled={!formData.requestCountry}
+            />
+          </View>
         </View>
-      </View>
-      
-      {/* Destinations Row */}
-      <View style={styles.row}>
-        <View style={styles.halfWidth}>
-          <Text style={styles.label}>Destination Country</Text>
-          <Dropdown
-          ref={countryDropdownRef}
-            data={allCountries
-              .filter(country => country.can_visit)
-              .map(country => ({
+        
+        {/* Travelers Row */}
+        <View style={styles.row}>
+          <View style={styles.halfWidth}>
+            <Text style={styles.label}>Number of Adults</Text>
+            <Input
+              keyboardType="numeric"
+              value={formData.numOfAdults}
+              onChangeText={(text) => {
+                const value = text.replace(/[^0-9]/g, '');
+                if (value === '' || (parseInt(value) >= 1 && parseInt(value) <= 1000)) {
+                  setFormData({...formData, numOfAdults: value});
+                }
+              }}
+              containerStyle={styles.input}
+            />
+          </View>
+          
+          <View style={styles.halfWidth}>
+            <Text style={styles.label}>Add Child</Text>
+            <Dropdown
+              data={allChildrenAges}
+              labelField="label"
+              valueField="value"
+              onChange={item => addChild(item.value)}
+              placeholder="Select age"
+              style={styles.dropdown}
+              placeholderStyle={styles.placeholderStyle}
+              selectedTextStyle={styles.selectedTextStyle}
+            />
+          </View>
+        </View>
+        
+        {/* Children Row (if any) */}
+        {formData.requestChildren.length > 0 && (
+          <View style={styles.childrenContainer}>
+            <Text style={styles.label}>Children</Text>
+            <View style={styles.childrenList}>
+              {formData.requestChildren.map((age,index )=> (
+                <View key={`${age}-${index}`} style={styles.childTag}>
+                  <Text style={styles.childTagText}>{age} years</Text>
+                  <Button
+                    icon={{ name: 'close', size: 15, color: 'white' }}
+                    onPress={() => removeChild(age)}
+                    buttonStyle={styles.removeChildButton}
+                  />
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+        
+        {/* Hotels Row */}
+        <View style={styles.row}>
+          <View style={styles.halfWidth}>
+            <Text style={styles.label}>Hotel Rating</Text>
+            <Dropdown
+              data={hotelRatings}
+              labelField="label"
+              valueField="value"
+              value={formData.hotelRating}
+              onChange={item => {
+                setFormData({
+                  ...formData,
+                  hotelRating: item.value
+                });
+              }}
+              placeholder="Select rating"
+              style={styles.dropdown}
+              placeholderStyle={styles.placeholderStyle}
+              selectedTextStyle={styles.selectedTextStyle}
+            />
+          </View>
+          
+          <View style={styles.halfWidth}>
+            <Text style={styles.label}>Number of Rooms</Text>
+            <Input
+              keyboardType="numeric"
+              value={formData.numOfRooms}
+              onChangeText={(text) => {
+                const value = text.replace(/[^0-9]/g, '');
+                if (value === '' || (parseInt(value) >= 1 && parseInt(value) <= 1000)) {
+                  setFormData({...formData, numOfRooms: value});
+                }
+              }}
+              containerStyle={styles.input}
+            />
+          </View>
+        </View>
+        
+        {/* Meals Row */}
+        <View style={styles.row}>
+          <View style={styles.fullWidth}>
+            <Text style={styles.label}>Meals</Text>
+            <View style={styles.mealsContainer}>
+              {['Breakfast', 'Lunch', 'Dinner'].map(meal => (
+                <CheckBox
+                  key={meal}
+                  title={meal}
+                  checked={formData.meals.includes(meal.toLowerCase())}
+                  onPress={() => toggleMeal(meal.toLowerCase())}
+                  containerStyle={styles.checkbox}
+                />
+              ))}
+            </View>
+          </View>
+        </View>
+    
+        {/* Budget Row */}
+        <View style={styles.row}>
+          <View style={styles.halfWidth}>
+            <Text style={styles.label}>Minimum Budget in $</Text>
+            <Input
+              keyboardType="numeric"
+              value={formData.minBudget}
+              onChangeText={(text) => {
+                const value = text.replace(/[^0-9]/g, '');
+                if (value === '' || (parseInt(value) >= 0 && parseInt(value) <= 1000000)) {
+                  setFormData({...formData, minBudget: value});
+                }
+              }}
+              containerStyle={styles.input}
+            />
+          </View>
+          
+          <View style={styles.halfWidth}>
+            <Text style={styles.label}>Maximum Budget in $</Text>
+            <Input
+              keyboardType="numeric"
+              value={formData.maxBudget}
+              onChangeText={(text) => {
+                const value = text.replace(/[^0-9]/g, '');
+                if (value === '' || (parseInt(value) >= 0 && parseInt(value) <= 1000000)) {
+                  setFormData({...formData, maxBudget: value});
+                }
+              }}
+              containerStyle={styles.input}
+            />
+          </View>
+        </View>
+        
+        {/* Travelers Nationality Row */}
+        <View style={styles.row}>
+          <View style={styles.fullWidth}>
+            <Text style={styles.label}>Travelers Nationality</Text>
+            <Dropdown
+              ref={nationalityDropdownRef}
+              data={allCountries.
+                filter(country => country.citizens_can_travel)
+                .map(country => ({
                 label: country.country_name,
                 value: country.id
               }))}
-            labelField="label"
-            valueField="value"
-            value={formData.requestCountry}
-            onChange={item => {
-              setFormData({
-                ...formData,
-                requestCountry: item.value,
-                requestArea: null
-              });
-            }}
-            placeholder="Select country"
-            style={styles.dropdown}
-            placeholderStyle={styles.placeholderStyle}
-            selectedTextStyle={styles.selectedTextStyle}
-            search
-            searchPlaceholder="Search country..."
-          />
-        </View>
-        
-        <View style={styles.halfWidth}>
-          <Text style={styles.label}>Destination Area</Text>
-          <Dropdown
-          ref={areaDropdownRef}
-            data={areas.map(area => ({
-              label: area.area_name,
-              value: area.id
-            }))}
-            labelField="label"
-            valueField="value"
-            value={formData.requestArea}
-            onChange={item => {
-              setFormData({
-                ...formData,
-                requestArea: item.value
-              });
-            }}
-            placeholder="Select area"
-            style={styles.dropdown}
-            placeholderStyle={styles.placeholderStyle}
-            selectedTextStyle={styles.selectedTextStyle}
-            search
-            searchPlaceholder="Search area..."
-            disabled={!formData.requestCountry}
-          />
-        </View>
-      </View>
-      
-      {/* Travelers Row */}
-      <View style={styles.row}>
-        <View style={styles.halfWidth}>
-          <Text style={styles.label}>Number of Adults</Text>
-          <Input
-            keyboardType="numeric"
-            value={formData.numOfAdults}
-            onChangeText={(text) => {
-              const value = text.replace(/[^0-9]/g, '');
-              if (value === '' || (parseInt(value) >= 1 && parseInt(value) <= 1000)) {
-                setFormData({...formData, numOfAdults: value});
-              }
-            }}
-            containerStyle={styles.input}
-          />
-        </View>
-        
-        <View style={styles.halfWidth}>
-          <Text style={styles.label}>Add Child</Text>
-          <Dropdown
-            data={allChildrenAges}
-            labelField="label"
-            valueField="value"
-            onChange={item => addChild(item.value)}
-            placeholder="Select age"
-            style={styles.dropdown}
-            placeholderStyle={styles.placeholderStyle}
-            selectedTextStyle={styles.selectedTextStyle}
-          />
-        </View>
-      </View>
-      
-      {/* Children Row (if any) */}
-      {formData.requestChildren.length > 0 && (
-        <View style={styles.childrenContainer}>
-          <Text style={styles.label}>Children</Text>
-          <View style={styles.childrenList}>
-            {formData.requestChildren.map((age,index )=> (
-              <View key={`${age}-${index}`} style={styles.childTag}>
-                <Text style={styles.childTagText}>{age} years</Text>
-                <Button
-                  icon={{ name: 'close', size: 15, color: 'white' }}
-                  onPress={() => removeChild(age)}
-                  buttonStyle={styles.removeChildButton}
-                />
-              </View>
-            ))}
+              labelField="label"
+              valueField="value"
+              value={formData.travelersNationality}
+              onChange={item => {
+                setFormData({
+                  ...formData,
+                  travelersNationality: item.value
+                });
+              }}
+              placeholder="Select nationality"
+              style={styles.dropdown}
+              placeholderStyle={styles.placeholderStyle}
+              selectedTextStyle={styles.selectedTextStyle}
+              search
+              searchPlaceholder="Search nationality..."
+            />
           </View>
         </View>
-      )}
-      
-      {/* Hotels Row */}
-      <View style={styles.row}>
-        <View style={styles.halfWidth}>
-          <Text style={styles.label}>Hotel Rating</Text>
-          <Dropdown
-            data={hotelRatings}
-            labelField="label"
-            valueField="value"
-            value={formData.hotelRating}
-            onChange={item => {
-              setFormData({
-                ...formData,
-                hotelRating: item.value
-              });
-            }}
-            placeholder="Select rating"
-            style={styles.dropdown}
-            placeholderStyle={styles.placeholderStyle}
-            selectedTextStyle={styles.selectedTextStyle}
-          />
-        </View>
-        
-        <View style={styles.halfWidth}>
-          <Text style={styles.label}>Number of Rooms</Text>
-          <Input
-            keyboardType="numeric"
-            value={formData.numOfRooms}
-            onChangeText={(text) => {
-              const value = text.replace(/[^0-9]/g, '');
-              if (value === '' || (parseInt(value) >= 1 && parseInt(value) <= 1000)) {
-                setFormData({...formData, numOfRooms: value});
-              }
-            }}
-            containerStyle={styles.input}
-          />
-        </View>
-      </View>
-       {/* Meals Row */}
-      <View style={styles.row}>
-        <View style={styles.fullWidth}>
-          <Text style={styles.label}>Meals</Text>
-          <View style={styles.mealsContainer}>
-            {['Breakfast', 'Lunch', 'Dinner'].map(meal => (
-              <CheckBox
-                key={meal}
-                title={meal}
-                checked={formData.meals.includes(meal.toLowerCase())}
-                onPress={() => toggleMeal(meal.toLowerCase())}
-                containerStyle={styles.checkbox}
-              />
-            ))}
+   
+        {/* Preferred Agents Countries Row */}
+        <View style={styles.row}>
+          <View style={styles.fullWidth}>
+            <Text style={styles.label}>Countries where you can pay Agents</Text>
+            <Dropdown
+              ref={preferredAgentsDropdownRef}
+              data={allCountries.map(country => ({
+                label: country.country_name,
+                value: country.id
+              }))}
+              labelField="label"
+              valueField="value"
+              onChange={item => {
+                addPreferredAgentCountry(item.value);
+              }}
+              showsVerticalScrollIndicator={true}
+              placeholder="Select country"
+              style={[
+                styles.dropdown, 
+                formData.preferredAgentsCountries.length >= 2 ? styles.disabledDropdown : {}
+              ]}
+              placeholderStyle={styles.placeholderStyle}
+              selectedTextStyle={styles.selectedTextStyle}
+              search
+              searchPlaceholder="Search country..."
+              disable={formData.preferredAgentsCountries.length >= 2}
+              excludeItems={formData.preferredAgentsCountries.map(id => ({ value: id }))}
+              excludeSearchItems={formData.preferredAgentsCountries.map(id => ({ value: id }))}
+            />
+            
+            {/* Display selected countries as tags */}
+            <View style={styles.agentCountriesContainer}>
+              {formData.preferredAgentsCountries.map(countryId => (
+                <View key={countryId} style={styles.agentCountryTag}>
+                  <Text style={styles.agentCountryTagText}>
+                    {allCountries.find(country => country.id === countryId)?.country_name}
+                  </Text>
+                  <Button
+                    icon={{ name: 'close', size: 15, color: 'white' }}
+                    onPress={() => removePreferredAgentCountry(countryId)}
+                    buttonStyle={styles.removeAgentCountryButton}
+                  />
+                </View>
+              ))}
+            </View>
           </View>
         </View>
-      </View>
-  
-      {/* Budget Row */}
-      <View style={styles.row}>
-        <View style={styles.halfWidth}>
-          <Text style={styles.label}>Minimum Budget in $</Text>
-          <Input
-            keyboardType="numeric"
-            value={formData.minBudget}
-            onChangeText={(text) => {
-              const value = text.replace(/[^0-9]/g, '');
-              if (value === '' || (parseInt(value) >= 0 && parseInt(value) <= 1000000)) {
-                setFormData({...formData, minBudget: value});
-              }
-            }}
-            containerStyle={styles.input}
-          />
+         
+        {/* Notes Row */}
+        <View style={styles.row}>
+          <View style={styles.fullWidth}>
+            <Text style={styles.label}
+              numberOfLines={2}
+            >Notes:examples: honeymoon,
+            sea view, balcony, smocking room etc.
+             </Text>
+            <Input
+              multiline
+              numberOfLines={10}
+              textAlignVertical='top'
+              value={formData.notes}
+              onChangeText={(text) => setFormData({...formData, notes: text})}
+              containerStyle={styles.input}
+              inputContainerStyle={styles.notesInputContainer}
+              inputStyle={styles.notesInput}
+            />
+          </View>
         </View>
         
-        <View style={styles.halfWidth}>
-          <Text style={styles.label}>Maximum Budget in $</Text>
-          <Input
-            keyboardType="numeric"
-            value={formData.maxBudget}
-            onChangeText={(text) => {
-              const value = text.replace(/[^0-9]/g, '');
-              if (value === '' || (parseInt(value) >= 0 && parseInt(value) <= 1000000)) {
-                setFormData({...formData, maxBudget: value});
-              }
-            }}
-            containerStyle={styles.input}
-          />
-        </View>
-      </View>
-      
-     
-      {/* Travelers Nationality Row */}
-      <View style={styles.row}>
-        <View style={styles.fullWidth}>
-          <Text style={styles.label}>Travelers Nationality</Text>
-          <Dropdown
-          ref={nationalityDropdownRef}
-            data={allCountries.
-              filter(country => country.citizens_can_travel)
-              .map(country => ({
-              label: country.country_name,
-              value: country.id
-            }))}
-            labelField="label"
-            valueField="value"
-            value={formData.travelersNationality}
-            onChange={item => {
-              setFormData({
-                ...formData,
-                travelersNationality: item.value
-              });
-            }}
-            placeholder="Select nationality"
-            style={styles.dropdown}
-            placeholderStyle={styles.placeholderStyle}
-            selectedTextStyle={styles.selectedTextStyle}
-            search
-            searchPlaceholder="Search nationality..."
-          />
-        </View>
-      </View>
- 
-    {/* Preferred Agents Countries Row */}
-<View style={styles.row}>
-  <View style={styles.fullWidth}>
-    <Text style={styles.label}>Countries where you can pay Agents</Text>
-    <Dropdown
-    ref={preferredAgentsDropdownRef}
-      data={allCountries.map(country => ({
-        label: country.country_name,
-        value: country.id
-      }))}
-      labelField="label"
-      valueField="value"
-    
-      onChange={item => {
-        addPreferredAgentCountry(item.value);
-      }}
-     // dropdownPosition="top"
-      showsVerticalScrollIndicator={true}
-      placeholder="Select country"
-      style={[
-        styles.dropdown, 
-        formData.preferredAgentsCountries.length >= 2 ? styles.disabledDropdown : {}
-      ]}
-      placeholderStyle={styles.placeholderStyle}
-      selectedTextStyle={styles.selectedTextStyle}
-      search
-      searchPlaceholder="Search country..."
-      disable={formData.preferredAgentsCountries.length >= 2}
-      excludeItems={formData.preferredAgentsCountries.map(id => ({ value: id }))}
-      excludeSearchItems={formData.preferredAgentsCountries.map(id => ({ value: id }))}
-    />
-    
-    {/* Display selected countries as tags */}
-    <View style={styles.agentCountriesContainer}>
-      {formData.preferredAgentsCountries.map(countryId => (
-        <View key={countryId} style={styles.agentCountryTag}>
-          <Text style={styles.agentCountryTagText}>
-            {allCountries.find(country => country.id === countryId)?.country_name}
-          </Text>
+        {/* Submit Button */}
+        <View style={styles.submitButtonContainer}>
           <Button
-            icon={{ name: 'close', size: 15, color: 'white' }}
-            onPress={() => removePreferredAgentCountry(countryId)}
-            buttonStyle={styles.removeAgentCountryButton}
+            title={isEditing ? "Update Request" : "Submit Request"}
+            onPress={handleSubmit}
+            loading={loading}
+            disabled={loading}
           />
         </View>
-      ))}
-    </View>
-  </View>
-</View>
-     
-      {/* Notes Row */}
-      <View style={styles.row}>
-        <View style={styles.fullWidth}>
-          <Text style={styles.label}
-          numberOfLines={2}
-          >Notes:examples: honeymoon,
-          sea view, balcony, smocking room etc.
-           </Text>
-          <Input
-            multiline
-            numberOfLines={10}
-            textAlignVertical='top'
-            value={formData.notes}
-            onChangeText={(text) => setFormData({...formData, notes: text})}
-            containerStyle={styles.input}
-            inputContainerStyle={styles.notesInputContainer}
-            inputStyle={styles.notesInput}
-          />
-        </View>
-      </View>
-      
-      {/* Submit Button */}
-      <View style={styles.submitButtonContainer}>
-        <Button
-          title="Submit Request"
-          onPress={handleSubmit}
-          loading={loading}
-          disabled={loading}
-        />
-      </View>
-    </ScrollView>
-  </KeyboardAvoidingView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     padding: 16,
     backgroundColor: '#fff',
-    paddingBottom:50,
+    paddingBottom: 50,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   title: {
     marginBottom: 16,
@@ -826,29 +947,28 @@ const styles = StyleSheet.create({
     borderRadius: 8
   },
   agentCountriesContainer: {
-  flexDirection: 'row',
-  flexWrap: 'wrap',
-  marginTop: 8,
-  paddingBottom:80,
-},
-   notesInputContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 8,
+    paddingBottom: 80,
+  },
+  notesInputContainer: {
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,
     paddingHorizontal: 8,
-    maxHeight:150,
+    maxHeight: 150,
   },
   notesInput: {
     minHeight: 100,
     textAlignVertical: 'top',
     paddingTop: 8,
   },
-
-disabledDropdown: {
-  backgroundColor: '#f0f0f0',
-  borderColor: '#d0d0d0',
-  opacity: 0.7
-},
+  disabledDropdown: {
+    backgroundColor: '#f0f0f0',
+    borderColor: '#d0d0d0',
+    opacity: 0.7
+  },
   agentCountryTag: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -871,6 +991,42 @@ disabledDropdown: {
   submitButtonContainer: {
     marginTop: 16,
     alignItems: 'center',
-    marginBottom:32,
+    marginBottom: 32,
+  },
+  errorText: {
+    color: '#dc3545',
+    marginBottom: 8,
+  },
+  dateButton: {
+    marginBottom: 8,
+  },
+  datePickerContainer: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  sectionHeader: {
+    backgroundColor: '#f8f9fa',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  sectionTitle: {
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  infoText: {
+    fontSize: 14,
+    color: '#6c757d',
+    marginBottom: 8,
+  },
+  warningText: {
+    color: '#dc3545',
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  successText: {
+    color: '#28a745',
+    fontWeight: 'bold',
+    marginBottom: 8,
   }
 });

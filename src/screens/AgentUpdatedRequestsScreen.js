@@ -71,6 +71,7 @@ const AgentUpdatedRequestsScreen = ({ navigation }) => {
 
   const handleViewRequest = (requestId, offerId) => {
     navigation.navigate("Home",{screen:'AgentTravelRequestDetails',params: { requestId, offerId }});
+   
   };
 
   const formatDate = (dateString) => {

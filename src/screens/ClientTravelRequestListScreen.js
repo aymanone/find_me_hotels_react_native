@@ -84,7 +84,7 @@ const fetchTravelRequests = async () => {
     // Build query for ALL travel requests (no filtering here)
     let query = supabase
       .from('travel_requests')
-      .select('id, creator_id, status, offers_number, request_area, request_country, start_date, end_date')
+      .select('id, creator_id, status, offers_number, request_area, request_country, start_date, end_date, new_offers')
       .eq('creator_id', user.id)
       .order('created_at', { ascending: false });
 

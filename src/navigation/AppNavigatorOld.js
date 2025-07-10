@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { AppState, View, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -37,13 +37,13 @@ import {
   setupAdminChannels 
 } from '../utils/channelUtils';
 import supabase from '../config/supabase';
-import UpdatedRequestsBadge from '../components/UpdatedRequestsBadge';
-// Create navigators - Move outside component to prevent recreation
+import UpdatedRequestBadge from '../components/UpdatedRequestsBadge';
+// Create navigators
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 const Drawer = createDrawerNavigator();
 
-// Optimize screen components with React.memo and proper comparison
+// Optimize screen components with React.memo
 const MemoizedTravelRequestForm = React.memo(TravelRequestForm);
 const MemoizedClientTravelRequestList = React.memo(ClientTravelRequestList);
 const MemoizedAgentSearchTravelRequests = React.memo(AgentSearchTravelRequestsScreen);
@@ -53,8 +53,8 @@ const MemoizedCompanyAgentsList = React.memo(CompanyAgentsListScreen);
 const MemoizedAdminCreateCompanyForm = React.memo(AdminCreateCompanyFormScreen);
 const MemoizedAdminCompaniesList = React.memo(AdminCompaniesListScreen);
 
-// Memoized components for better performance
-const MemoizedSignOutScreen = React.memo(function SignOutScreen({ navigation }) {
+// Sign Out Screen
+function SignOutScreen({ navigation }) {
   useEffect(() => {
     const handleSignOut = async () => {
       try {
@@ -66,6 +66,7 @@ const MemoizedSignOutScreen = React.memo(function SignOutScreen({ navigation }) 
     };
     
     handleSignOut();
+    return () => {};
   }, [navigation]);
   
   return (
@@ -73,78 +74,33 @@ const MemoizedSignOutScreen = React.memo(function SignOutScreen({ navigation }) 
       <Text>Signing out...</Text>
     </View>
   );
-});
+}
 
-const MemoizedPlaceholderScreen = React.memo(function PlaceholderScreen({ title }) {
+// Placeholder component
+function PlaceholderScreen({ title }) {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text>{title || 'Coming Soon'}</Text>
     </View>
   );
-});
-
-// Improved tab screen options with memoization
-const createTabScreenOptions = () => (route) => ({
-  tabBarIcon: ({ focused, color, size }) => {
-    const iconMap = {
-      'NewRequest': focused ? 'add-circle' : 'add-circle-outline',
-      'Requests': focused ? 'list' : 'list-outline',
-      'SearchRequests': focused ? 'search' : 'search-outline',
-      'MyOffers': focused ? 'pricetag' : 'pricetag-outline',
-      'Create Agent': focused ? 'people' : 'people-outline',
-      'Agents': focused ? 'list' : 'list-outline',
-      'Create Company': focused ? 'people' : 'people-outline',
-      'Analytics': focused ? 'analytics' : 'analytics-outline',
-    };
-    
-    const iconName = iconMap[route.name] || 'help-outline';
-    return <Icon name={iconName} type="ionicon" size={size} color={color} />;
-  },
-  headerShown: false,
-});
-
-// Improved tab listeners with proper stack reset
-const createTabListeners = () => (navigation) => ({
+}
+const createTabListeners = () => ({
   tabPress: (e) => {
+    const navigation = e.target.navigation;
     const targetRouteName = e.target.split('-')[0];
     
-    // Properly reset the tab's stack to prevent memory buildup
+    // THIS IS THE IMPORTANT PART - Reset instead of navigate
     navigation.reset({
       index: 0,
       routes: [{ name: targetRouteName }],
     });
   },
 });
-
-// Memoized drawer screen options
-const createDrawerScreenOptions = () => (navigation) => ({
-  headerShown: true,
-  headerLeft: () => (
-    <Button
-      icon={{
-        name: "menu",
-        type: "ionicon",
-        size: 24,
-        color: "#333"
-      }}
-      type="clear"
-      onPress={() => navigation.toggleDrawer()}
-      containerStyle={{ marginLeft: 10 }}
-    />
-  ),
-  drawerStyle: {
-    backgroundColor: '#f8f8f8',
-    width: '70%',
-  },
-  drawerType: 'front',
-  overlayColor: 'rgba(0,0,0,0.5)',
-  swipeEnabled: true,
-});
-
 // CLIENT NAVIGATION
 // =================
 
-const ClientStack = React.memo(function ClientStack() {
+// CLIENT STACK - Contains client screens with history reset
+function ClientStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="ClientTabs" component={ClientTabs} />
@@ -152,16 +108,31 @@ const ClientStack = React.memo(function ClientStack() {
       <Stack.Screen name="ClientOfferDetails" component={ClientOfferDetailsScreen} />
     </Stack.Navigator>
   );
-});
+}
 
-const ClientTabs = React.memo(function ClientTabs() {
-  const screenOptions = useMemo(() => createTabScreenOptions(), []);
-  const screenListeners = useMemo(() => createTabListeners(), []);
-  
+// Client tabs
+function ClientTabs() {
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => screenOptions(route)}
-      screenListeners={({ navigation }) => screenListeners(navigation)}
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName;
+          if (route.name === 'NewRequest') {
+            iconName = focused ? 'add-circle' : 'add-circle-outline';
+          } else if (route.name === 'Requests') {
+            iconName = focused ? 'list' : 'list-outline';
+          }
+          return <Icon name={iconName} type="ionicon" size={size} color={color} />;
+        },
+        headerShown: false,
+      })}
+      screenListeners={({ navigation }) => ({
+        tabPress: (e) => {
+          // Reset stack when switching tabs to avoid keeping many screens
+          const targetRouteName = e.target.split('-')[0];
+          navigation.navigate(targetRouteName);
+        },
+      })}
     >
       <Tab.Screen 
         name="NewRequest" 
@@ -175,15 +146,36 @@ const ClientTabs = React.memo(function ClientTabs() {
       />
     </Tab.Navigator>
   );
-});
+}
 
-const ClientDrawer = React.memo(function ClientDrawer() {
-  const screenOptions = useMemo(() => createDrawerScreenOptions(), []);
-  
+// CLIENT DRAWER
+function ClientDrawer() {
   return (
     <Drawer.Navigator
       initialRouteName="Home"
-      screenOptions={({ navigation }) => screenOptions(navigation)}
+      screenOptions={({ navigation }) => ({
+        headerShown: true,
+        headerLeft: () => (
+          <Button
+            icon={{
+              name: "menu",
+              type: "ionicon",
+              size: 24,
+              color: "#333"
+            }}
+            type="clear"
+            onPress={() => navigation.toggleDrawer()}
+            containerStyle={{ marginLeft: 10 }}
+          />
+        ),
+        drawerStyle: {
+          backgroundColor: '#f8f8f8',
+          width: '70%',
+        },
+        drawerType: 'front',
+        overlayColor: 'rgba(0,0,0,0.5)',
+        swipeEnabled: true,
+      })}
     >
       <Drawer.Screen 
         name="Home" 
@@ -196,6 +188,7 @@ const ClientDrawer = React.memo(function ClientDrawer() {
         }}
         listeners={({ navigation }) => ({
           drawerItemPress: () => {
+            // Reset to initial state when pressing drawer item
             navigation.reset({
               index: 0,
               routes: [{ name: 'Home', state: { routes: [{ name: 'ClientTabs' }] } }],
@@ -217,7 +210,7 @@ const ClientDrawer = React.memo(function ClientDrawer() {
       
       <Drawer.Screen 
         name="SignOut" 
-        component={MemoizedSignOutScreen}
+        component={SignOutScreen}
         options={{
           title: 'Sign Out',
           drawerIcon: ({ color }) => (
@@ -230,27 +223,44 @@ const ClientDrawer = React.memo(function ClientDrawer() {
       />
     </Drawer.Navigator>
   );
-});
+}
 
-// AGENT NAVIGATION (Similar pattern)
-const AgentStack = React.memo(function AgentStack() {
+// AGENT NAVIGATION
+// ===============
+
+// AGENT STACK
+function AgentStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="AgentTabs" component={AgentTabs} />
-      <Stack.Screen name="AgentUpdatedRequests" component={AgentUpdatedRequestsScreen} />
       <Stack.Screen name="AgentTravelRequestDetails" component={AgentTravelRequestDetailsScreen} />
     </Stack.Navigator>
   );
-});
+}
 
-const AgentTabs = React.memo(function AgentTabs() {
-  const screenOptions = useMemo(() => createTabScreenOptions(), []);
-  const screenListeners = useMemo(() => createTabListeners(), []);
-  
+// Agent tabs
+function AgentTabs() {
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => screenOptions(route)}
-      screenListeners={({ navigation }) => screenListeners(navigation)}
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName;
+          if (route.name === 'SearchRequests') {
+            iconName = focused ? 'search' : 'search-outline';
+          } else if (route.name === 'MyOffers') {
+            iconName = focused ? 'pricetag' : 'pricetag-outline';
+          }
+          return <Icon name={iconName} type="ionicon" size={size} color={color} />;
+        },
+        headerShown: false,
+      })}
+      screenListeners={({ navigation }) => ({
+        tabPress: (e) => {
+          // Reset stack when switching tabs
+          const targetRouteName = e.target.split('-')[0];
+          navigation.navigate(targetRouteName);
+        },
+      })}
     >
       <Tab.Screen 
         name="SearchRequests" 
@@ -264,15 +274,36 @@ const AgentTabs = React.memo(function AgentTabs() {
       />
     </Tab.Navigator>
   );
-});
+}
 
-const AgentDrawer = React.memo(function AgentDrawer() {
-  const screenOptions = useMemo(() => createDrawerScreenOptions(), []);
-  
+// AGENT DRAWER
+function AgentDrawer() {
   return (
     <Drawer.Navigator
       initialRouteName="Home"
-      screenOptions={({ navigation }) => screenOptions(navigation)}
+      screenOptions={({ navigation }) => ({
+        headerShown: true,
+        headerLeft: () => (
+          <Button
+            icon={{
+              name: "menu",
+              type: "ionicon",
+              size: 24,
+              color: "#333"
+            }}
+            type="clear"
+            onPress={() => navigation.toggleDrawer()}
+            containerStyle={{ marginLeft: 10 }}
+          />
+        ),
+        drawerStyle: {
+          backgroundColor: '#f8f8f8',
+          width: '70%',
+        },
+        drawerType: 'front',
+        overlayColor: 'rgba(0,0,0,0.5)',
+        swipeEnabled: true,
+      })}
     >
       <Drawer.Screen 
         name="Home" 
@@ -285,6 +316,7 @@ const AgentDrawer = React.memo(function AgentDrawer() {
         }}
         listeners={({ navigation }) => ({
           drawerItemPress: () => {
+            // Reset to initial state when pressing drawer item
             navigation.reset({
               index: 0,
               routes: [{ name: 'Home', state: { routes: [{ name: 'AgentTabs' }] } }],
@@ -293,27 +325,16 @@ const AgentDrawer = React.memo(function AgentDrawer() {
         })}
       />
       
-    <Drawer.Screen 
-  name="AgentUpdatedRequestsDrawer" // Different name to avoid conflicts
-  component={AgentUpdatedRequestsScreen}
-  options={{
-    title: 'Updated Requests',
-    drawerIcon: ({ color }) => (
-      <Icon name="refresh-outline" type="ionicon" size={22} color={color} />
-    ),
-  }}
-  listeners={({ navigation }) => ({
-    drawerItemPress: (e) => {
-      // Prevent default drawer navigation
-      e.preventDefault();
-      
-      // Navigate to the stack version instead
-      navigation.navigate('Home', {
-        screen: 'AgentUpdatedRequests'
-      });
-    },
-  })}
-/>
+      <Drawer.Screen 
+        name="AgentUpdatedRequests" 
+        component={AgentUpdatedRequestsScreen}
+        options={{
+          title: 'Updated Requests',
+          drawerIcon: ({ color }) => (
+            <Icon name="refresh-outline" type="ionicon" size={22} color={color} />
+          ),
+        }}
+      />
       
       <Drawer.Screen 
         name="Profile" 
@@ -328,7 +349,7 @@ const AgentDrawer = React.memo(function AgentDrawer() {
       
       <Drawer.Screen 
         name="SignOut" 
-        component={MemoizedSignOutScreen}
+        component={SignOutScreen}
         options={{
           title: 'Sign Out',
           drawerIcon: ({ color }) => (
@@ -341,18 +362,46 @@ const AgentDrawer = React.memo(function AgentDrawer() {
       />
     </Drawer.Navigator>
   );
-});
+}
 
 // COMPANY NAVIGATION
-const CompanyTabs = React.memo(function CompanyTabs() {
-  const screenOptions = useMemo(() => createTabScreenOptions(), []);
-  
+// company AgentFlow
+const CompanyAgentStack = Stack;
+function CompanyAgentFlow() {
   return (
-    <Tab.Navigator screenOptions={({ route }) => screenOptions(route)}>
+       <CompanyAgentStack.Navigator 
+      initialRouteName="CompanyAgentProfile"
+      screenOptions={{ headerShown: false }}
+    >
+      <CompanyAgentStack.Screen 
+        name="CompanyAgentProfile" 
+        component={CompanyAgentProfileScreen} 
+      />
+    
+    </CompanyAgentStack.Navigator>
+  );}
+
+// Company tabs
+function CompanyTabs() {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName;
+          if (route.name === 'Create Agent') {
+            iconName = focused ? 'people' : 'people-outline';
+          } else if (route.name === 'Agents') {
+            iconName = focused ? 'list' : 'list-outline';
+          }
+          return <Icon name={iconName} type="ionicon" size={size} color={color} />;
+        },
+      })}
+    > 
       <Tab.Screen 
         name="Create Agent"
         component={MemoizedCompanyCreateAgentForm}
         options={{ title: 'Create Agent', headerShown: false }}
+        
       />
       <Tab.Screen 
         name="Agents" 
@@ -361,21 +410,48 @@ const CompanyTabs = React.memo(function CompanyTabs() {
       />
       <Tab.Screen 
         name="Requests" 
-        component={() => <MemoizedPlaceholderScreen title="Company Requests" />}
+        component={() => <PlaceholderScreen title="Company Requests" />}
         options={{ title: 'Requests', headerShown: false }}
       />
     </Tab.Navigator>
   );
-});
+}
 
-const CompanyDrawer = React.memo(function CompanyDrawer() {
-  const screenOptions = useMemo(() => createDrawerScreenOptions(), []);
-  
+// Company Profile Screen (specific to companies only)
+function CompanyProfileScreen() {
+  return <PlaceholderScreen title="Company Profile - Settings & Billing" />;
+}
+
+// COMPANY DRAWER - Contains ALL company screens
+function CompanyDrawer() {
   return (
     <Drawer.Navigator
       initialRouteName="Home"
-      screenOptions={({ navigation }) => screenOptions(navigation)}
+      screenOptions={({ navigation }) => ({
+        headerShown: true,
+        headerLeft: () => (
+          <Button
+            icon={{
+              name: "menu",
+              type: "ionicon",
+              size: 24,
+              color: "#333"
+            }}
+            type="clear"
+            onPress={() => navigation.toggleDrawer()}
+            containerStyle={{ marginLeft: 10 }}
+          />
+        ),
+        drawerStyle: {
+          backgroundColor: '#f8f8f8',
+          width: '70%',
+        },
+        drawerType: 'front',
+        overlayColor: 'rgba(0,0,0,0.5)',
+        swipeEnabled: true,
+      })}
     >
+      {/* HOME - Contains the main company tabs */}
       <Drawer.Screen 
         name="Home" 
         component={CompanyTabs} 
@@ -387,6 +463,7 @@ const CompanyDrawer = React.memo(function CompanyDrawer() {
         }}
       />
       
+      {/* COMPANY-SPECIFIC NESTED SCREENS */}
       <Drawer.Screen 
         name="CompanyAgentProfile" 
         component={CompanyAgentProfileScreen}
@@ -395,10 +472,23 @@ const CompanyDrawer = React.memo(function CompanyDrawer() {
           drawerIcon: ({ color }) => (
             <Icon name="person-outline" type="ionicon" size={22} color={color} />
           ),
-          drawerItemStyle: { display: 'none' },
+          drawerItemStyle: { display: 'none' }, // Hide from drawer menu but keep accessible
         }}
       />
       
+      <Drawer.Screen 
+        name="RequestDetails" 
+        component={() => <PlaceholderScreen title="Request Details" />}
+        options={{
+          title: 'Request Details',
+          drawerIcon: ({ color }) => (
+            <Icon name="document-text-outline" type="ionicon" size={22} color={color} />
+          ),
+          drawerItemStyle: { display: 'none' }, // Hide from drawer menu but keep accessible
+        }}
+      />
+      
+      {/* COMPANY PROFILE */}
       <Drawer.Screen 
         name="Profile" 
         component={CompanyCompanyProfileScreen}
@@ -410,9 +500,10 @@ const CompanyDrawer = React.memo(function CompanyDrawer() {
         }}
       />
       
+      {/* SIGN OUT */}
       <Drawer.Screen 
         name="SignOut" 
-        component={MemoizedSignOutScreen}
+        component={SignOutScreen}
         options={{
           title: 'Sign Out',
           drawerIcon: ({ color }) => (
@@ -425,18 +516,32 @@ const CompanyDrawer = React.memo(function CompanyDrawer() {
       />
     </Drawer.Navigator>
   );
-});
+}
 
 // ADMIN NAVIGATION
-const AdminTabs = React.memo(function AdminTabs() {
-  const screenOptions = useMemo(() => createTabScreenOptions(), []);
-  
+// ---------------
+
+// Admin tabs
+function AdminTabs() {
   return (
-    <Tab.Navigator screenOptions={({ route }) => screenOptions(route)}>
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName;
+          if (route.name === 'Create Company') {
+            iconName = focused ? 'people' : 'people-outline';
+          } else if (route.name === 'Analytics') {
+            iconName = focused ? 'analytics' : 'analytics-outline';
+          }
+          return <Icon name={iconName} type="ionicon" size={size} color={color} />;
+        },
+      })}
+    >
       <Tab.Screen 
         name="Create Company"
         component={MemoizedAdminCreateCompanyForm} 
         options={{ title: 'Create Company', headerShown: false }}
+        
       />
       <Tab.Screen 
         name="My Companies" 
@@ -445,16 +550,43 @@ const AdminTabs = React.memo(function AdminTabs() {
       />
     </Tab.Navigator>
   );
-});
+}
 
-const AdminDrawer = React.memo(function AdminDrawer() {
-  const screenOptions = useMemo(() => createDrawerScreenOptions(), []);
-  
+// Admin Profile Screen (specific to admins only)
+function AdminProfileScreen() {
+  return <PlaceholderScreen title="Admin Profile - System Settings" />;
+}
+
+// ADMIN DRAWER - Contains ALL admin screens
+function AdminDrawer() {
   return (
     <Drawer.Navigator
       initialRouteName="Home"
-      screenOptions={({ navigation }) => screenOptions(navigation)}
+      screenOptions={({ navigation }) => ({
+        headerShown: true,
+        headerLeft: () => (
+          <Button
+            icon={{
+              name: "menu",
+              type: "ionicon",
+              size: 24,
+              color: "#333"
+            }}
+            type="clear"
+            onPress={() => navigation.toggleDrawer()}
+            containerStyle={{ marginLeft: 10 }}
+          />
+        ),
+        drawerStyle: {
+          backgroundColor: '#f8f8f8',
+          width: '70%',
+        },
+        drawerType: 'front',
+        overlayColor: 'rgba(0,0,0,0.5)',
+        swipeEnabled: true,
+      })}
     >
+      {/* HOME - Contains the main admin tabs */}
       <Drawer.Screen 
         name="Home" 
         component={AdminTabs} 
@@ -466,6 +598,7 @@ const AdminDrawer = React.memo(function AdminDrawer() {
         }}
       />
       
+      {/* ADMIN-SPECIFIC NESTED SCREENS */}
       <Drawer.Screen 
         name="AdminCompanyProfile" 
         component={AdminCompanyProfileScreen}
@@ -474,10 +607,23 @@ const AdminDrawer = React.memo(function AdminDrawer() {
           drawerIcon: ({ color }) => (
             <Icon name="person-outline" type="ionicon" size={22} color={color} />
           ),
-          drawerItemStyle: { display: 'none' },
+          drawerItemStyle: { display: 'none' }, // Hide from drawer menu but keep accessible
         }}
       />
       
+      <Drawer.Screen 
+        name="AnalyticsReport" 
+        component={() => <PlaceholderScreen title="Analytics Report" />}
+        options={{
+          title: 'Analytics Report',
+          drawerIcon: ({ color }) => (
+            <Icon name="bar-chart-outline" type="ionicon" size={22} color={color} />
+          ),
+          drawerItemStyle: { display: 'none' }, // Hide from drawer menu but keep accessible
+        }}
+      />
+      
+      {/* ADMIN PROFILE */}
       <Drawer.Screen 
         name="Profile" 
         component={AdminAdminProfileScreen}
@@ -489,9 +635,10 @@ const AdminDrawer = React.memo(function AdminDrawer() {
         }}
       />
       
+      {/* SIGN OUT */}
       <Drawer.Screen 
         name="SignOut" 
-        component={MemoizedSignOutScreen}
+        component={SignOutScreen}
         options={{
           title: 'Sign Out',
           drawerIcon: ({ color }) => (
@@ -504,25 +651,14 @@ const AdminDrawer = React.memo(function AdminDrawer() {
       />
     </Drawer.Navigator>
   );
-});
+}
 
 export default function AppNavigator() {
   const [session, setSession] = useState(null);
   const [userType, setUserType] = useState(null);
   const [appState, setAppState] = useState(AppState.currentState);
-  const channelsRef = useRef([]);
-  const appStateRef = useRef(appState);
-
-  // Memoized sign out handler
-  const handleSignOut = useCallback(async () => {
-    try {
-      await signOut(null, 'Signin');
-    } catch (error) {
-      console.error('Error signing out:', error);
-      // Handle error appropriately
-    }
-  }, []);
-
+  const channelsRef=useRef([]);
+   
   // Handle app state changes (foreground, background)
   useEffect(() => {
     const subscription = AppState.addEventListener('change', nextAppState => {
@@ -614,48 +750,54 @@ export default function AppNavigator() {
       }
     } ;
   }, []);
-  // Memoized navigation components
-  const authScreens = useMemo(() => (
-    <>
-      <Stack.Screen 
-        name="Signin" 
-        component={SigninScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen 
-        name="Signup" 
-        component={SignupScreen}
-        options={{ headerShown: false }}
-      />
-    </>
-  ), []);
-
-  const appScreens = useMemo(() => {
-    if (!userType) return null;
-    
-    const screenConfigs = {
-      client: { name: 'ClientApp', component: ClientDrawer },
-      agent: { name: 'AgentApp', component: AgentDrawer },
-      company: { name: 'CompanyApp', component: CompanyDrawer },
-      admin: { name: 'AdminApp', component: AdminDrawer },
-    };
-    
-    const config = screenConfigs[userType];
-    if (!config) return null;
-    
-    return (
-      <Stack.Screen 
-        name={config.name} 
-        component={config.component}
-        options={{ headerShown: false }}
-      />
-    );
-  }, [userType]);
 
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        {!session ? authScreens : appScreens}
+        {!session ? (
+          // Auth screens
+          <>
+            <Stack.Screen 
+              name="Signin" 
+              component={SigninScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen 
+              name="Signup" 
+              component={SignupScreen}
+              options={{ headerShown: false }}
+            />
+          </>
+        ) : (
+          // App screens - Each user type gets their own complete drawer
+          <>
+            {userType === 'client' ? (
+              <Stack.Screen 
+                name="ClientApp" 
+                component={ClientDrawer}
+                options={{ headerShown: false }}
+              />
+            ) : userType === 'agent' ? (
+              <Stack.Screen 
+                name="AgentApp" 
+                component={AgentDrawer}
+                options={{ headerShown: false }}
+              />
+            ) : userType === 'company' ? (
+              <Stack.Screen 
+                name="CompanyApp" 
+                component={CompanyDrawer}
+                options={{ headerShown: false }}
+              />
+            ) : userType === 'admin' ? (
+              <Stack.Screen 
+                name="AdminApp" 
+                component={AdminDrawer}
+                options={{ headerShown: false }}
+              />
+            ) : null}
+          </>
+        )}
       </Stack.Navigator>
     </NavigationContainer>
   );

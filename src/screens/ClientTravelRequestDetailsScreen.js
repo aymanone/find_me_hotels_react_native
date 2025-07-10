@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import supabase from '../config/supabase';
 import {inDateReq} from '../utils/dateUtils';
 import { checkUserRole, signOut, getCurrentUser } from '../utils/auth';
+import { Dropdown } from 'react-native-element-dropdown';
 
 export default function ClientTravelRequestDetailsScreen({ route, navigation }) {
   const { id } = route.params;
@@ -15,6 +16,26 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
   const [offersSectionExpanded, setOffersSectionExpanded] = useState(false);
   const [refreshingOffers, setRefreshingOffers] = useState(false);
   const [visitedOffers, setVisitedOffers] = useState({});  // Using an object
+  
+  // Add sort state variables
+  const [sortField, setSortField] = useState('created_at');
+  const [sortDirection, setSortDirection] = useState('desc'); // 'desc' for bigger first
+  
+  // Sort options data
+  const sortFieldOptions = [
+    { label: 'Created Date', value: 'created_at' },
+    { label: 'Updated Date', value: 'updated_at' },
+    { label: 'Maximum Cost', value: 'max_cost' },
+    { label: 'Minimum Cost', value: 'min_cost' },
+    { label: 'Maximum Rating', value: 'max_rating' },
+    { label: 'Minimum Rating', value: 'min_rating' },
+    { label: 'Number of Hotels', value: 'num_of_hotels' },
+  ];
+  
+  const sortDirectionOptions = [
+    { label: 'Bigger First', value: 'desc' },
+    { label: 'Smaller First', value: 'asc' },
+  ];
  
   const offerUpToDateState = (offer) => {
     // Check if the offer is new or updated
@@ -26,6 +47,36 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
     }
     return 'up to date ';
   };
+  
+  // Function to sort offers based on current sort settings
+  const getSortedOffers = () => {
+    if (!offers || offers.length === 0) return [];
+    
+    return [...offers].sort((a, b) => {
+      let valueA, valueB;
+      
+      // Handle date fields differently
+      if (sortField === 'created_at' || sortField === 'updated_at') {
+        valueA = new Date(a[sortField]).getTime();
+        valueB = new Date(b[sortField]).getTime();
+      } else {
+        valueA = a[sortField];
+        valueB = b[sortField];
+      }
+      
+      // Handle null/undefined values
+      if (valueA === null || valueA === undefined) valueA = sortDirection === 'asc' ? Infinity : -Infinity;
+      if (valueB === null || valueB === undefined) valueB = sortDirection === 'asc' ? Infinity : -Infinity;
+      
+      // Sort based on direction
+      if (sortDirection === 'asc') {
+        return valueA - valueB;
+      } else {
+        return valueB - valueA;
+      }
+    });
+  };
+
   // Check if user is a client
   useEffect(() => {
     const checkRole = async () => {
@@ -38,6 +89,7 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
 
     checkRole();
   }, []);
+  
   // Fetch travel request details and offers
   useEffect(() => {
     const fetchRequestDetails = async () => {
@@ -422,8 +474,39 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
 
         {offersSectionExpanded && (
           <View style={styles.sectionContent}>
+            {/* Add sort options if there are offers */}
+            {offers.length > 0 && (
+              <View style={styles.sortContainer}>
+                <Text style={styles.sortLabel}>Sort by:</Text>
+                <View style={styles.sortDropdownsContainer}>
+                  <Dropdown
+                    data={sortFieldOptions}
+                    labelField="label"
+                    valueField="value"
+                    value={sortField}
+                    onChange={item => setSortField(item.value)}
+                    style={styles.sortDropdown}
+                    placeholderStyle={styles.dropdownPlaceholder}
+                    selectedTextStyle={styles.dropdownSelectedText}
+                    containerStyle={styles.dropdownContainer}
+                  />
+                  <Dropdown
+                    data={sortDirectionOptions}
+                    labelField="label"
+                    valueField="value"
+                    value={sortDirection}
+                    onChange={item => setSortDirection(item.value)}
+                    style={styles.sortDropdown}
+                    placeholderStyle={styles.dropdownPlaceholder}
+                    selectedTextStyle={styles.dropdownSelectedText}
+                    containerStyle={styles.dropdownContainer}
+                  />
+                </View>
+              </View>
+            )}
+            
             {offers.length > 0 ? (
-              offers.map((offer, index) => (
+              getSortedOffers().map((offer, index) => (
                 <Card key={index} containerStyle={styles.offerCard}>
                   <View style={styles.offerHeader}>
                     <Text style={styles.offerTitle}>Offer #{index + 1}</Text>
@@ -678,5 +761,42 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
     marginLeft: 5,
+  },
+  sortContainer: {
+    marginBottom: 15,
+    padding: 10,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 8,
+  },
+  sortLabel: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  sortDropdownsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  sortDropdown: {
+    width: '48%',
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 4,
+    paddingHorizontal: 8,
+  },
+  dropdownPlaceholder: {
+    fontSize: 14,
+    color: '#999',
+  },
+  dropdownSelectedText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  dropdownContainer: {
+    backgroundColor: '#f9f9f9',
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#ccc',
   },
 });
