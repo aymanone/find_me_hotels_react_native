@@ -125,12 +125,25 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
 
         if (offersError) throw offersError;
         setOffers(offersData || []);
+       if(request && request.new_offers) {
+  // Update new_offers field to false
+  const { error } = await supabase
+    .from('travel_requests')
+    .update({ new_offers: false })
+    .eq('id', id);
+  
+  if (error) {
+    console.error('Error updating new_offers status:', error);
+  }
+} 
+      
       } catch (error) {
         console.error('Error fetching request details:', error.message);
         alert('Failed to load request details');
         navigation.goBack();
       } finally {
         setLoading(false);
+ 
       }
     };
 
