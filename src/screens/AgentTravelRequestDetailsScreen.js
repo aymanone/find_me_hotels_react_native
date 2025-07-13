@@ -149,7 +149,17 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
         setRequest(data);
       } catch (error) {
         console.error('Error fetching data:', error);
-        Alert.alert('Error', 'Failed to load request details');
+           Alert.alert(
+      'Error', 
+      'Failed to load profile data',
+      [
+        { text: 'Try Again', onPress: () => {
+          setTimeout(() => fetchData(), 100);
+        } },
+        { text: 'Cancel', style: 'cancel' }
+      ]
+    );
+     return;
       } finally {
         setLoading(false);
       }
@@ -411,7 +421,7 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
 
   const userCanMakeOffer = user?.app_metadata?.permitted_to_work !== false && 
                           (isEditMode || request?.offers_number < MAXIMUM_OFFERS)
-                          && inDateReq(request);
+                          && (request && inDateReq(request));
   
 
   return (
@@ -527,7 +537,7 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
         </Card>
         
         {/* Warning Section */}
-        {!isEditMode && inDateReq(request) && request?.offers_number >= MAXIMUM_OFFERS && (
+        {!isEditMode && request && inDateReq(request) && request?.offers_number >= MAXIMUM_OFFERS && (
           <Card containerStyle={styles.warningCard}>
             <Text style={styles.warningText}>
               This request already has the maximum number of offers ({MAXIMUM_OFFERS}).

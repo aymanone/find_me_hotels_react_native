@@ -17,11 +17,20 @@ import {
 } from 'react-native-elements';
 import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser, signOut } from '../utils/auth';
+import { validPasswordSignup } from '../utils/validation';
 
 const CompanyCompanyProfileScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [company, setCompany] = useState(null);
-
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+ const [passwordData, setPasswordData] = useState({
+  password: '',
+  confirmPassword: '',
+});
+const [showPassword, setShowPassword] = useState(false);
+const [passwordError, setPasswordError] = useState('');
+const [passwordChangeLoading, setPasswordChangeLoading] = useState(false);
+const [passwordConfirmVisible, setPasswordConfirmVisible] = useState(false);
   useEffect(() => {
     const fetchCompanyProfile = async () => {
       try {
@@ -60,7 +69,16 @@ const CompanyCompanyProfileScreen = ({ navigation }) => {
 
         if (error) {
           console.error('Error fetching company data:', error);
-          Alert.alert('Error', 'Failed to load company profile');
+            Alert.alert(
+      'Error', 
+      'Failed to load profile data',
+      [
+        { text: 'Try Again', onPress: () => {
+         setTimeout(() => fetchCompanyProfile(), 100);
+}  },
+        { text: 'Cancel', style: 'cancel' }
+      ]
+    ); 
           return;
         }
 
@@ -75,7 +93,47 @@ const CompanyCompanyProfileScreen = ({ navigation }) => {
 
     fetchCompanyProfile();
   }, [navigation]);
+  const handlePasswordChange = (field, value) => {
+  setPasswordData(prev => ({ ...prev, [field]: value }));
+  setPasswordError('');
+};
 
+const confirmPasswordChange = () => {
+  // Validate passwords
+  if (passwordData.password !== passwordData.confirmPassword) {
+    setPasswordError('Passwords do not match');
+    return;
+  }
+
+  if (!validPasswordSignup(passwordData.password)) {
+    setPasswordError('Password must be at least 8 characters with letters and numbers');
+    return;
+  }
+
+  setPasswordConfirmVisible(true);
+};
+
+const updatePassword = async () => {
+  try {
+    setPasswordChangeLoading(true);
+    
+    const { error } = await supabase.auth.updateUser({
+      password: passwordData.password
+    });
+
+    if (error) throw error;
+    
+    setPasswordData({ password: '', confirmPassword: '' });
+    setIsChangingPassword(false);
+    setPasswordConfirmVisible(false);
+    Alert.alert('Success', 'Your password has been updated successfully.');
+  } catch (error) {
+    console.error('Error updating password:', error.message);
+    Alert.alert('Error', 'Failed to update your password. Please try again.');
+  } finally {
+    setPasswordChangeLoading(false);
+  }
+};
   const openUrl = (url) => {
     if (!url) return;
     
@@ -237,7 +295,74 @@ const CompanyCompanyProfileScreen = ({ navigation }) => {
           </View>
         )}
       </Card>
-      
+      {/* Password Change Card */}
+<Card containerStyle={styles.card}>
+  <Text style={styles.sectionTitle}>Security</Text>
+  <Divider style={styles.divider} />
+  
+  {!isChangingPassword ? (
+    <Button
+      title="Change Password"
+      icon={<Icon name="lock-closed-outline" type="ionicon" color="white" size={20} style={styles.buttonIcon} />}
+      buttonStyle={styles.securityButton}
+      onPress={() => setIsChangingPassword(true)}
+    />
+  ) : (
+    <>
+      <View style={styles.inputContainer}>
+        <Text style={styles.inputLabel}>New Password</Text>
+        <View style={styles.passwordInputContainer}>
+          <Input
+            value={passwordData.password}
+            onChangeText={(value) => handlePasswordChange('password', value)}
+            placeholder="Enter new password"
+            secureTextEntry={!showPassword}
+            rightIcon={
+              <Icon
+                name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                type="ionicon"
+                onPress={() => setShowPassword(!showPassword)}
+              />
+            }
+            containerStyle={styles.passwordInput}
+          />
+        </View>
+        
+        <Text style={styles.inputLabel}>Confirm Password</Text>
+        <View style={styles.passwordInputContainer}>
+          <Input
+            value={passwordData.confirmPassword}
+            onChangeText={(value) => handlePasswordChange('confirmPassword', value)}
+            placeholder="Confirm new password"
+            secureTextEntry={!showPassword}
+            errorMessage={passwordError}
+            containerStyle={styles.passwordInput}
+          />
+        </View>
+        
+        <View style={styles.passwordButtonsContainer}>
+          <Button
+            title="Cancel"
+            type="outline"
+            buttonStyle={styles.cancelButton}
+            containerStyle={styles.passwordButtonContainer}
+            onPress={() => {
+              setPasswordData({ password: '', confirmPassword: '' });
+              setPasswordError('');
+              setIsChangingPassword(false);
+            }}
+          />
+          <Button
+            title="Update Password"
+            buttonStyle={styles.saveButton}
+            containerStyle={styles.passwordButtonContainer}
+            onPress={confirmPasswordChange}
+          />
+        </View>
+      </View>
+    </>
+  )}
+</Card>
       {/* Delete Account Button */}
       <Card containerStyle={styles.dangerCard}>
         <Text style={styles.dangerTitle}>Danger Zone</Text>
@@ -254,7 +379,36 @@ const CompanyCompanyProfileScreen = ({ navigation }) => {
         />
       </Card>
     </ScrollView>
+ 
   );
+     {/* Password Change Confirmation Overlay */}
+<Overlay
+  isVisible={passwordConfirmVisible}
+  onBackdropPress={() => setPasswordConfirmVisible(false)}
+  overlayStyle={styles.overlay}
+>
+  <Text style={styles.overlayTitle}>Change Password</Text>
+  <Text style={styles.overlayText}>
+    Are you sure you want to change your password?
+  </Text>
+  <View style={styles.overlayButtons}>
+    <Button
+      title="Cancel"
+      type="outline"
+      buttonStyle={styles.cancelButton}
+      containerStyle={styles.overlayButtonContainer}
+      onPress={() => setPasswordConfirmVisible(false)}
+    />
+    <Button
+      title={passwordChangeLoading ? "Updating..." : "Confirm"}
+      buttonStyle={styles.saveButton}
+      containerStyle={styles.overlayButtonContainer}
+      onPress={updatePassword}
+      disabled={passwordChangeLoading}
+      loading={passwordChangeLoading}
+    />
+  </View>
+</Overlay>
 };
 
 const styles = StyleSheet.create({
@@ -335,6 +489,64 @@ const styles = StyleSheet.create({
   buttonIcon: {
     marginRight: 10,
   },
+  securityButton: {
+  backgroundColor: '#007bff',
+  borderRadius: 5,
+},
+inputContainer: {
+  marginBottom: 15,
+},
+inputLabel: {
+  fontSize: 16,
+  fontWeight: 'bold',
+  color: '#555',
+  marginBottom: 5,
+},
+passwordInputContainer: {
+  marginBottom: 10,
+},
+passwordInput: {
+  paddingHorizontal: 0,
+},
+passwordButtonsContainer: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  marginTop: 10,
+},
+passwordButtonContainer: {
+  width: '48%',
+},
+saveButton: {
+  backgroundColor: '#28a745',
+  borderRadius: 5,
+},
+cancelButton: {
+  borderColor: '#6c757d',
+  borderRadius: 5,
+},
+overlay: {
+  width: '80%',
+  padding: 20,
+  borderRadius: 10,
+},
+overlayTitle: {
+  fontSize: 18,
+  fontWeight: 'bold',
+  marginBottom: 15,
+  textAlign: 'center',
+},
+overlayText: {
+  fontSize: 16,
+  marginBottom: 20,
+  textAlign: 'center',
+},
+overlayButtons: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+},
+overlayButtonContainer: {
+  width: '48%',
+},
 });
 
 export default CompanyCompanyProfileScreen;

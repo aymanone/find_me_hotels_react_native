@@ -137,7 +137,17 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
         }
       } catch (error) {
         console.error('Error fetching agent data:', error);
-        Alert.alert('Error', 'Failed to load agent profile');
+           Alert.alert(
+      'Error', 
+      'Failed to load profile data',
+      [
+        { text: 'Try Again', onPress: () => {
+            setTimeout(() => fetchAgentData(), 100);
+} },
+        { text: 'Cancel', style: 'cancel' }
+      ]
+    );
+    return;
       } finally {
         setLoading(false);
       }

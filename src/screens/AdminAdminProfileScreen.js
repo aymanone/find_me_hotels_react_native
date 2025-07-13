@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { Text, Button, Input, Icon } from 'react-native-elements';
 import supabase from '../config/supabase';
-import { checkUserRole } from '../utils/auth';
+import { checkUserRole , getCurrentUser,signOut} from '../utils/auth';
 import { validPasswordSignup } from '../utils/validation';
 
 export default function AdminAdminProfileScreen({ navigation }) {
@@ -83,6 +83,12 @@ export default function AdminAdminProfileScreen({ navigation }) {
     setUpdating(true);
     
     try {
+         const user = await getCurrentUser();
+        if (!user) {
+          Alert.alert('Error', 'User not found. Please log in again.');
+          await signOut(navigation);
+          return;
+        }
       const { error } = await supabase.auth.updateUser({
         password: newPassword
       });

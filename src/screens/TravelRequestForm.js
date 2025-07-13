@@ -90,10 +90,20 @@ export default function TravelRequestForm({ navigation, route }) {
         if (error) {
           if (error.code === 'PGRST116') {
             Alert.alert('Error', 'Request not found or you do not have permission to edit it.');
+            navigation.goBack();
           } else {
-            Alert.alert('Error', 'Failed to load request data.');
+                       Alert.alert(
+      'Error', 
+      'Failed to Request data',
+      [
+        { text: 'Try Again', onPress: () => {
+         setTimeout(() => fetchRequestData(), 100);
+}  },
+        { text: 'Cancel', style: 'cancel' }
+      ]
+    ); 
           }
-          navigation.goBack();
+         
           return;
         }
 

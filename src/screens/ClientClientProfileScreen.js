@@ -107,7 +107,9 @@ export default function ClientClientProfileScreen({ navigation }) {
         'Error',
         'Failed to load your profile information.',
         [
-          { text: 'Try Again', onPress: () => checkUserAccess() },
+          { text: 'Try Again', onPress: () => {
+                setTimeout(() => checkUserAccess(), 100);
+                   } },
           { text: 'Close', style: 'cancel', onPress: () => navigation.goBack() }
         ]
       );
@@ -152,7 +154,12 @@ export default function ClientClientProfileScreen({ navigation }) {
   const saveProfile = async () => {
     try {
       setLoading(true);
-      
+        const user = await getCurrentUser();
+        if (!user) {
+          Alert.alert('Error', 'User not found. Please log in again.');
+          await signOut(navigation);
+          return;
+        }
       const { error } = await supabase
         .from('clients')
         .update({

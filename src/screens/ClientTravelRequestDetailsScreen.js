@@ -88,15 +88,19 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
     };
 
     checkRole();
-  }, []);
+  }, [id]);
   
   // Fetch travel request details and offers
   useEffect(() => {
     const fetchRequestDetails = async () => {
       try {
         setLoading(true);
-        const user = await getCurrentUser();
+       
+        //const user = await getCurrentUser();
+        const { data: { session } } = await supabase.auth.getSession();
+        const user = session?.user;
         if (!user) {
+          
           Alert.alert('Error', 'User not found. Please log in again.');
           await signOut(navigation);
           return;
@@ -139,8 +143,17 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
       
       } catch (error) {
         console.error('Error fetching request details:', error.message);
-        alert('Failed to load request details');
-        navigation.goBack();
+           Alert.alert(
+      'Error', 
+      'Failed to load Request Details',
+      [
+        { text: 'Try Again', onPress: () => {
+            setTimeout(() => fetchRequestDetails(), 100);
+                  } },
+        { text: 'Cancel', style: 'cancel' }
+      ]
+    );
+        return;
       } finally {
         setLoading(false);
  
@@ -311,13 +324,13 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
           style={[styles.actionButton, styles.editButton]}
           onPress={() => {
             // Navigate to the ClientApp drawer first, then to the Home tab, then to the NewRequest tab
-            navigation.navigate('ClientApp', {
-              screen: 'Home',
-              params: {
-                screen: 'NewRequest',
+            navigation.navigate(
+               'ClientTabs',
+              
+                {screen: 'NewRequest',
                 params: { requestId: id }
               }
-            });
+            );
           }}
         > 
           <Icon name="edit" type="font-awesome" size={14} color="#007bff" />

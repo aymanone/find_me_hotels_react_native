@@ -31,6 +31,7 @@ const ClientOfferDetailsScreen = ({ route, navigation }) => {
       try {
         // First check if user is a client with proper permissions
         const isValidClient = await checkUserRole('client');
+
         if (!isValidClient) {
           Alert.alert('Access Denied', 'You do not have permission to view this page.');
           navigation.goBack();
@@ -57,7 +58,16 @@ const ClientOfferDetailsScreen = ({ route, navigation }) => {
 
         if (error) {
           console.error('Error fetching offer:', error);
-          Alert.alert('Error', 'Failed to load offer details');
+             Alert.alert(
+      'Error', 
+      'Failed to load profile data',
+      [
+        { text: 'Try Again', onPress: () => {
+           setTimeout(() => fetchOfferDetails(), 100);
+}  },
+        { text: 'Cancel', style: 'cancel' }
+      ]
+    );
           return;
         }
         console.log(offer);

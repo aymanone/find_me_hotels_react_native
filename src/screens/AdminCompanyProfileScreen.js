@@ -127,8 +127,19 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
       setPermittedToWork(data.permitted_to_work);
     } catch (error) {
       console.error('Error fetching company details:', error);
-      Alert.alert('Error', 'Failed to load company details');
-      navigation.goBack();
+         Alert.alert(
+      'Error', 
+      'Failed to load profile data',
+      [
+        { text: 'Try Again', onPress: () =>{
+        setTimeout(() => fetchCompanyDetails(), 100);
+
+               } 
+      },
+        { text: 'Cancel', style: 'cancel' }
+      ]
+    );
+      return;
     }
   };
 

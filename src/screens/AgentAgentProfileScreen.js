@@ -21,7 +21,9 @@ import { Dropdown } from 'react-native-element-dropdown';
 import supabase from '../config/supabase';
 import {MESSAGING_APPS} from '../config/CONSTANTS';
 import { checkUserRole, getCurrentUser, signOut } from '../utils/auth';
-import { validPhoneNumber } from '../utils/validation';
+import { validPhoneNumber, validPasswordSignup
+
+ } from '../utils/validation';
 
 export default function AgentAgentProfileScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
@@ -33,6 +35,15 @@ export default function AgentAgentProfileScreen({ navigation }) {
   const [offerStats, setOfferStats] = useState(null);
   const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+const [passwordData, setPasswordData] = useState({
+  password: '',
+  confirmPassword: '',
+});
+const [showPassword, setShowPassword] = useState(false);
+const [passwordError, setPasswordError] = useState('');
+const [passwordChangeLoading, setPasswordChangeLoading] = useState(false);
+const [passwordConfirmVisible, setPasswordConfirmVisible] = useState(false);
 
   useEffect(() => {
     const checkPermission = async () => {
@@ -84,7 +95,17 @@ export default function AgentAgentProfileScreen({ navigation }) {
       setMessagingApp(data.messaging_app || '');
     } catch (error) {
       console.error('Error fetching agent profile:', error.message);
-      Alert.alert('Error', 'Failed to load profile data');
+       Alert.alert(
+      'Error', 
+      'Failed to load profile data',
+      [
+        { text: 'Try Again', onPress: () => {
+            setTimeout(() => fetchAgentProfile(), 100);
+             }  },
+        { text: 'Cancel', style: 'cancel' }
+      ]
+    );
+     return; 
     } finally {
       setLoading(false);
     }
@@ -118,7 +139,47 @@ export default function AgentAgentProfileScreen({ navigation }) {
       console.error('Error fetching offer stats:', error.message);
     }
   };
+  const handlePasswordChange = (field, value) => {
+  setPasswordData(prev => ({ ...prev, [field]: value }));
+  setPasswordError('');
+};
 
+const confirmPasswordChange = () => {
+  // Validate passwords
+  if (passwordData.password !== passwordData.confirmPassword) {
+    setPasswordError('Passwords do not match');
+    return;
+  }
+
+  if (!validPasswordSignup(passwordData.password)) {
+    setPasswordError('Password must be at least 8 characters with letters and numbers');
+    return;
+  }
+
+  setPasswordConfirmVisible(true);
+};
+
+const updatePassword = async () => {
+  try {
+    setPasswordChangeLoading(true);
+    
+    const { error } = await supabase.auth.updateUser({
+      password: passwordData.password
+    });
+
+    if (error) throw error;
+    
+    setPasswordData({ password: '', confirmPassword: '' });
+    setIsChangingPassword(false);
+    setPasswordConfirmVisible(false);
+    Alert.alert('Success', 'Your password has been updated successfully.');
+  } catch (error) {
+    console.error('Error updating password:', error.message);
+    Alert.alert('Error', 'Failed to update your password. Please try again.');
+  } finally {
+    setPasswordChangeLoading(false);
+  }
+};
   const handleSaveChanges = async () => {
     try {
       // Validate phone number
@@ -332,7 +393,71 @@ export default function AgentAgentProfileScreen({ navigation }) {
               </>
             )}
           </View>
-          
+          <Divider style={styles.divider} />
+
+{/* Password Section */}
+<View style={styles.section}>
+  <Text style={styles.sectionTitle}>Security</Text>
+  
+  {!isChangingPassword ? (
+    <Button
+      title="Change Password"
+      icon={<Icon name="lock" type="material" color="#007bff" size={20} style={{ marginRight: 10 }} />}
+      type="outline"
+      buttonStyle={styles.securityButton}
+      containerStyle={styles.buttonContainer}
+      onPress={() => setIsChangingPassword(true)}
+    />
+  ) : (
+    <>
+      <Input
+        label="New Password"
+        value={passwordData.password}
+        onChangeText={(value) => handlePasswordChange('password', value)}
+        placeholder="Enter new password"
+        secureTextEntry={!showPassword}
+        rightIcon={
+          <Icon
+            name={showPassword ? 'eye-off' : 'eye'}
+            type="ionicon"
+            onPress={() => setShowPassword(!showPassword)}
+          />
+        }
+        containerStyle={styles.inputContainer}
+      />
+      
+      <Input
+        label="Confirm Password"
+        value={passwordData.confirmPassword}
+        onChangeText={(value) => handlePasswordChange('confirmPassword', value)}
+        placeholder="Confirm new password"
+        secureTextEntry={!showPassword}
+        errorMessage={passwordError}
+        containerStyle={styles.inputContainer}
+      />
+      
+      <View style={styles.passwordButtonsContainer}>
+        <Button
+          title="Cancel"
+          type="outline"
+          buttonStyle={styles.cancelButton}
+          containerStyle={styles.passwordButtonContainer}
+          onPress={() => {
+            setPasswordData({ password: '', confirmPassword: '' });
+            setPasswordError('');
+            setIsChangingPassword(false);
+          }}
+        />
+        <Button
+          title="Update Password"
+          buttonStyle={styles.saveButton}
+          containerStyle={styles.passwordButtonContainer}
+          onPress={confirmPasswordChange}
+        />
+      </View>
+    </>
+  )}
+</View>
           {offerStats && (
             <>
               <Divider style={styles.divider} />
@@ -388,7 +513,34 @@ export default function AgentAgentProfileScreen({ navigation }) {
           </View>
         </Card>
       </ScrollView>
-      
+      {/* Password Change Confirmation Overlay */}
+<Overlay
+  isVisible={passwordConfirmVisible}
+  onBackdropPress={() => setPasswordConfirmVisible(false)}
+  overlayStyle={styles.overlay}
+>
+  <Text style={styles.overlayTitle}>Change Password</Text>
+  <Text style={styles.overlayText}>
+    Are you sure you want to change your password?
+  </Text>
+  <View style={styles.overlayButtons}>
+    <Button
+      title="Cancel"
+      type="outline"
+      buttonStyle={styles.cancelButton}
+      containerStyle={styles.overlayButtonContainer}
+      onPress={() => setPasswordConfirmVisible(false)}
+    />
+    <Button
+      title={passwordChangeLoading ? "Updating..." : "Confirm"}
+      buttonStyle={styles.saveButton}
+      containerStyle={styles.overlayButtonContainer}
+      onPress={updatePassword}
+      disabled={passwordChangeLoading}
+      loading={passwordChangeLoading}
+    />
+  </View>
+</Overlay>
       {/* Delete Confirmation Overlay */}
       <Overlay
         isVisible={deleteConfirmVisible}
@@ -559,4 +711,15 @@ const styles = StyleSheet.create({
   overlayButtonContainer: {
     width: '48%',
   },
+  securityButton: {
+  borderColor: '#007bff',
+},
+passwordButtonsContainer: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  marginBottom: 15,
+},
+passwordButtonContainer: {
+  width: '48%',
+},
 });

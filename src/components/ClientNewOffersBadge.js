@@ -10,33 +10,81 @@ const ClientNewOffersBadge = React.memo(() => {
   useEffect(() => {
     let isMounted = true;
     
-    const fetchCount = async () => {
-      try {
-        const user = await getCurrentUser();
-        if (!user || user.app_metadata?.role !== 'client') return;
-        const today= new Date();
-        today.setHours(0,0,0,0);
-        const { count, error } = await supabase.from('travel_requests_agent').select('*',{count:'exact',head:true}).eq('creator_id', user.id)
-.eq('new_offers',true).gte('start_date',today.toISOString());
-        
-        if (error) throw error;
-        if (isMounted) setRequestsCount(count || 0);
-      } catch (error) {
-        console.error('Error fetching updated requests count:', error);
+    const setupFetchInterval = async (user) => {
+      // Clear any existing interval
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
+      
+      // If no user or not a client, reset count and don't set up interval
+      if (!user || user.app_metadata?.role !== 'client') {
+        if (isMounted) setRequestsCount(0);
+        return;
+      }
+      
+      // User is a client, set up fetching
+      const fetchCount = async () => {
+        try {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          
+          const { count, error } = await supabase
+            .from('travel_requests_agent')
+            .select('*', { count: 'exact', head: true })
+            .eq('creator_id', user.id)
+            .eq('new_offers', true)
+            .gte('start_date', today.toISOString());
+          
+          if (error) throw error;
+          if (isMounted) setRequestsCount(count || 0);
+        } catch (error) {
+          console.error('Error fetching updated requests count:', error);
+        }
+      };
+      
+      // Initial fetch
+      fetchCount();
+      
+      const msPerHour = 60 * 60 * 1000; // 1 hour in milliseconds
+      // Set up interval to fetch every 4 hours
+      intervalRef.current = setInterval(fetchCount, 4 * msPerHour);
     };
     
-    // Initial fetch
-    fetchCount();
-    const msPerHour=60 * 60 * 1000; // 1 hour in milliseconds
-    // Set up interval to fetch every 4 hours (4 * 60 * 60 * 1000 = 14400000ms)
-    intervalRef.current = setInterval(fetchCount, 4 * msPerHour);
+    // Get initial session and set up listener
+    const initAuth = async () => {
+      // Get current user on component mount
+      const initialUser = await getCurrentUser();
+      setupFetchInterval(initialUser);
+      
+      // Listen for auth state changes
+      const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
+          const user = session?.user || null;
+          setupFetchInterval(user);
+        }
+      });
+      
+      return authListener;
+    };
+    
+    // Initialize auth and get the listener
+    const authListenerPromise = initAuth();
     
     return () => {
       isMounted = false;
+      
+      // Clean up interval
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
+      
+      // Clean up auth listener
+      authListenerPromise.then(listener => {
+        if (listener && listener.unsubscribe) {
+          listener.unsubscribe();
+        }
+      });
     };
   }, []);
   
@@ -44,7 +92,7 @@ const ClientNewOffersBadge = React.memo(() => {
   
   return (
     <Badge
-      value={requestsCount }
+      value={requestsCount}
       status="error"
       containerStyle={{
         position: 'absolute',
