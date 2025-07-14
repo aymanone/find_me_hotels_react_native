@@ -2,10 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Badge } from 'react-native-elements';
 import supabase from '../config/supabase';
 import { getCurrentUser } from '../utils/auth';
+import { sendLocalNotification } from '../utils/notificationUtils';
 
 const ClientNewOffersBadge = React.memo(() => {
   const [requestsCount, setRequestsCount] = useState(0);
   const intervalRef = useRef(null);
+  const previousCountRef = useRef(0);
   
   useEffect(() => {
     let isMounted = true;
@@ -37,7 +39,25 @@ const ClientNewOffersBadge = React.memo(() => {
             .gte('start_date', today.toISOString());
           
           if (error) throw error;
-          if (isMounted) setRequestsCount(count || 0);
+          
+          if (isMounted) {
+            // Check if count has increased
+          
+              // Send notification only if count increased
+              if (count > 0){
+              sendLocalNotification(
+                'New Offers Available!',
+                `You have New Offers for ${count} request${count>1?'s':''}.`,
+                { screen:"Home",
+                params:{ screen: 'ClientUpdatedRequests' }
+                }
+              );
+            
+            }
+            // Update state and ref
+            setRequestsCount(count || 0);
+            previousCountRef.current = count || 0;
+          }
         } catch (error) {
           console.error('Error fetching updated requests count:', error);
         }

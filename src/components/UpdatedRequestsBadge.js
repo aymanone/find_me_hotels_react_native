@@ -2,10 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Badge } from 'react-native-elements';
 import supabase from '../config/supabase';
 import { getCurrentUser } from '../utils/auth';
-
+import { sendLocalNotification } from '../utils/notificationUtils';
 const UpdatedRequestsBadge = React.memo(() => {
   const [count, setCount] = useState(0);
   const intervalRef = useRef(null);
+  const previousCountRef = useRef(0);
   
   useEffect(() => {
     let isMounted = true;
@@ -31,7 +32,18 @@ const UpdatedRequestsBadge = React.memo(() => {
           });
           
           if (error) throw error;
-          if (isMounted) setCount(data || 0);
+          if (isMounted){
+             if(data > 0){
+              sendLocalNotification(
+                'New Requests Updated!',
+                `You have ${data} request${data>1?'s':''} you made offers to them updated`,
+              { screen:"Home",
+                params:{ screen: 'AgentUpdatedRequests' }
+                } 
+              );
+            }
+           setCount(data || 0);
+           previousCountRef.current = count || 0;         } 
         } catch (error) {
           console.error('Error fetching updated requests count:', error);
         }
