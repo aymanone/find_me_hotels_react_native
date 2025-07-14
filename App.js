@@ -5,15 +5,19 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AppNavigator from './src/navigation/AppNavigator';
 import * as Notifications from 'expo-notifications';
 import { registerForPushNotificationsAsync } from './src/utils/notificationUtils';
-
+import { createNavigationContainerRef } from '@react-navigation/native';
 
 export default function App() {
-  // Create a navigation ref that can be used outside of components
-  const navigationRef = useRef(null);
+  // Create a navigation ref using the official API
+  const navigationRef = createNavigationContainerRef();
 
   const navigate = (name, params) => {
-    if (navigationRef.current) {
-      navigationRef.current.navigate(name, params);
+    if (navigationRef.current && navigationRef.isReady()) {
+      // For navigating to AgentUpdatedRequests in the AgentStack
+
+        // For other navigation targets
+        navigationRef.current.navigate(name, params);
+      
     }
   };
 
@@ -43,9 +47,7 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      
-        <AppNavigator ref={navigationRef} />
-  
+      <AppNavigator navigationRef={navigationRef} />
     </SafeAreaProvider>
   );
 }

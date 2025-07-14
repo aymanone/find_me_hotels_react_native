@@ -37,9 +37,9 @@ const UpdatedRequestsBadge = React.memo(() => {
               sendLocalNotification(
                 'New Requests Updated!',
                 `You have ${data} request${data>1?'s':''} you made offers to them updated`,
-              { screen:"Home",
+           { screen:"AgentApp",params:    { screen:"Home",
                 params:{ screen: 'AgentUpdatedRequests' }
-                } 
+                } }
               );
             }
            setCount(data || 0);

@@ -581,7 +581,8 @@ const AdminDrawer = React.memo(function AdminDrawer() {
   );
 });
 
-export default function AppNavigator() {
+export default function AppNavigator({navigationRef}) {
+  
   const [session, setSession] = useState(null);
   const [userType, setUserType] = useState(null);
   const [appState, setAppState] = useState(AppState.currentState);
@@ -728,7 +729,7 @@ export default function AppNavigator() {
   }, [userType]);
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Stack.Navigator>
         {!session ? authScreens : appScreens}
       </Stack.Navigator>

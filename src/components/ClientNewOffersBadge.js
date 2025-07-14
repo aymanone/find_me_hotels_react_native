@@ -48,9 +48,9 @@ const ClientNewOffersBadge = React.memo(() => {
               sendLocalNotification(
                 'New Offers Available!',
                 `You have New Offers for ${count} request${count>1?'s':''}.`,
-                { screen:"Home",
+           {  screen:"ClientApp", params:   { screen:"Home",
                 params:{ screen: 'ClientUpdatedRequests' }
-                }
+                }}
               );
             
             }
