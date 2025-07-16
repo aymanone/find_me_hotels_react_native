@@ -602,7 +602,7 @@ export default function AppNavigator({navigationRef}) {
     }
   }, []);
   const linking = {
-  prefixes: ['findmehotels://', 'https://findmehotels.com', 'http://findmehotels.com'],
+  prefixes: ['findmehotels://', 'https://findmehotels.com', 'http://findmehotels.com', 'exp://'] ,
   config: {
     screens: {
       // Auth screens

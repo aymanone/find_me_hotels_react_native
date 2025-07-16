@@ -53,6 +53,29 @@ export default function App() {
       console.log('Deep link received while app is running:', url);
       // The NavigationContainer will automatically handle this URL
       // if it matches your linking configuration
+        // Parse the URL to extract parameters
+       const fragment = url.split('#')[1];
+      
+       const params = new URLSearchParams(fragment);
+    
+    // Extract Supabase parameters
+    const accessToken = params.get('access_token');
+    const tokenType = params.get('token_type');
+    const type = params.get('type');
+    const expiresAt = params.get('expires_at');
+    const refreshToken = params.get('refresh_token');
+    console.log(type);
+    console.log(fragment);
+    console.log(params);
+      // Handle different types of deep links
+      if (type === 'recovery' && accessToken) {
+        // This is a password reset link
+      navigate('ResetPassword', { 
+            accessToken,
+            refreshToken,
+            expiresAt 
+          });
+      }
     };
     
     // Add event listener for deep links while the app is open

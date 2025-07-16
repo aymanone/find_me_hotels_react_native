@@ -4,7 +4,6 @@ import { Button, Input, Text } from 'react-native-elements';
 import supabase from '../config/supabase';
 import Constants from 'expo-constants';
 import {validEmail} from '../utils/validation';
-import {notAllowedAuthenticatedUser } from '../utils/auth';
 export default function ForgotPasswordScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -26,8 +25,26 @@ export default function ForgotPasswordScreen({ navigation }) {
         redirectTo = `${window.location.origin}/reset-password`;
       } else {
         // For mobile, use deep linking with the correct format
+        if (__DEV__) {
+        // In development, we need to use a URL that works with Expo's development server
+        // but is compatible with React Native's Linking
+        
+        // Get the development server URL from Constants
+        // This works even with React Native's Linking because we're just using Constants to get the host
+        const devHost = Constants.manifest?.hostUri?.split(':').slice(0, 2).join(':');
+        
+        if (devHost) {
+          // Format for Expo development: exp://192.168.1.109:8081/--/reset-password
+          redirectTo = `exp://${devHost}/--/reset-password`;
+        } else {
+          // Fallback to your app's custom URL scheme
+          redirectTo = 'findmehotels://reset-password';
+        }
+      } else {
+        // For production, use your app's custom URL scheme
         redirectTo = 'findmehotels://reset-password';
-        //redirectTo='exp://192.168.1.109:8081/--/reset-password'
+      }
+        
       }
       
       // Send password reset email
@@ -49,10 +66,7 @@ export default function ForgotPasswordScreen({ navigation }) {
       setLoading(false);
     }
   };
- useEffect(() => {
-    
-    notAllowedAuthenticatedUser();
-  }, [navigation]);
+
   return (
     <View style={styles.container}>
       <Text h3 style={styles.title}>Reset Password</Text>

@@ -3,7 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { Button, Input, Text } from 'react-native-elements';
 import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser,notAllowedAuthenticatedUser } from '../utils/auth';
-import DeepLinkText from '../components/DeepLinkText';
+
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -48,15 +48,11 @@ export default function LoginScreen({ navigation }) {
         onChangeText={setPassword}
         value={password}
         secureTextEntry={!showPassword}
-        rightIcon={
-    <Icon
-      name={showPassword ? 'eye-off' : 'eye'}
-      type="ionicon"
-      size={24}
-      color="#86939e"
-      onPress={() => setShowPassword(!showPassword)}
-    />
-  }
+       rightIcon={{ 
+          type: 'font-awesome',
+          name: showPassword ? 'eye-slash' : 'eye',
+          onPress: () => setShowPassword(!showPassword)
+        }}
       />
       <Button
         title="Login"

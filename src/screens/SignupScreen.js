@@ -233,16 +233,14 @@ export default function SignupScreen({ navigation }) {
           secureTextEntry={!showPassword}
           errorMessage={password && !validPasswordSignup(password) ? 
             "Password must be at least 8 characters with uppercase, lowercase, and numbers" : ""}
-          rightIcon={
-    <Icon
-      name={showPassword ? 'eye-off' : 'eye'}
-      type="ionicon"
-      size={24}
-      color="#86939e"
-      onPress={() => setShowPassword(!showPassword)}
+            rightIcon={{ 
+          type: 'font-awesome', 
+          name: showPassword ? 'eye-slash' : 'eye',
+          onPress: () => setShowPassword(!showPassword)
+        }}
     />
-  }
-        />
+  
+        
         <Text style={styles.passwordHint}>
           Password must contain at least 8 characters, including uppercase, lowercase, and numbers
         </Text>
@@ -253,16 +251,14 @@ export default function SignupScreen({ navigation }) {
           value={confirmPassword}
           secureTextEntry={!showPassword}
           errorMessage={confirmPassword && password !== confirmPassword ? 'Passwords do not match' : ''}
-          rightIcon={
-    <Icon
-      name={showPassword ? 'eye-off' : 'eye'}
-      type="ionicon"
-      size={24}
-      color="#86939e"
-      onPress={() => setShowPassword(!showPassword)}
+          rightIcon={{ 
+          type: 'font-awesome', 
+          name: showPassword ? 'eye-slash' : 'eye',
+          onPress: () => setShowPassword(!showPassword)
+        }}
     />
-  }
-        />
+  
+        
         
        
 
