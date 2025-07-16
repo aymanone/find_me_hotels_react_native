@@ -8,7 +8,7 @@ export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
- 
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
     
@@ -47,7 +47,16 @@ export default function LoginScreen({ navigation }) {
         placeholder="Password"
         onChangeText={setPassword}
         value={password}
-        secureTextEntry
+        secureTextEntry={!showPassword}
+        rightIcon={
+    <Icon
+      name={showPassword ? 'eye-off' : 'eye'}
+      type="ionicon"
+      size={24}
+      color="#86939e"
+      onPress={() => setShowPassword(!showPassword)}
+    />
+  }
       />
       <Button
         title="Login"
@@ -64,7 +73,7 @@ export default function LoginScreen({ navigation }) {
         type="clear"
         onPress={() => navigation.navigate('ForgotPassword')}
      />
-     <DeepLinkText path="forgot-password">Forgot password?</DeepLinkText>
+   
     </View>
   );
 }

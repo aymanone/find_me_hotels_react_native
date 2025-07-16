@@ -43,7 +43,7 @@ export default function SignupScreen({ navigation }) {
   const [loadingCountries, setLoadingCountries] = useState(false);
   const [countriesError, setCountriesError] = useState(null);
   const [countrySearch, setCountrySearch] = useState('');
-  
+   const [showPassword, setShowPassword] = useState(false);
   const roles = [
     { label: 'Client', value: 'client' },
     { label: 'Agent', value: 'agent' },
@@ -230,9 +230,18 @@ export default function SignupScreen({ navigation }) {
           placeholder="Password"
           onChangeText={setPassword}
           value={password}
-          secureTextEntry
+          secureTextEntry={!showPassword}
           errorMessage={password && !validPasswordSignup(password) ? 
             "Password must be at least 8 characters with uppercase, lowercase, and numbers" : ""}
+          rightIcon={
+    <Icon
+      name={showPassword ? 'eye-off' : 'eye'}
+      type="ionicon"
+      size={24}
+      color="#86939e"
+      onPress={() => setShowPassword(!showPassword)}
+    />
+  }
         />
         <Text style={styles.passwordHint}>
           Password must contain at least 8 characters, including uppercase, lowercase, and numbers
@@ -242,8 +251,17 @@ export default function SignupScreen({ navigation }) {
           placeholder="Confirm Password"
           onChangeText={setConfirmPassword}
           value={confirmPassword}
-          secureTextEntry
+          secureTextEntry={!showPassword}
           errorMessage={confirmPassword && password !== confirmPassword ? 'Passwords do not match' : ''}
+          rightIcon={
+    <Icon
+      name={showPassword ? 'eye-off' : 'eye'}
+      type="ionicon"
+      size={24}
+      color="#86939e"
+      onPress={() => setShowPassword(!showPassword)}
+    />
+  }
         />
         
        

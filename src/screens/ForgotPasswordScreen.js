@@ -4,6 +4,7 @@ import { Button, Input, Text } from 'react-native-elements';
 import supabase from '../config/supabase';
 import Constants from 'expo-constants';
 import {validEmail} from '../utils/validation';
+import {notAllowedAuthenticatedUser } from '../utils/auth';
 export default function ForgotPasswordScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -26,6 +27,7 @@ export default function ForgotPasswordScreen({ navigation }) {
       } else {
         // For mobile, use deep linking with the correct format
         redirectTo = 'findmehotels://reset-password';
+        //redirectTo='exp://192.168.1.109:8081/--/reset-password'
       }
       
       // Send password reset email
@@ -47,7 +49,10 @@ export default function ForgotPasswordScreen({ navigation }) {
       setLoading(false);
     }
   };
-
+ useEffect(() => {
+    
+    notAllowedAuthenticatedUser();
+  }, [navigation]);
   return (
     <View style={styles.container}>
       <Text h3 style={styles.title}>Reset Password</Text>
