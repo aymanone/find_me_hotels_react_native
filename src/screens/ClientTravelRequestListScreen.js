@@ -229,76 +229,74 @@ const fetchTravelRequests = async () => {
     const endDate = new Date(item.end_date);
     const requestKey = `${item.id}+${item.offers_number}+${item.status}`;
     const isHighlighted = highlightedRequests[requestKey];
-    
-    return (
-      <TouchableOpacity onPress={() => handleRequestPress(item)}>
-        <Card containerStyle={getCardStyle(item)}>
-          {/* Delete Button Row */}
-            
-          <View style={styles.deleteButtonContainer}>
-        
-            <TouchableOpacity 
-              onPress={(e) => {
-                e.stopPropagation(); // Prevent triggering the card's onPress
-                handleDeleteRequest(item.id);
-              }}
-              style={styles.deleteButton}
-            >
-              <Icon name="trash" type="font-awesome" size={16} color="#dc3545" />
-            </TouchableOpacity>
-          </View>
+      return (
+    <TouchableOpacity onPress={() => handleRequestPress(item)}>
+      <Card containerStyle={getCardStyle(item)}>
+        {/* Card Header with Delete Button */}
+        <View style={styles.cardHeader}>
+          {/* New Offers Indicator - only show if there are new offers */}
+          {item.new_offers && (
+            <View style={styles.newOffersIndicator}>
+              <Icon name="bell" type="font-awesome" size={14} color="#fff" />
+              <Text style={styles.newOffersText}>New Offers</Text>
+            </View>
+          )}
           
-          {/* Destination Row */}
-          <View style={styles.row}>
-            <Icon name="map-marker" type="font-awesome" size={16} color="#007bff" />
-            <Text style={styles.label}>Destination:</Text>
-            <Text style={styles.value}>
-              {item.country_name}{item.area_name ? `, ${item.area_name}` : ''}
-            </Text>
-            
-            {isHighlighted && (
-              <Badge
-                value="New Offers"
-                status="warning"
-                containerStyle={styles.newOffersBadge}
-                textStyle={styles.newOffersBadgeText}
-              />
-            )}
-          </View>
+          {/* Delete Button - always at the right */}
+          <TouchableOpacity 
+            onPress={(e) => {
+              e.stopPropagation(); // Prevent triggering the card's onPress
+              handleDeleteRequest(item.id);
+            }}
+            style={styles.deleteButton}
+          >
+            <Icon name="trash" type="font-awesome" size={16} color="#dc3545" />
+          </TouchableOpacity>
+        </View>
+        
+        {/* Destination Row */}
+        <View style={styles.row}>
+          <Icon name="map-marker" type="font-awesome" size={16} color="#007bff" />
+          <Text style={styles.label}>Destination:</Text>
+          <Text style={styles.value}>
+            {item.country_name}{item.area_name ? `, ${item.area_name}` : ''}
+          </Text>
+        </View>
 
-          {/* Dates Row */}
-          <View style={styles.row}>
-            <Icon name="calendar" type="font-awesome" size={16} color="#007bff" />
-            <Text style={styles.label}>Dates:</Text>
-            <Text style={styles.value}>
-              {format(startDate, 'MMM dd, yyyy')} - {format(endDate, 'MMM dd, yyyy')}
-            </Text>
-          </View>
+        {/* Dates Row */}
+        <View style={styles.row}>
+          <Icon name="calendar" type="font-awesome" size={16} color="#007bff" />
+          <Text style={styles.label}>Dates:</Text>
+          <Text style={styles.value}>
+            {format(startDate, 'MMM dd, yyyy')} - {format(endDate, 'MMM dd, yyyy')}
+          </Text>
+        </View>
 
-          {/* Info Row */}
-          <View style={styles.row}>
-            <Icon name="info-circle" type="font-awesome" size={16} color="#007bff" />
-            <Text style={styles.label}>Status:</Text>
-            <Text style={[
-              styles.statusText,
-              { color: isRequestActive(item) ? '#28a745' : '#6c757d' }
-            ]}>
-              {item.status.toUpperCase()}
-            </Text>
-            <Text style={styles.offersText}>
-              {item.offers_number} {item.offers_number === 1 ? 'offer' : 'offers'}
-            </Text>
-            <Icon 
-              name="chevron-right" 
-              type="font-awesome" 
-              size={16} 
-              color="#007bff"
-              containerStyle={styles.chevronIcon}
-            />
-          </View>
-        </Card>
-      </TouchableOpacity>
-    );
+        {/* Info Row */}
+        <View style={styles.row}>
+          <Icon name="info-circle" type="font-awesome" size={16} color="#007bff" />
+          <Text style={styles.label}>Status:</Text>
+          <Text style={[
+            styles.statusText,
+            { color: isRequestActive(item) ? '#28a745' : '#6c757d' }
+          ]}>
+            {item.status.toUpperCase()}
+          </Text>
+          <Text style={styles.offersText}>
+            {item.offers_number} {item.offers_number === 1 ? 'offer' : 'offers'}
+          </Text>
+          <Icon 
+            name="chevron-right" 
+            type="font-awesome" 
+            size={16} 
+            color="#007bff"
+            containerStyle={styles.chevronIcon}
+          />
+        </View>
+      </Card>
+    </TouchableOpacity>
+  );
+  
   };
 
   // Add this new function for manual refresh
@@ -402,6 +400,12 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     padding: 12,
   },
+  cardHeader: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginBottom: 8,
+},
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -476,6 +480,8 @@ const styles = StyleSheet.create({
   deleteButton: {
     padding: 3,
     backgroundColor: '#f8f9fa',
+    marginLeft:'auto',
+    borderRadius:4,
     
     
   },
@@ -488,5 +494,28 @@ const styles = StyleSheet.create({
   refreshButtonText: {
     color: '#007bff',
     fontSize: 14,
+  },
+  actionButtonsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  newOffersIndicator: {
+     flexDirection: 'row',
+  alignItems: 'center',
+  backgroundColor: '#ff9800',
+  paddingHorizontal: 8,
+  paddingVertical: 4,
+  borderRadius: 12,
+  },
+  newOffersText: {
+    color: '#fff',
+    marginLeft: 4,
+    fontSize: 12,
+    fontWeight:'bold',
+  },
+  spacer: {
+    flex: 1,
   },
 });

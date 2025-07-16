@@ -9,6 +9,8 @@ import { Icon, Button } from 'react-native-elements';
 // Import screens
 import SignupScreen from '../screens/SignupScreen';
 import SigninScreen from '../screens/SigninScreen';
+import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
+import ResetPasswordScreen from '../screens/ResetPasswordScreen';
 import ClientTravelRequestList from '../screens/ClientTravelRequestListScreen';
 import ClientTravelRequestDetailsScreen from '../screens/ClientTravelRequestDetailsScreen';
 import TravelRequestForm from '../screens/TravelRequestForm';
@@ -37,6 +39,7 @@ import {
   setupAdminChannels 
 } from '../utils/channelUtils';
 import supabase from '../config/supabase';
+import { Linking } from 'react-native';
 import UpdatedRequestsBadge from '../components/UpdatedRequestsBadge';
 import ClientNewOffersBadge from '../components/ClientNewOffersBadge';
 // Create navigators - Move outside component to prevent recreation
@@ -598,6 +601,75 @@ export default function AppNavigator({navigationRef}) {
       // Handle error appropriately
     }
   }, []);
+  const linking = {
+  prefixes: ['findmehotels://', 'https://findmehotels.com', 'http://findmehotels.com'],
+  config: {
+    screens: {
+      // Auth screens
+      Signin: 'signin',
+      Signup: 'signup',
+      ForgotPassword: 'forgot-password',
+      ResetPassword: 'reset-password',
+      
+      // Client routes
+      ClientApp: {
+        screens: {
+          Home: {
+            screens: {
+              ClientTabs: {
+                screens: {
+                  Requests: 'client/requests',
+                  NewRequest: 'client/new-request'
+                }
+              },
+              ClientTravelRequestDetails: 'client/request/:id',
+              ClientOfferDetails: 'client/offer/:id',
+              ClientUpdatedRequests: 'client/updated-requests'
+            }
+          },
+          Profile: 'client/profile'
+        }
+      },
+      
+      // Agent routes
+      AgentApp: {
+        screens: {
+          Home: {
+            screens: {
+              AgentTabs: {
+                screens: {
+                  SearchRequests: 'agent/search',
+                  MyOffers: 'agent/offers'
+                }
+              },
+              AgentTravelRequestDetails: 'agent/request/:id',
+              AgentUpdatedRequests: 'agent/updated-requests'
+            }
+          },
+          Profile: 'agent/profile'
+        }
+      },
+      
+      // Company routes
+      CompanyApp: {
+        screens: {
+          Home: 'company/dashboard',
+          Profile: 'company/profile',
+          CompanyAgentProfile: 'company/agent/:id'
+        }
+      },
+      
+      // Admin routes
+      AdminApp: {
+        screens: {
+          Home: 'admin/dashboard',
+          Profile: 'admin/profile',
+          AdminCompanyProfile: 'admin/company/:id'
+        }
+      }
+    }
+  },
+};
 
   // Handle app state changes (foreground, background)
   useEffect(() => {
@@ -703,6 +775,16 @@ export default function AppNavigator({navigationRef}) {
         component={SignupScreen}
         options={{ headerShown: false }}
       />
+    <Stack.Screen 
+        name="ForgotPassword" 
+        component={ForgotPasswordScreen}
+        options={{ headerShown: false }}
+     />
+   <Stack.Screen 
+        name="ResetPassword" 
+        component={ResetPasswordScreen}
+        options={{ headerShown: false }}
+    />
     </>
   ), []);
 
@@ -729,7 +811,7 @@ export default function AppNavigator({navigationRef}) {
   }, [userType]);
 
   return (
-    <NavigationContainer ref={navigationRef}>
+    <NavigationContainer ref={navigationRef} linking={linking}>
       <Stack.Navigator>
         {!session ? authScreens : appScreens}
       </Stack.Navigator>

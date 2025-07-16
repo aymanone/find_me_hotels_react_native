@@ -311,6 +311,8 @@ export default function ClientClientProfileScreen({ navigation }) {
                   style={styles.dropdown}
                   placeholderStyle={styles.placeholderStyle}
                   selectedTextStyle={styles.selectedTextStyle}
+                  inputSearchStyle={styles.inputSearchStyle}
+                  iconStyle={styles.iconStyle}
                   data={countries}
                   maxHeight={300}
                   labelField="label"
@@ -322,6 +324,11 @@ export default function ClientClientProfileScreen({ navigation }) {
                   }}
                   search
                   searchPlaceholder="Search country..."
+                  renderItem={item => (
+                    <View style={styles.dropdownItem}>
+                      <Text style={styles.textItem}>{item.label}</Text>
+                    </View>
+                  )}
                 />
                 
                 <View style={styles.buttonRow}>
@@ -518,12 +525,33 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderRadius: 8,
     paddingHorizontal: 8,
-    marginBottom: 10,
+    marginBottom: 20,
+    marginHorizontal: 10,
+    backgroundColor: '#fff',
   },
   placeholderStyle: {
     fontSize: 16,
+    color: '#aaa',
   },
   selectedTextStyle: {
+    fontSize: 16,
+  },
+  inputSearchStyle: {
+    height: 40,
+    fontSize: 16,
+  },
+  iconStyle: {
+    width: 20,
+    height: 20,
+  },
+  dropdownItem: {
+    padding: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  textItem: {
+    flex: 1,
     fontSize: 16,
   },
   infoRow: {

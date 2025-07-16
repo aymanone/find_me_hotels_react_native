@@ -33,15 +33,21 @@ export default function AdminAdminProfileScreen({ navigation }) {
     
     try {
       // Check if user is admin
-      const user = await checkUserRole("admin");
+      const isAdmin = await checkUserRole("admin");
       
-      if (!user) {
+      if (!isAdmin) {
         setError('You do not have permission to access this page.');
         setLoading(false);
         return;
       }
       
       // Fetch admin details
+       const user = await getCurrentUser();
+      if (!user) {
+        Alert.alert('Error', 'User not found. Please log in again.');
+        await signOut(navigation);
+        return;
+      }
       const { data, error } = await supabase
         .from('admins')
         .select('*')

@@ -3,7 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { Button, Input, Text } from 'react-native-elements';
 import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser,notAllowedAuthenticatedUser } from '../utils/auth';
-
+import DeepLinkText from '../components/DeepLinkText';
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -59,6 +59,12 @@ export default function LoginScreen({ navigation }) {
         type="clear"
         onPress={() => navigation.navigate('Signup')}
       />
+     <Button
+        title="forgot password"
+        type="clear"
+        onPress={() => navigation.navigate('ForgotPassword')}
+     />
+     <DeepLinkText path="forgot-password">Forgot password?</DeepLinkText>
     </View>
   );
 }

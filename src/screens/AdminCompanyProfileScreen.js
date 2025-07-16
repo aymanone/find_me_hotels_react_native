@@ -461,17 +461,25 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
               selectedTextStyle={styles.selectedTextStyle}
               inputSearchStyle={styles.inputSearchStyle}
               iconStyle={styles.iconStyle}
-              data={countries}
+              data={countries.map(country => ({
+                label: country.country_name,
+                value: country.id
+              }))}
+              search
               maxHeight={300}
-              labelField="country_name"
-              valueField="id"
+              labelField="label"
+              valueField="value"
               placeholder="Select country"
-              searchPlaceholder="Search..."
+              searchPlaceholder="Search country..."
               value={countryId}
               onChange={item => {
-                setCountryId(item.id);
+                setCountryId(item.value);
               }}
-              searchable
+              renderItem={item => (
+                <View style={styles.dropdownItem}>
+                  <Text style={styles.textItem}>{item.label}</Text>
+                </View>
+              )}
             />
             
             <Input
@@ -674,9 +682,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 8,
     marginBottom: 20,
+    backgroundColor: '#fff',
   },
   placeholderStyle: {
     fontSize: 16,
+    color: '#aaa',
   },
   selectedTextStyle: {
     fontSize: 16,
@@ -736,5 +746,15 @@ const styles = StyleSheet.create({
   deleteConfirmButton: {
     backgroundColor: '#dc3545',
     borderRadius: 5,
+  },
+  dropdownItem: {
+    padding: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  textItem: {
+    flex: 1,
+    fontSize: 16,
   },
 });
