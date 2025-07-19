@@ -51,8 +51,10 @@ export default function AgentAgentOffersScreen() {
           id, 
           status, 
           created_at,
+          updated_at,
           travel_requests (
             id, 
+            updated_at,
             start_date,
             end_date,
             adults,
@@ -106,7 +108,12 @@ export default function AgentAgentOffersScreen() {
     today.setHours(0, 0, 0, 0);
     return new Date(startDate) < new Date(today);
   };
-
+ const activeOfferState=(reqUpdated , offerUpdated)=>{
+         const reqDate=new Date(reqUpdated);
+         const offerDate=new Date(offerUpdated);
+        if(reqDate > offerDate){return "needs updating";}
+        return "view Offer";
+};
   const viewTravelRequestDetails = (requestId, offerId) => {
     navigation.navigate('AgentTravelRequestDetails', {
       requestId: requestId,
@@ -230,7 +237,7 @@ export default function AgentAgentOffersScreen() {
                 onPress={() => viewTravelRequestDetails(offer.travel_requests.id, offer.id)}
               >
                 <Text style={styles.viewButtonText}>
-                  {outdated ? "View Outdated Offer" : "Update Offer"}
+                  {outdated ? "View Outdated Offer" : activeOfferState(offer.travel_requests.updated_at, offer.updated_at)}
                 </Text>
                 <Icon name="arrow-right" type="font-awesome" size={16} color="#fff" />
               </TouchableOpacity>

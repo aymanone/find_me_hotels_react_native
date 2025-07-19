@@ -6,6 +6,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Icon, Button } from 'react-native-elements';
 import { CommonActions } from '@react-navigation/native';
+import { useAuth } from '../contexts/AuthContext';
 // Import screens
 import SignupScreen from '../screens/SignupScreen';
 import SigninScreen from '../screens/SigninScreen';
@@ -624,7 +625,7 @@ export default function AppNavigator({navigationRef}) {
   const [appState, setAppState] = useState(AppState.currentState);
   const channelsRef = useRef([]);
   const appStateRef = useRef(appState);
-
+    const { isResettingPassword } = useAuth();
   // Memoized sign out handler
   const handleSignOut = useCallback(async () => {
     try {
@@ -847,7 +848,7 @@ export default function AppNavigator({navigationRef}) {
   return (
     <NavigationContainer ref={navigationRef} linking={linking}>
       <Stack.Navigator>
-        {!session ? authScreens : appScreens}
+        {!session || isResettingPassword? authScreens : appScreens}
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -7,7 +7,7 @@ import * as Notifications from 'expo-notifications';
 import { Linking } from 'react-native'; // Changed from expo-linking to react-native
 import { registerForPushNotificationsAsync } from './src/utils/notificationUtils';
 import { createNavigationContainerRef } from '@react-navigation/native';
-
+import { AuthProvider } from './src/contexts/AuthContext';
 export default function App() {
   // Create a navigation ref using the official API
   const navigationRef = createNavigationContainerRef();
@@ -21,7 +21,7 @@ export default function App() {
             try{
         setTimeout(()=>{
         navigationRef.navigate(name, params);
-},100);
+},200);
 }catch(error){
      setTimeout(()=>{
         navigationRef.navigate(name, params);
@@ -154,10 +154,12 @@ return  url.includes('access_token=') &&
 
   return (
     <SafeAreaProvider>
+   <AuthProvider>
       <AppNavigator 
         navigationRef={navigationRef} 
         initialUrl={initialUrl}
       />
+    </AuthProvider>
     </SafeAreaProvider>
   );
 }

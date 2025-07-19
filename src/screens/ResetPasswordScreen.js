@@ -3,6 +3,7 @@ import { View, StyleSheet, Alert } from 'react-native';
 import { Button, Input, Text } from 'react-native-elements';
 import supabase from '../config/supabase';
 import { validPasswordSignup } from '../utils/validation';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function ResetPasswordScreen({ navigation, route }) {
   const [password, setPassword] = useState('');
@@ -12,6 +13,8 @@ export default function ResetPasswordScreen({ navigation, route }) {
   const [passwordError, setPasswordError] = useState('');
   const [sessionEstablished, setSessionEstablished] = useState(false);
 
+  const { setIsResettingPassword } = useAuth();
+
   // Extract tokens from route params
   const { access_token, refresh_token } = route.params || {};
 
@@ -20,6 +23,9 @@ export default function ResetPasswordScreen({ navigation, route }) {
     const setupSession = async () => {
       if (access_token && refresh_token) {
         try {
+          // Set the resetting flag before setting session
+          setIsResettingPassword(true);
+          
           // Set the session using the tokens from the URL
           const { data, error } = await supabase.auth.setSession({
             access_token,
@@ -29,6 +35,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
           if (error) {
             console.error('Error setting session:', error.message);
             Alert.alert('Error', 'Failed to authenticate your reset request. Please try again.');
+            setIsResettingPassword(false); // Reset flag on error
             navigation.navigate('Signin');
             return;
           }
@@ -37,6 +44,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
         } catch (err) {
           console.error('Session setup error:', err.message);
           Alert.alert('Error', 'Authentication failed. Please request a new password reset link.');
+          setIsResettingPassword(false); // Reset flag on error
           navigation.navigate('Signin');
         }
       } else {
@@ -46,7 +54,12 @@ export default function ResetPasswordScreen({ navigation, route }) {
     };
 
     setupSession();
-  }, [access_token, refresh_token, navigation]);
+    
+    // Cleanup function to reset flag when component unmounts
+    return () => {
+      setIsResettingPassword(false);
+    };
+  }, [access_token, refresh_token, navigation, setIsResettingPassword]);
 
   const handleUpdatePassword = async () => {
     // Validate password
@@ -77,6 +90,9 @@ export default function ResetPasswordScreen({ navigation, route }) {
 
       if (error) throw error;
       
+      // Reset the flag before showing success and navigating
+      setIsResettingPassword(false);
+      
       Alert.alert(
         'Success', 
         'Your password has been updated successfully',
@@ -84,7 +100,11 @@ export default function ResetPasswordScreen({ navigation, route }) {
       );
     } catch (error) {
       console.error('Update password error:', error.message);
-      Alert.alert('Error', error.message);
+      // Reset flag on error
+      setIsResettingPassword(false);
+      Alert.alert('Error', error.message, [
+        { text: 'OK', onPress: () => navigation.navigate('Signin') }
+      ]);
     } finally {
       setLoading(false);
     }
