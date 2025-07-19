@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
 import { Button, Input, Text } from 'react-native-elements';
 import supabase from '../config/supabase';
@@ -10,6 +10,43 @@ export default function ResetPasswordScreen({ navigation, route }) {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [passwordError, setPasswordError] = useState('');
+  const [sessionEstablished, setSessionEstablished] = useState(false);
+
+  // Extract tokens from route params
+  const { access_token, refresh_token } = route.params || {};
+
+  // Set up the session when component mounts
+  useEffect(() => {
+    const setupSession = async () => {
+      if (access_token && refresh_token) {
+        try {
+          // Set the session using the tokens from the URL
+          const { data, error } = await supabase.auth.setSession({
+            access_token,
+            refresh_token
+          });
+          
+          if (error) {
+            console.error('Error setting session:', error.message);
+            Alert.alert('Error', 'Failed to authenticate your reset request. Please try again.');
+            navigation.navigate('Signin');
+            return;
+          }
+          
+          setSessionEstablished(true);
+        } catch (err) {
+          console.error('Session setup error:', err.message);
+          Alert.alert('Error', 'Authentication failed. Please request a new password reset link.');
+          navigation.navigate('Signin');
+        }
+      } else {
+        Alert.alert('Error', 'Invalid reset link. Please request a new password reset.');
+        navigation.navigate('Signin');
+      }
+    };
+
+    setupSession();
+  }, [access_token, refresh_token, navigation]);
 
   const handleUpdatePassword = async () => {
     // Validate password
@@ -21,6 +58,12 @@ export default function ResetPasswordScreen({ navigation, route }) {
     // Check if passwords match
     if (password !== confirmPassword) {
       Alert.alert('Error', 'Passwords do not match');
+      return;
+    }
+
+    // Check if session is established
+    if (!sessionEstablished) {
+      Alert.alert('Error', 'Authentication session not established. Please try again.');
       return;
     }
 
@@ -68,6 +111,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
           onPress: () => setShowPassword(!showPassword)
         }}
         errorMessage={passwordError}
+        disabled={!sessionEstablished || loading}
       />
       
       <Input
@@ -75,12 +119,14 @@ export default function ResetPasswordScreen({ navigation, route }) {
         onChangeText={setConfirmPassword}
         value={confirmPassword}
         secureTextEntry={!showPassword}
+        disabled={!sessionEstablished || loading}
       />
       
       <Button
-        title="Update Password"
+        title={sessionEstablished ? "Update Password" : "Authenticating..."}
         onPress={handleUpdatePassword}
         loading={loading}
+        disabled={!sessionEstablished || loading}
         buttonStyle={styles.button}
       />
     </View>
@@ -91,20 +137,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#fff',
     justifyContent: 'center',
+    backgroundColor: '#fff',
   },
   title: {
+    marginBottom: 20,
     textAlign: 'center',
-    marginBottom: 10,
   },
   subtitle: {
+    marginBottom: 30,
     textAlign: 'center',
-    marginBottom: 20,
     color: '#666',
   },
   button: {
-    marginTop: 10,
-    marginBottom: 20,
+    marginTop: 20,
+    backgroundColor: '#007bff',
   },
 });

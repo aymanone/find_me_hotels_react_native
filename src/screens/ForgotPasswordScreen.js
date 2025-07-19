@@ -34,7 +34,7 @@ export default function ForgotPasswordScreen({ navigation }) {
         const devHost = Constants.manifest?.hostUri?.split(':').slice(0, 2).join(':');
         
         if (devHost) {
-          // Format for Expo development: exp://192.168.1.109:8081/--/reset-password
+          // Format for Expo development: exp://192.168.1.109:8081/--/reset-password short url is https://shorturl.at/9ZxIQ
           redirectTo = `exp://${devHost}/--/reset-password`;
         } else {
           // Fallback to your app's custom URL scheme

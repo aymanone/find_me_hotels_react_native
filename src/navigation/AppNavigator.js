@@ -5,7 +5,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Icon, Button } from 'react-native-elements';
-
+import { CommonActions } from '@react-navigation/native';
 // Import screens
 import SignupScreen from '../screens/SignupScreen';
 import SigninScreen from '../screens/SigninScreen';
@@ -204,27 +204,28 @@ const ClientDrawer = React.memo(function ClientDrawer() {
     drawerItemPress: (e) => {
       // Prevent default drawer navigation
       e.preventDefault();
-      
+//           navigation.navigate('Home', { 
+//    screen: 'ClientTabs'
+//  });
       // Reset the entire stack to the initial state
-      navigation.reset({
+     setTimeout(() => {
+    navigation.dispatch(
+      CommonActions.reset({
         index: 0,
         routes: [
           {
             name: 'Home',
             state: {
+              index: 0, // Reset ClientStack to first screen (ClientTabs)
               routes: [
-                {
-                  name: 'ClientTabs',
-                  state: {
-                    index: 0,
-                    routes: [{ name: 'NewRequest' }]
-                  }
-                }
+                { name: 'ClientTabs' } // Let React Navigation handle tab state
               ]
             }
           }
         ]
-      });
+      })
+    );
+  }, 100);
       
       // Close the drawer
       navigation.closeDrawer();
@@ -339,27 +340,30 @@ const AgentDrawer = React.memo(function AgentDrawer() {
     drawerItemPress: (e) => {
       // Prevent default drawer navigation
       e.preventDefault();
-      
-      // Reset the entire stack to the initial state
-      navigation.reset({
+ //     navigation.navigate('Home', { 
+//    screen: 'AgentTabs'
+ // });
+  
+  // Step 2: Reset ClientStack to only contain ClientTabs
+  setTimeout(() => {
+    navigation.dispatch(
+      CommonActions.reset({
         index: 0,
         routes: [
           {
             name: 'Home',
             state: {
+              index: 0, // Reset ClientStack to first screen (ClientTabs)
               routes: [
-                {
-                  name: 'AgentTabs',
-                  state: {
-                    index: 0,
-                    routes: [{ name: 'SearchRequests' }]
-                  }
-                }
+                { name: 'AgentTabs' } // Let React Navigation handle tab state
               ]
             }
           }
         ]
-      });
+      })
+    );
+  }, 100);
+      
       
       // Close the drawer
       navigation.closeDrawer();
@@ -437,11 +441,7 @@ const CompanyTabs = React.memo(function CompanyTabs() {
         component={MemoizedCompanyAgentsList}
         options={{ title: 'My Agents', headerShown: false }}
       />
-      <Tab.Screen 
-        name="Requests" 
-        component={() => <MemoizedPlaceholderScreen title="Company Requests" />}
-        options={{ title: 'Requests', headerShown: false }}
-      />
+    
     </Tab.Navigator>
   );
 });
@@ -463,6 +463,39 @@ const CompanyDrawer = React.memo(function CompanyDrawer() {
             <Icon name="home-outline" type="ionicon" size={22} color={color} />
           ),
         }}
+           listeners={({ navigation }) => ({
+    drawerItemPress: (e) => {
+      // Prevent default drawer navigation
+      e.preventDefault();
+ //     navigation.navigate('Home', { 
+//    screen: 'AgentTabs'
+ // });
+  
+  // Step 2: Reset ClientStack to only contain ClientTabs
+  setTimeout(() => {
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [
+          {
+            name: 'Home',
+            state: {
+              index: 0, // Reset ClientStack to first screen (ClientTabs)
+              routes: [
+                { name: 'CompanyTabs' } // Let React Navigation handle tab state
+              ]
+            }
+          }
+        ]
+      })
+    );
+  }, 100);
+      
+      
+      // Close the drawer
+      navigation.closeDrawer();
+    },
+  })}
       />
       
       <Drawer.Screen 
@@ -602,7 +635,7 @@ export default function AppNavigator({navigationRef}) {
     }
   }, []);
   const linking = {
-  prefixes: ['findmehotels://', 'https://findmehotels.com', 'http://findmehotels.com', 'exp://'] ,
+  prefixes: ['findmehotels://', 'https://findmehotels.com', 'http://findmehotels.com','exp://192.168.1.109:8081/--/', 'exp://'] ,
   config: {
     screens: {
       // Auth screens
@@ -669,6 +702,7 @@ export default function AppNavigator({navigationRef}) {
       }
     }
   },
+
 };
 
   // Handle app state changes (foreground, background)
@@ -809,7 +843,7 @@ export default function AppNavigator({navigationRef}) {
       />
     );
   }, [userType]);
-
+ 
   return (
     <NavigationContainer ref={navigationRef} linking={linking}>
       <Stack.Navigator>
