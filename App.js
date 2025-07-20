@@ -67,101 +67,25 @@ export default function App() {
     registerForPushNotificationsAsync();
     
     // Set up notification handler
-    const notificationListener = Notifications.addNotificationReceivedListener(notification => {
+    const  notificationListener = Notifications.addNotificationReceivedListener(async (notification) => {
       console.log('Notification received:', notification);
     });
     
     // Handle notification response (when user taps the notification)
-    const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
+    const responseListener = Notifications.addNotificationResponseReceivedListener(async (response) => {
       const { data } = response.notification.request.content;
       
       // Navigate based on the notification data
       if (data.screen) {
-     await   navigate(data.screen, data.params);
+     await navigate(data.screen, data.params);
       }
     });
-    const hasSupabaseParams = (url)=>{
-       
-return  url.includes('access_token=') && 
-                           url.includes('refresh_token=');
-}
+ 
     // Set up deep link handler
-   const handleDeepLink = ({ url }) => {
+   const handleDeepLink = async ({ url }) => {
   console.log('Deep link received:', url);
-  
-  // Add small delay to ensure navigation is ready
-  setTimeout(() => {
-    try {
-      if (hasSupabaseParams(url)) {
-        console.log('Processing Supabase deep link');
-        
-        // Extract the fragment (part after #)
-        const [urlPart, fragmentPart] = url.split('#');
-        console.log('URL part:', urlPart);
-        console.log('Fragment part:', fragmentPart);
-        
-        if (!fragmentPart) {
-          console.log('No fragment found in URL');
-          return;
-        }
-        
-        const params = new URLSearchParams(fragmentPart);
-        
-        // Extract Supabase parameters
-        const accessToken = params.get('access_token');
-        const refreshToken = params.get('refresh_token');
-        const type = params.get('type');
-        const expiresAt = params.get('expires_at');
-        
-        console.log('Extracted params:', { type, accessToken: !!accessToken, refreshToken: !!refreshToken });
-        
-        // Skip if it's already a reset-password URL to avoid infinite loops
-        if (url.includes("//reset-password") || url.includes("--/reset-password?")) {
-          console.log('Already a reset-password URL, skipping');
-          return;
-        }
-        
-        // Handle password recovery links
-        if ((type === 'recovery/reset-password' || type=="recovery" || url.includes(`recovery`)) && accessToken && refreshToken) {
-          console.log('Processing password reset link');
-          
-        
-          
-          // Use navigate to open the URL
-        await  navigate('ResetPassword', { access_token:accessToken,refresh_token: refreshToken, expires_at:expiresAt });
-          
-          
-          return; // Exit early after handling
-        }
-        
-        // Handle other Supabase auth types (signup confirmation, etc.)
-        if (type === 'signup' && accessToken && refreshToken) {
-          console.log('Processing signup confirmation');
-          // Navigate to your signup confirmation screen
-        await  navigate('SignupConfirmation', { access_token:accessToken,refresh_token: refreshToken, expires_at:expiresAt });
-          return;
-        }
-        
-        // Handle email confirmation
-        if (type === 'email_change' && accessToken && refreshToken) {
-          console.log('Processing email change confirmation');
-          // Navigate to your email change confirmation screen
-         await navigate('EmailChangeConfirmation', { access_token:accessToken,refresh_token: refreshToken, expires_at:expiresAt });
-          return;
-        }
-        
-        console.log('Unhandled Supabase auth type:', type);
-      } else {
-        // Handle non-Supabase deep links here
-        console.log('Processing regular deep link');
-        
-       return;
-      }
-    } catch (error) {
-      console.error('Error handling deep link:', error);
-      console.error('URL that caused error:', url);
-    }
-  }, 100); // Small delay to ensure navigation is ready
+  return;
+
 };
     
     

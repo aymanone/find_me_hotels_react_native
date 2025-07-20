@@ -46,7 +46,7 @@ export default function ForgotPasswordScreen({ navigation }) {
       }
         
       }
-      
+      redirectTo="https://687cc7aca90e378ee9f06618--bucolic-banoffee-2f9450.netlify.app/supabase_redirect.html";
       // Send password reset email
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: redirectTo,
