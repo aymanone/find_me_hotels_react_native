@@ -13,21 +13,44 @@ export default function App() {
   const navigationRef = createNavigationContainerRef();
   const [initialUrl, setInitialUrl] = useState(null);
 
-  const navigate = (name, params) => {
-    if (navigationRef.isReady()) {
-      
-      navigationRef.navigate(name, params);
-    }else{
-            try{
-        setTimeout(()=>{
-        navigationRef.navigate(name, params);
-},200);
-}catch(error){
-     setTimeout(()=>{
-        navigationRef.navigate(name, params);
-},200);}finally{};
-}
-  };
+ const navigate = async (name, params, maxAttempts = 3) => {
+  let navigationSuccessful = false;
+  let lastError = null;
+
+  try {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        if (navigationRef.isReady()) {
+          navigationRef.navigate(name, params);
+          navigationSuccessful = true;
+          return true;
+        } else {
+          console.log(`Navigation not ready, attempt ${attempt}/${maxAttempts}`);
+          await new Promise(resolve => setTimeout(resolve, 200 * attempt));
+        }
+      } catch (error) {
+        lastError = error;
+        console.log(`Navigation attempt ${attempt}/${maxAttempts} failed:`, error);
+        
+        if (attempt === maxAttempts) {
+          break; // Exit loop to go to finally
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 200 * attempt));
+      }
+    }
+    
+    return false; // All attempts failed
+  } finally {
+    console.log(`Navigation to ${name} completed. Success: ${navigationSuccessful}`);
+    
+    if (!navigationSuccessful && lastError) {
+      console.error('Final navigation failure:', lastError);
+    }
+    
+    // Any cleanup you need here
+  }
+};
 
   useEffect(() => {
     // Get the initial URL that opened the app
@@ -54,7 +77,7 @@ export default function App() {
       
       // Navigate based on the notification data
       if (data.screen) {
-        navigate(data.screen, data.params);
+     await   navigate(data.screen, data.params);
       }
     });
     const hasSupabaseParams = (url)=>{
@@ -105,7 +128,7 @@ return  url.includes('access_token=') &&
         
           
           // Use navigate to open the URL
-          navigate('ResetPassword', { access_token:accessToken,refresh_token: refreshToken, expires_at:expiresAt });
+        await  navigate('ResetPassword', { access_token:accessToken,refresh_token: refreshToken, expires_at:expiresAt });
           
           
           return; // Exit early after handling
@@ -115,7 +138,7 @@ return  url.includes('access_token=') &&
         if (type === 'signup' && accessToken && refreshToken) {
           console.log('Processing signup confirmation');
           // Navigate to your signup confirmation screen
-          navigate('SignupConfirmation', { access_token:accessToken,refresh_token: refreshToken, expires_at:expiresAt });
+        await  navigate('SignupConfirmation', { access_token:accessToken,refresh_token: refreshToken, expires_at:expiresAt });
           return;
         }
         
@@ -123,7 +146,7 @@ return  url.includes('access_token=') &&
         if (type === 'email_change' && accessToken && refreshToken) {
           console.log('Processing email change confirmation');
           // Navigate to your email change confirmation screen
-          navigate('EmailChangeConfirmation', { access_token:accessToken,refresh_token: refreshToken, expires_at:expiresAt });
+         await navigate('EmailChangeConfirmation', { access_token:accessToken,refresh_token: refreshToken, expires_at:expiresAt });
           return;
         }
         
