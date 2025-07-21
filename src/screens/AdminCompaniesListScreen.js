@@ -76,7 +76,7 @@ export default function AdminCompaniesListScreen({ navigation }) {
   };
 
   const viewCompanyProfile = (companyId) => {
-    navigation.navigate('AdminCompanyProfile', { companyId });
+    navigation.navigate("Home",{screen:'AdminCompanyProfile', params:{ companyId }});
   };
 
   if (loading && !refreshing) {

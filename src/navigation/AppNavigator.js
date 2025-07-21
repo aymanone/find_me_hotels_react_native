@@ -427,6 +427,15 @@ const AgentDrawer = React.memo(function AgentDrawer() {
 });
 
 // COMPANY NAVIGATION
+const CompanyStack = React.memo(function AgentStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="CompanyTabs" component={CompanyTabs} />
+      <Stack.Screen name="CompanyAgentProfile" component={CompanyAgentProfileScreen} />
+    
+    </Stack.Navigator>
+  );
+});
 const CompanyTabs = React.memo(function CompanyTabs() {
   const screenOptions = useMemo(() => createTabScreenOptions(), []);
   
@@ -457,7 +466,7 @@ const CompanyDrawer = React.memo(function CompanyDrawer() {
     >
       <Drawer.Screen 
         name="Home" 
-        component={CompanyTabs} 
+        component={CompanyStack} 
         options={{
           title: 'Company Dashboard',
           drawerIcon: ({ color }) => (
@@ -499,17 +508,7 @@ const CompanyDrawer = React.memo(function CompanyDrawer() {
   })}
       />
       
-      <Drawer.Screen 
-        name="CompanyAgentProfile" 
-        component={CompanyAgentProfileScreen}
-        options={{
-          title: 'Agent Profile',
-          drawerIcon: ({ color }) => (
-            <Icon name="person-outline" type="ionicon" size={22} color={color} />
-          ),
-          drawerItemStyle: { display: 'none' },
-        }}
-      />
+   
       
       <Drawer.Screen 
         name="Profile" 
@@ -540,6 +539,15 @@ const CompanyDrawer = React.memo(function CompanyDrawer() {
 });
 
 // ADMIN NAVIGATION
+const AdminStack = React.memo(function AgentStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="AdminTabs" component={AdminTabs} />
+      <Stack.Screen name="AdminCompanyProfile" component={AdminCompanyProfileScreen} />
+    
+    </Stack.Navigator>
+  );
+});
 const AdminTabs = React.memo(function AdminTabs() {
   const screenOptions = useMemo(() => createTabScreenOptions(), []);
   
@@ -569,26 +577,48 @@ const AdminDrawer = React.memo(function AdminDrawer() {
     >
       <Drawer.Screen 
         name="Home" 
-        component={AdminTabs} 
+        component={AdminStack} 
         options={{
           title: 'Admin Dashboard',
           drawerIcon: ({ color }) => (
             <Icon name="home-outline" type="ionicon" size={22} color={color} />
           ),
         }}
-      />
+               listeners={({ navigation }) => ({
+    drawerItemPress: (e) => {
+      // Prevent default drawer navigation
+      e.preventDefault();
+ //     navigation.navigate('Home', { 
+//    screen: 'AgentTabs'
+ // });
+  
+  // Step 2: Reset ClientStack to only contain ClientTabs
+  setTimeout(() => {
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [
+          {
+            name: 'Home',
+            state: {
+              index: 0, // Reset ClientStack to first screen (ClientTabs)
+              routes: [
+                { name: 'AdminTabs' } // Let React Navigation handle tab state
+              ]
+            }
+          }
+        ]
+      })
+    );
+  }, 100);
       
-      <Drawer.Screen 
-        name="AdminCompanyProfile" 
-        component={AdminCompanyProfileScreen}
-        options={{
-          title: 'Company Profile',
-          drawerIcon: ({ color }) => (
-            <Icon name="person-outline" type="ionicon" size={22} color={color} />
-          ),
-          drawerItemStyle: { display: 'none' },
-        }}
+      
+      // Close the drawer
+      navigation.closeDrawer();
+    },
+  })}
       />
+    
       
       <Drawer.Screen 
         name="Profile" 
@@ -636,7 +666,7 @@ export default function AppNavigator({navigationRef}) {
     }
   }, []);
   const linking = {
-  prefixes: ['findmehotels://', 'https://findmehotels.com', 'http://findmehotels.com','exp://192.168.1.109:8081/--/', 'exp://','http://localhost:3000'] ,
+  prefixes: ['findmehotels://', 'https://findmehotels.com', 'http://findmehotels.com','exp://192.168.1.109:8081/--/', 'exp://','http://localhost:8081'] ,
   config: {
     screens: {
       // Auth screens
@@ -657,7 +687,7 @@ export default function AppNavigator({navigationRef}) {
                 }
               },
               ClientTravelRequestDetails: 'client/request/:id',
-              ClientOfferDetails: 'client/offer/:id',
+              ClientOfferDetails: 'client/offer/:offerId',
               ClientUpdatedRequests: 'client/updated-requests'
             }
           },
@@ -676,7 +706,7 @@ export default function AppNavigator({navigationRef}) {
                   MyOffers: 'agent/offers'
                 }
               },
-              AgentTravelRequestDetails: 'agent/request/:id',
+              AgentTravelRequestDetails: 'agent/request/:requestId',
               AgentUpdatedRequests: 'agent/updated-requests'
             }
           },
@@ -687,18 +717,36 @@ export default function AppNavigator({navigationRef}) {
       // Company routes
       CompanyApp: {
         screens: {
-          Home: 'company/dashboard',
+          Home: { 
+        screens:{
+       CompanyTabs:{
+        screens: {
+              'Create Agent': 'company/create-agent',
+              'Agents': 'company/agents'
+            }
+         },
+     CompanyAgentProfile: 'company/agent/:agentId'
+        }},
           Profile: 'company/profile',
-          CompanyAgentProfile: 'company/agent/:id'
+         
         }
       },
       
       // Admin routes
       AdminApp: {
         screens: {
-          Home: 'admin/dashboard',
+          Home: {
+          screens:{
+           AdminTabs:{
+            screens: {
+              'Create Company': 'admin/create-company',
+              'My Companies': 'admin/companies'
+            } 
+           },
+         AdminCompanyProfile: 'admin/company/:companyId'
+          }},
           Profile: 'admin/profile',
-          AdminCompanyProfile: 'admin/company/:id'
+         
         }
       }
     }

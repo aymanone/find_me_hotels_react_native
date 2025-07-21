@@ -225,8 +225,8 @@ const CompanyAgentsListScreen = ({ navigation }) => {
                   title="View Profile"
                   type="outline"
                   buttonStyle={styles.viewButton}
-                  onPress={() => navigation.navigate("CompanyAgentProfile",
-                    { agentId: agent.id })}
+                  onPress={() => navigation.navigate("Home",{screen: "CompanyAgentProfile",params:
+                    { agentId: agent.id }})}
                 />
                 
                 <Button
