@@ -19,10 +19,12 @@ export default function ForgotPasswordScreen({ navigation }) {
       
       // Determine the appropriate redirect URL based on platform
       let redirectTo;
+     let screen='';
       
       if (Platform.OS === 'web') {
         // For web, redirect to the web reset page
         redirectTo = `${window.location.origin}/reset-password`;
+        screen=redirectTo;
       } else {
         // For mobile, use deep linking with the correct format
         if (__DEV__) {
@@ -36,13 +38,16 @@ export default function ForgotPasswordScreen({ navigation }) {
         if (devHost) {
           // Format for Expo development: exp://192.168.1.109:8081/--/reset-password short url is https://shorturl.at/9ZxIQ
           redirectTo = `exp://${devHost}/--/reset-password`;
+          screen=redirectTo;
         } else {
           // Fallback to your app's custom URL scheme
           redirectTo = 'findmehotels://reset-password';
+          screen=redirectTo;
         }
       } else {
         // For production, use your app's custom URL scheme
         redirectTo = 'findmehotels://reset-password';
+        screen=redirectTo;
       }
         
       }

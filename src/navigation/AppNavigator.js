@@ -686,8 +686,8 @@ export default function AppNavigator({navigationRef}) {
                   NewRequest: 'client/new-request'
                 }
               },
-              ClientTravelRequestDetails: 'client/request/:id',
-              ClientOfferDetails: 'client/offer/:offerId',
+              ClientTravelRequestDetails: 'client/request/:id?',
+              ClientOfferDetails: 'client/offer/:offerId?',
               ClientUpdatedRequests: 'client/updated-requests'
             }
           },
@@ -706,7 +706,7 @@ export default function AppNavigator({navigationRef}) {
                   MyOffers: 'agent/offers'
                 }
               },
-              AgentTravelRequestDetails: 'agent/request/:requestId',
+              AgentTravelRequestDetails: 'agent/request/:requestId?',
               AgentUpdatedRequests: 'agent/updated-requests'
             }
           },
@@ -725,7 +725,7 @@ export default function AppNavigator({navigationRef}) {
               'Agents': 'company/agents'
             }
          },
-     CompanyAgentProfile: 'company/agent/:agentId'
+     CompanyAgentProfile: 'company/agent/:agentId?'
         }},
           Profile: 'company/profile',
          
@@ -743,7 +743,7 @@ export default function AppNavigator({navigationRef}) {
               'My Companies': 'admin/companies'
             } 
            },
-         AdminCompanyProfile: 'admin/company/:companyId'
+         AdminCompanyProfile: 'admin/company/:companyId?'
           }},
           Profile: 'admin/profile',
          
