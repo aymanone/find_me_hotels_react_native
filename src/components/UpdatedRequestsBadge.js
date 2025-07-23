@@ -3,6 +3,7 @@ import { Badge } from 'react-native-elements';
 import supabase from '../config/supabase';
 import { getCurrentUser } from '../utils/auth';
 import { sendLocalNotification } from '../utils/notificationUtils';
+import { Platform } from 'react-native';
 const UpdatedRequestsBadge = React.memo(() => {
   const [count, setCount] = useState(0);
   const intervalRef = useRef(null);
@@ -25,29 +26,36 @@ const UpdatedRequestsBadge = React.memo(() => {
       }
       
       // User is an agent, set up fetching
-      const fetchCount = async () => {
-        try {
-          const { data, error } = await supabase.rpc('agent_updated_requests_count', {
-            agent: user.id
-          });
-          
-          if (error) throw error;
-          if (isMounted){
-             if(data > 0){
-              sendLocalNotification(
-                'New Requests Updated!',
-                `You have ${data} request${data>1?'s':''} you made offers to them updated`,
-           { screen:"AgentApp",params:    { screen:"Home",
-                params:{ screen: 'AgentUpdatedRequests' }
-                } }
-              );
+     // User is an agent, set up fetching
+const fetchCount = async () => {
+  try {
+    const { data, error } = await supabase.rpc('agent_updated_requests_count', {
+      agent: user.id
+    });
+    
+    if (error) throw error;
+    
+    if (isMounted) {
+      if (data > 0) {
+        await sendLocalNotification(
+          'New Requests Updated!',
+          `You have ${data} request${data > 1 ? 's' : ''} you made offers to them updated`,
+          {
+            screen: "AgentApp",
+            params: {
+              screen: "Home",
+              params: { screen: 'AgentUpdatedRequests' }
             }
-           setCount(data || 0);
-           previousCountRef.current = count || 0;         } 
-        } catch (error) {
-          console.error('Error fetching updated requests count:', error);
-        }
-      };
+          }
+        );
+      }
+      setCount(data || 0);
+      previousCountRef.current = data || 0;
+    } 
+  } catch (error) {
+    console.error('Error fetching updated requests count:', error);
+  }
+};
       
       // Initial fetch
       fetchCount();

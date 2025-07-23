@@ -174,7 +174,7 @@ const ClientUpdatedRequestsScreen = ({ navigation }) => {
                 <View style={styles.offersContainer}>
                   <Icon name="notifications" type="ionicon" size={16} color="#FF9500" />
                   <Text style={styles.offersText}>
-                    {request.offers_number} new {request.offers_number === 1 ? 'offer' : 'offers'}
+                    {request.offers_number} {request.offers_number === 1 ? 'offer' : 'offers'}
                   </Text>
                 </View>
               </View>

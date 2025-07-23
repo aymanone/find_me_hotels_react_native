@@ -666,7 +666,8 @@ export default function AppNavigator({navigationRef}) {
     }
   }, []);
   const linking = {
-  prefixes: ['findmehotels://', 'https://findmehotels.com', 'http://findmehotels.com','exp://192.168.1.109:8081/--/', 'exp://','http://localhost:8081'] ,
+  prefixes: ['findmehotels://', 'https://findmehotels.com', 'http://findmehotels.com','exp://192.168.1.109:8081/--/', 'exp://','http://localhost:8081',
+'http://localhost:8081/'] ,
   config: {
     screens: {
       // Auth screens

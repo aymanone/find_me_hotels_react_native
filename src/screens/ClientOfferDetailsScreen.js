@@ -70,7 +70,7 @@ const ClientOfferDetailsScreen = ({ route, navigation }) => {
     );
           return;
         }
-        console.log(offer);
+        
         setOffer(offer);
         // Test if you can query agents directly
 

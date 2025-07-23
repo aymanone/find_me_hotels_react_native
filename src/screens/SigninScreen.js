@@ -30,10 +30,22 @@ export default function LoginScreen({ navigation }) {
     }
   };
  
-  useEffect(() => {
-    
-    notAllowedAuthenticatedUser();
-  }, [navigation]);
+useEffect(() => {
+  // Define async function inside
+  const handleAsyncWork = async () => {
+    try {
+      const isAllowed = await notAllowedAuthenticatedUser();
+      if (!isAllowed) {
+        navigation.navigate('Dashboard');
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error);
+    }
+  };
+  
+  // Call it immediately
+  handleAsyncWork();
+}, [navigation]);
   return (
     <View style={styles.container}>
       <Text h3 style={styles.title}>Find Me Hotels</Text>

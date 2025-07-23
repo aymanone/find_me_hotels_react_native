@@ -3,7 +3,7 @@ import { Badge } from 'react-native-elements';
 import supabase from '../config/supabase';
 import { getCurrentUser } from '../utils/auth';
 import { sendLocalNotification } from '../utils/notificationUtils';
-
+import { Platform } from 'react-native';
 const ClientNewOffersBadge = React.memo(() => {
   const [requestsCount, setRequestsCount] = useState(0);
   const intervalRef = useRef(null);
@@ -26,43 +26,89 @@ const ClientNewOffersBadge = React.memo(() => {
       }
       
       // User is a client, set up fetching
-      const fetchCount = async () => {
+     const fetchCount = async () => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const { count, error } = await supabase
+      .from('travel_requests_agent')
+      .select('*', { count: 'exact', head: true })
+      .eq('creator_id', user.id)
+      .eq('new_offers', true)
+      .gte('start_date', today.toISOString());
+    
+    if (error) throw error;
+    
+    if (isMounted) {
+      // Send notification only if count increased
+      if (count > 0) {
         try {
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
-          
-          const { count, error } = await supabase
-            .from('travel_requests_agent')
-            .select('*', { count: 'exact', head: true })
-            .eq('creator_id', user.id)
-            .eq('new_offers', true)
-            .gte('start_date', today.toISOString());
-          
-          if (error) throw error;
-          
-          if (isMounted) {
-            // Check if count has increased
-          
-              // Send notification only if count increased
-              if (count > 0){
-              sendLocalNotification(
-                'New Offers Available!',
-                `You have New Offers for ${count} request${count>1?'s':''}.`,
-           {  screen:"ClientApp", params:   { screen:"Home",
-                params:{ screen: 'ClientUpdatedRequests' }
-                }}
-              );
-            
+          if (Platform.OS === 'web') {
+            // Web notifications using browser API  
+            if ('Notification' in window) {
+              const showWebNotification = () => {
+                const notification = new Notification('New Offers Available!', {
+                  body: `You have New Offers for ${count} request${count > 1 ? 's' : ''}.`,
+                  icon: '/favicon.ico',
+                  tag: 'new-offers',
+                  // Add screen data directly to the notification content
+                  screen: "ClientApp",
+                  params: {
+                    screen: "Home", 
+                    params: { screen: 'ClientUpdatedRequests' }
+                  }
+                });
+                
+                // Handle notification click to navigate to screen
+                notification.onclick = function(event) {
+                  event.preventDefault();
+                  window.focus();
+                  // Access screen data from the notification itself
+                  if (this.screen) {
+                    navigate(this.screen, this.params);
+                  }
+                  this.close();
+                };
+              };
+
+              if (Notification.permission === 'granted') {
+                showWebNotification();
+              } else if (Notification.permission !== 'denied') {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                  showWebNotification();
+                }
+              }
             }
-            // Update state and ref
-            setRequestsCount(count || 0);
-            previousCountRef.current = count || 0;
+          } else {
+            // Mobile notifications using Expo
+            await sendLocalNotification(
+              'New Offers Available!',
+              `You have New Offers for ${count} request${count > 1 ? 's' : ''}.`,
+              {
+                screen: "ClientApp",
+                params: {
+                  screen: "Home",
+                  params: { screen: 'ClientUpdatedRequests' }
+                }
+              }
+            );
           }
-        } catch (error) {
-          console.error('Error fetching updated requests count:', error);
+        } catch (notificationError) {
+          console.log('Notification failed:', notificationError.message);
+          // Don't let notification errors break the component
         }
-      };
+      }
       
+      // Update state and ref
+      setRequestsCount(count || 0);
+      previousCountRef.current = count || 0;
+    }
+  } catch (error) {
+    console.error('Error fetching updated requests count:', error);
+  }
+};
       // Initial fetch
       fetchCount();
       

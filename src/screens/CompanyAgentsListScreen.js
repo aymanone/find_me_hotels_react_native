@@ -33,7 +33,7 @@ const CompanyAgentsListScreen = ({ navigation }) => {
       const currentUser = await getCurrentUser();
       if (!currentUser) {
         Alert.alert('Error', 'User not found. Please log in again.');
-        navigation.navigate('Login');
+        navigation.navigate('Signin');
         return;
       }
       

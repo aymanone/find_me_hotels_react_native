@@ -51,10 +51,22 @@ export default function SignupScreen({ navigation }) {
     { label: 'Admin', value: 'admin' }
   ];
   const messaging_apps = MESSAGING_APPS.map(app => { return { label: app, value: app }});
-  useEffect(() => {
-
-      notAllowedAuthenticatedUser();
-    }, [navigation]);
+ useEffect(() => {
+  // Define async function inside
+  const handleAsyncWork = async () => {
+    try {
+      const isAllowed = await notAllowedAuthenticatedUser();
+      if (!isAllowed) {
+        navigation.navigate('Dashboard');
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error);
+    }
+  };
+  
+  // Call it immediately
+  handleAsyncWork();
+}, [navigation]);
   // Fetch countries from Supabase
   useEffect(() => {
     const fetchCountries = async () => {
@@ -184,7 +196,7 @@ export default function SignupScreen({ navigation }) {
 
       if (error) throw error;
 
-      alert('Registration successful! Please check your email for verification.');
+      alert('Registration successful! Please sign in.');
       
       // Wait for 5 seconds before navigating
       setTimeout(async () => {
@@ -404,7 +416,7 @@ export default function SignupScreen({ navigation }) {
         <Button
           title="Back to Sign In"
           type="clear"
-          onPress={() => navigation.goBack()}
+          onPress={() => navigation.navigate("Signin")}
         />
       </View>
       </ScrollView>

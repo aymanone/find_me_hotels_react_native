@@ -7,7 +7,22 @@ import {validEmail} from '../utils/validation';
 export default function ForgotPasswordScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
-
+useEffect(() => {
+  // Define async function inside
+  const handleAsyncWork = async () => {
+    try {
+      const isAllowed = await notAllowedAuthenticatedUser();
+      if (!isAllowed) {
+        navigation.navigate('Dashboard');
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error);
+    }
+  };
+  
+  // Call it immediately
+  handleAsyncWork();
+}, [navigation]);
   const handleResetPassword = async () => {
     if (!email) {
       Alert.alert('Error', 'Please enter your email address');
