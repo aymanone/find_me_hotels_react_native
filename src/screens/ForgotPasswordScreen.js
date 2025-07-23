@@ -4,6 +4,7 @@ import { Button, Input, Text } from 'react-native-elements';
 import supabase from '../config/supabase';
 import Constants from 'expo-constants';
 import {validEmail} from '../utils/validation';
+import {signOut,notAllowedAuthenticatedUser} from '../utils/auth';
 export default function ForgotPasswordScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -13,7 +14,7 @@ useEffect(() => {
     try {
       const isAllowed = await notAllowedAuthenticatedUser();
       if (!isAllowed) {
-        navigation.navigate('Dashboard');
+        navigation.navigate('Home');
       }
     } catch (error) {
       console.error('Auth check failed:', error);

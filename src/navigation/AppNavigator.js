@@ -667,7 +667,7 @@ export default function AppNavigator({navigationRef}) {
   }, []);
   const linking = {
   prefixes: ['findmehotels://', 'https://findmehotels.com', 'http://findmehotels.com','exp://192.168.1.109:8081/--/', 'exp://','http://localhost:8081',
-'http://localhost:8081/'] ,
+'http://localhost:8081/','https://tiny-crepe-b758ab.netlify.app'] ,
   config: {
     screens: {
       // Auth screens
