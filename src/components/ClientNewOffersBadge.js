@@ -4,10 +4,12 @@ import supabase from '../config/supabase';
 import { getCurrentUser } from '../utils/auth';
 import { sendLocalNotification } from '../utils/notificationUtils';
 import { Platform } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 const ClientNewOffersBadge = React.memo(() => {
   const [requestsCount, setRequestsCount] = useState(0);
   const intervalRef = useRef(null);
   const previousCountRef = useRef(0);
+ const navigation= useNavigation();
   
   useEffect(() => {
     let isMounted = true;
@@ -66,7 +68,7 @@ const ClientNewOffersBadge = React.memo(() => {
                   window.focus();
                   // Access screen data from the notification itself
                   if (this.screen) {
-                    navigate(this.screen, this.params);
+                    navigation.navigate(this.screen, this.params);
                   }
                   this.close();
                 };

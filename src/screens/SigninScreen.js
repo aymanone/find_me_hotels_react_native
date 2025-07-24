@@ -36,7 +36,7 @@ useEffect(() => {
     try {
       const isAllowed = await notAllowedAuthenticatedUser();
       if (!isAllowed) {
-        navigation.navigate('Dashboard');
+        navigation.navigate('Home');
       }
     } catch (error) {
       console.error('Auth check failed:', error);

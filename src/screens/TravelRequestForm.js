@@ -289,6 +289,7 @@ export default function TravelRequestForm({ navigation, route }) {
 
   // Submit form
   const handleSubmit = async () => {
+      
     try {
       // Basic form validation
       const today= new Date().setHours(0,0,0,0);
@@ -302,6 +303,8 @@ export default function TravelRequestForm({ navigation, route }) {
         throw new Error('Please select a destination country');
       }
       if (!formData.requestArea) {
+            Alert.alert('Please select a destination area');
+           return;
         throw new Error('Please select a destination area');
       }
       if (!formData.numOfAdults || parseInt(formData.numOfAdults) < 1) {
@@ -521,47 +524,86 @@ export default function TravelRequestForm({ navigation, route }) {
         </Text>
         
         {/* Dates Row */}
-        <View style={styles.row}>
-          <View style={styles.halfWidth}>
-            <Text style={styles.label}>Start Date</Text>
-            <Button
-              title={format(formData.startDate, 'yyyy-MM-dd')}
-              onPress={() => setShowStartDatePicker(true)}
-              type="outline"
-              buttonStyle={styles.dateButton}
-            />
-            {showStartDatePicker && (
-              <DateTimePicker
-                value={formData.startDate}
-                mode="date"
-                display="default"
-                onChange={onStartDateChange}
-                minimumDate={new Date()}
-                style={styles.datePickerContainer}
-              />
-            )}
-          </View>
-          
-          <View style={styles.halfWidth}>
-            <Text style={styles.label}>End Date</Text>
-            <Button
-              title={format(formData.endDate, 'yyyy-MM-dd')}
-              onPress={() => setShowEndDatePicker(true)}
-              type="outline"
-              buttonStyle={styles.dateButton}
-            />
-            {showEndDatePicker && (
-              <DateTimePicker
-                value={formData.endDate}
-                mode="date"
-                display="default"
-                onChange={onEndDateChange}
-                minimumDate={new Date(formData.startDate.getTime() + 86400000)} // startDate + 1 day
-                style={styles.datePickerContainer}
-              />
-            )}
-          </View>
-        </View>
+     {/* Dates Row */}
+<View style={styles.row}>
+  {Platform.OS === 'web' ? (
+    // WEB VERSION - Both dates
+    <>
+      <View style={styles.halfWidth}>
+        <Text style={styles.label}>Start Date</Text>
+        <input
+          type="date"
+          value={format(formData.startDate, 'yyyy-MM-dd')}
+          onChange={(e) => {
+            if (e.target.value) {
+              onStartDateChange(null, new Date(e.target.value));
+            }
+          }}
+          min={format(new Date(), 'yyyy-MM-dd')}
+          style={styles.webDateInput}
+        />
+      </View>
+      
+      <View style={styles.halfWidth}>
+        <Text style={styles.label}>End Date</Text>
+        <input
+          type="date"
+          value={format(formData.endDate, 'yyyy-MM-dd')}
+          onChange={(e) => {
+            if (e.target.value) {
+              onEndDateChange(null, new Date(e.target.value));
+            }
+          }}
+          min={format(new Date(formData.startDate.getTime() + 86400000), 'yyyy-MM-dd')}
+          style={styles.webDateInput}
+        />
+      </View>
+    </>
+  ) : (
+    // MOBILE VERSION - Both dates with pickers
+    <>
+      <View style={styles.halfWidth}>
+        <Text style={styles.label}>Start Date</Text>
+        <Button
+          title={format(formData.startDate, 'yyyy-MM-dd')}
+          onPress={() => setShowStartDatePicker(true)}
+          type="outline"
+          buttonStyle={styles.dateButton}
+        />
+        {showStartDatePicker && (
+          <DateTimePicker
+            value={formData.startDate}
+            mode="date"
+            display="default"
+            onChange={onStartDateChange}
+            minimumDate={new Date()}
+            style={styles.datePickerContainer}
+          />
+        )}
+      </View>
+      
+      <View style={styles.halfWidth}>
+        <Text style={styles.label}>End Date</Text>
+        <Button
+          title={format(formData.endDate, 'yyyy-MM-dd')}
+          onPress={() => setShowEndDatePicker(true)}
+          type="outline"
+          buttonStyle={styles.dateButton}
+        />
+        {showEndDatePicker && (
+          <DateTimePicker
+            value={formData.endDate}
+            mode="date"
+            display="default"
+            onChange={onEndDateChange}
+            minimumDate={new Date(formData.startDate.getTime() + 86400000)}
+            style={styles.datePickerContainer}
+          />
+        )}
+      </View>
+    </>
+  )}
+</View>
         
         {/* Destinations Row */}
         <View style={styles.row}>
@@ -845,9 +887,8 @@ export default function TravelRequestForm({ navigation, route }) {
         <View style={styles.row}>
           <View style={styles.fullWidth}>
             <Text style={styles.label}
-              numberOfLines={2}
-            >Notes:examples: honeymoon,
-            sea view, balcony, smocking room etc.
+            numberOflines={2}
+>Notes: examples: sea view, honeymoon, smoking, balcony
              </Text>
             <Input
               multiline
@@ -962,18 +1003,19 @@ const styles = StyleSheet.create({
     marginTop: 8,
     paddingBottom: 80,
   },
-  notesInputContainer: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    maxHeight: 150,
-  },
-  notesInput: {
-    minHeight: 100,
-    textAlignVertical: 'top',
-    paddingTop: 8,
-  },
+notesInputContainer: {
+  borderWidth: 1,
+  borderColor: '#ccc',
+  borderRadius: 8,
+  paddingHorizontal: 1,
+  minHeight: 120,
+},
+notesInput: {
+  minHeight: 100,
+  textAlignVertical: 'top',
+  paddingTop: 8,
+  fontSize: 16,
+},
   disabledDropdown: {
     backgroundColor: '#f0f0f0',
     borderColor: '#d0d0d0',
@@ -1038,5 +1080,20 @@ const styles = StyleSheet.create({
     color: '#28a745',
     fontWeight: 'bold',
     marginBottom: 8,
-  }
+  },
+webDateInput: {
+  height: 50,             
+  width: '100%',
+  borderColor: '#2196F3', 
+  borderWidth: 1,
+  borderRadius: 8,
+  paddingHorizontal: 12,
+  fontSize: 16,
+  backgroundColor: 'transparent',
+  color: '#2196F3',
+  fontWeight: '500',
+  cursor: 'pointer',
+  outline: 'none',
+},
+
 });

@@ -4,11 +4,13 @@ import supabase from '../config/supabase';
 import { getCurrentUser } from '../utils/auth';
 import { sendLocalNotification } from '../utils/notificationUtils';
 import { Platform } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+
 const UpdatedRequestsBadge = React.memo(() => {
   const [count, setCount] = useState(0);
   const intervalRef = useRef(null);
   const previousCountRef = useRef(0);
-  
+  const navigation= useNavigation();
   useEffect(() => {
     let isMounted = true;
     
@@ -37,18 +39,65 @@ const fetchCount = async () => {
     
     if (isMounted) {
       if (data > 0) {
-        await sendLocalNotification(
-          'New Requests Updated!',
-          `You have ${data} request${data > 1 ? 's' : ''} you made offers to them updated`,
-          {
-            screen: "AgentApp",
-            params: {
-              screen: "Home",
-              params: { screen: 'AgentUpdatedRequests' }
+        try {
+          if (Platform.OS === 'web') {
+            // Web notifications using browser API  
+            if ('Notification' in window) {
+              const showWebNotification = () => {
+                const notification = new Notification('New Requests Updated!', {
+                  body: `You have ${data} request${data > 1 ? 's' : ''} you made offers to them updated`,
+                  icon: '/favicon.ico',
+                  tag: 'new-requests-updated',
+                  // Add screen data directly to the notification content
+                  screen: "ClientApp",
+                  params: {
+                    screen: "Home", 
+                    params: { screen: 'AgentUpdatedRequests' }
+                  }
+                });
+                
+                // Handle notification click to navigate to screen
+                notification.onclick = function(event) {
+                  event.preventDefault();
+                  window.focus();
+                  // Access screen data from the notification itself
+                  if (this.screen) {
+                    navigation.navigate(this.screen, this.params);
+                  }
+                  this.close();
+                };
+              };
+
+              if (Notification.permission === 'granted') {
+                showWebNotification();
+              } else if (Notification.permission !== 'denied') {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                  showWebNotification();
+                }
+              }
             }
+          } else {
+            // Mobile notifications using Expo
+            await sendLocalNotification(
+              'New Requests Updated!',
+                 `You have ${data} request${data > 1 ? 's' : ''} you made offers to them updated`,
+              {
+                screen: "ClientApp",
+                params: {
+                  screen: "Home",
+                  params: { screen: 'AgentUpdatedRequests' }
+                }
+              }
+            );
           }
-        );
+        } catch (notificationError) {
+          console.log('Notification failed:', notificationError.message);
+          // Don't let notification errors break the component
+        }
       }
+      
+      // Update state and ref
       setCount(data || 0);
       previousCountRef.current = data || 0;
     } 
@@ -106,7 +155,7 @@ const fetchCount = async () => {
   
   return (
     <Badge
-      value={`${count} Requests Updated`}
+      value={count}
       status="error"
       containerStyle={{
         position: 'absolute',

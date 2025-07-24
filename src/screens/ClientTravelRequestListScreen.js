@@ -59,10 +59,7 @@ useFocusEffect(
     
     // When screen loses focus (cleanup)
     return () => {
-      if (subscriptionRef.current.length > 0) {
-        unsubscribeChannels(subscriptionRef.current);
-        subscriptionRef.current = [];
-      }
+     
     };
   }, [])
 );

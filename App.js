@@ -13,7 +13,7 @@ export default function App() {
   const navigationRef = createNavigationContainerRef();
   const [initialUrl, setInitialUrl] = useState(null);
 
- const navigate = async (name, params, maxAttempts = 3) => {
+ const navigate = async (name, params, maxAttempts = 4) => {
   let navigationSuccessful = false;
   let lastError = null;
 
@@ -26,7 +26,7 @@ export default function App() {
           return true;
         } else {
           console.log(`Navigation not ready, attempt ${attempt}/${maxAttempts}`);
-          await new Promise(resolve => setTimeout(resolve, 200 * attempt));
+          await new Promise(resolve => setTimeout(resolve, 250 * attempt));
         }
       } catch (error) {
         lastError = error;
