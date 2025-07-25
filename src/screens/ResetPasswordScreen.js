@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
+import { View, StyleSheet,} from 'react-native';
 import { Button, Input, Text } from 'react-native-elements';
 import supabase from '../config/supabase';
 import { validPasswordSignup } from '../utils/validation';
 import { useAuth } from '../contexts/AuthContext';
-
+import {showAlert} from "../components/ShowAlert";
 export default function ResetPasswordScreen({ navigation, route }) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -34,7 +34,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
           
           if (error) {
             console.error('Error setting session:', error.message);
-            Alert.alert('Error', 'Failed to authenticate your reset request. Please try again.');
+            showAlert('Error', 'Failed to authenticate your reset request. Please try again.');
             setIsResettingPassword(false); // Reset flag on error
             navigation.navigate('Signin');
             return;
@@ -43,12 +43,12 @@ export default function ResetPasswordScreen({ navigation, route }) {
           setSessionEstablished(true);
         } catch (err) {
           console.error('Session setup error:', err.message);
-          Alert.alert('Error', 'Authentication failed. Please request a new password reset link.');
+          showAlert('Error', 'Authentication failed. Please request a new password reset link.');
           setIsResettingPassword(false); // Reset flag on error
           navigation.navigate('Signin');
         }
       } else {
-        Alert.alert('Error', 'Invalid reset link. Please request a new password reset.');
+        showAlert('Error', 'Invalid reset link. Please request a new password reset.');
         navigation.navigate('Signin');
       }
     };
@@ -70,13 +70,13 @@ export default function ResetPasswordScreen({ navigation, route }) {
 
     // Check if passwords match
     if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
+      showAlert('Error', 'Passwords do not match');
       return;
     }
 
     // Check if session is established
     if (!sessionEstablished) {
-      Alert.alert('Error', 'Authentication session not established. Please try again.');
+      showAlert('Error', 'Authentication session not established. Please try again.');
       return;
     }
 
@@ -93,7 +93,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
       // Reset the flag before showing success and navigating
       setIsResettingPassword(false);
       
-      Alert.alert(
+      showAlert(
         'Success', 
         'Your password has been updated successfully',
         [{ text: 'OK', onPress: () => navigation.navigate('Signin') }]
@@ -102,7 +102,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
       console.error('Update password error:', error.message);
       // Reset flag on error
       setIsResettingPassword(false);
-      Alert.alert('Error', error.message, [
+      showAlert('Error', "an error happened please try again.", [
         { text: 'OK', onPress: () => navigation.navigate('Signin') }
       ]);
     } finally {

@@ -6,7 +6,6 @@ import {
   ActivityIndicator, 
   TouchableOpacity, 
   TextInput,
-  Alert,
   KeyboardAvoidingView,
   Platform
 } from 'react-native';
@@ -26,6 +25,7 @@ import {outDatedReq} from '../utils/dateUtils';
 import { checkUserRole } from '../utils/auth';
 import { getCurrentUser,signOut } from '../utils/auth';
 import {inDateReq} from '../utils/dateUtils';
+import {showAlert} from "../components/ShowAlert";
 const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
   const { requestId, offerId } = route.params; // Added offerId parameter
   const [loading, setLoading] = useState(true);
@@ -67,7 +67,7 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
       //setIsAgent(isUserAgent);
       
       if (!isUserAgent) {
-        Alert.alert('Access Denied', 'You must be an agent to access this screen.');
+        showAlert('Access Denied', 'You must be an agent to access this screen.');
         navigation.goBack();
         return false;
       }
@@ -82,7 +82,7 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
       return true;
     } catch (error) {
       console.error('Error checking agent status:', error);
-      Alert.alert('Error', 'Failed to verify your permissions.');
+      showAlert('Error', 'Failed to verify your permissions.');
       navigation.goBack();
       return false;
     }
@@ -101,7 +101,7 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
         // Get current user
         const user= await getCurrentUser();
         if(!user) {
-          Alert.alert('Error', 'User not found. Please log in again.');
+          showAlert('Error', 'User not found. Please log in again.');
           await signOut(navigation);
           return;
         }
@@ -149,7 +149,7 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
         setRequest(data);
       } catch (error) {
         console.error('Error fetching data:', error);
-           Alert.alert(
+           showAlert(
       'Error', 
       'Failed to load profile data',
       [
@@ -220,7 +220,7 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
     // Validate inputs
     if (!hotelName || !hotelAddress || !hotelRooms || !hotelRoomSize || 
         hotelRating === null || !hotelCost) {
-      Alert.alert('Missing Information', 'Please fill all required fields');
+      showAlert('Missing Information', 'Please fill all required fields');
       return;
     }
     
@@ -253,14 +253,14 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
 
   const addHotel = () => {
     if (offerHotels.length >= MAXIMUM_HOTELS) {
-      Alert.alert(`Limit Reached, You can only add up to ${MAXIMUM_HOTELS} hotels per offer`);
+      showAlert(`Limit Reached, You can only add up to ${MAXIMUM_HOTELS} hotels per offer`);
       return;
     }
     
     // Validate inputs
     if (!hotelName || !hotelAddress || !hotelRooms || !hotelRoomSize || 
         hotelRating === null || !hotelCost) {
-      Alert.alert('Missing Information', 'Please fill all required fields');
+      showAlert('Missing Information', 'Please fill all required fields');
       return;
     }
     
@@ -316,7 +316,7 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
 
   const makeOffer = async () => {
     if (offerHotels.length === 0) {
-      Alert.alert('No Hotels', 'Please add at least one hotel to make an offer');
+      showAlert('No Hotels', 'Please add at least one hotel to make an offer');
       return;
     }
     
@@ -333,17 +333,17 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
       
       const user= await getCurrentUser();
       if(!user) {
-        Alert.alert('Error', 'User not found. Please log in again.');
+        showAlert('Error', 'User not found. Please log in again.');
         await signOut(navigation);
         return;
       }
       if(user?.app_metadata?.permitted_to_work === false) {
-        Alert.alert('Access Denied', 'You are not permitted to make offers.');
+        showAlert('Access Denied', 'You are not permitted to make offers.');
         return;
 
       }
       if(! inDateReq(request)) {
-        Alert.alert('Request Outdated', 'This request is no longer valid.');
+        showAlert('Request Outdated', 'This request is no longer valid.');
         return;
       }
       if (isEditMode && existingOffer) {
@@ -365,7 +365,7 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
         
         if (error) throw error;
         
-        Alert.alert(
+        showAlert(
           'Success', 
           'Your offer has been updated successfully',
           [{ text: 'OK', onPress: () => navigation.goBack() }]
@@ -389,7 +389,7 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
         
         if (error) throw error;
         
-        Alert.alert(
+        showAlert(
           'Success', 
           'Your offer has been submitted successfully',
           [{ text: 'OK', onPress: () => navigation.navigate('Home') }]
@@ -397,7 +397,7 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
       }
     } catch (error) {
       console.error('Error making offer:', error);
-      Alert.alert('Error', 'Failed to submit offer. Please try again.');
+      showAlert('Error', 'Failed to submit offer. Please try again.');
     }
   };
 

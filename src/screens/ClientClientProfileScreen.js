@@ -4,7 +4,6 @@ import {
   StyleSheet, 
   ScrollView, 
   ActivityIndicator, 
-  Alert,
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity
@@ -21,7 +20,7 @@ import { Dropdown } from 'react-native-element-dropdown';
 import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser, signOut } from '../utils/auth';
 import { validPasswordSignup } from '../utils/validation';
-
+import {showAlert} from "../components/ShowAlert";
 export default function ClientClientProfileScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
@@ -50,7 +49,7 @@ export default function ClientClientProfileScreen({ navigation }) {
     try {
       const isClient = await checkUserRole('client');
       if (!isClient) {
-        Alert.alert(
+        showAlert(
           'Access Denied',
           'You do not have permission to access this page.',
           [{ text: 'OK', onPress: () => navigation.goBack() }]
@@ -68,7 +67,7 @@ export default function ClientClientProfileScreen({ navigation }) {
       }
     } catch (error) {
       console.error('Error checking user role:', error);
-      Alert.alert('Error', 'Failed to verify your account. Please try again.');
+      showAlert('Error', 'Failed to verify your account. Please try again.');
       navigation.goBack();
     }
   };
@@ -103,7 +102,7 @@ export default function ClientClientProfileScreen({ navigation }) {
       }
     } catch (error) {
       console.error('Error fetching client profile:', error);
-      Alert.alert(
+      showAlert(
         'Error',
         'Failed to load your profile information.',
         [
@@ -136,7 +135,7 @@ export default function ClientClientProfileScreen({ navigation }) {
       setCountries(formattedCountries || []);
     } catch (error) {
       console.error('Error fetching countries:', error);
-      Alert.alert('Error', 'Failed to load countries list.');
+      showAlert('Error', 'Failed to load countries list.');
     }
   };
 
@@ -156,7 +155,7 @@ export default function ClientClientProfileScreen({ navigation }) {
       setLoading(true);
         const user = await getCurrentUser();
         if (!user) {
-          Alert.alert('Error', 'User not found. Please log in again.');
+          showAlert('Error', 'User not found. Please log in again.');
           await signOut(navigation);
           return;
         }
@@ -187,10 +186,10 @@ export default function ClientClientProfileScreen({ navigation }) {
       }));
       
       setIsEditing(false);
-      Alert.alert('Success', 'Your profile has been updated successfully.');
+      showAlert('Success', 'Your profile has been updated successfully.');
     } catch (error) {
       console.error('Error updating profile:', error);
-      Alert.alert('Error', 'Failed to update your profile. Please try again.');
+      showAlert('Error', 'Failed to update your profile. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -219,17 +218,17 @@ export default function ClientClientProfileScreen({ navigation }) {
       
       setPasswordData({ password: '', confirmPassword: '' });
       setIsChangingPassword(false);
-      Alert.alert('Success', 'Your password has been updated successfully.');
+      showAlert('Success', 'Your password has been updated successfully.');
     } catch (error) {
       console.error('Error updating password:', error);
-      Alert.alert('Error', 'Failed to update your password. Please try again.');
+      showAlert('Error', 'Failed to update your password. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   const confirmDeleteAccount = () => {
-    Alert.alert(
+    showAlert(
       'Delete Account',
       'Are you sure you want to delete your account? This action cannot be undone.',
       [
@@ -254,14 +253,14 @@ export default function ClientClientProfileScreen({ navigation }) {
       // Then sign out the user
       await signOut(navigation);
       
-      Alert.alert(
+      showAlert(
         'Account Deleted',
         'Your account has been successfully deleted.',
         [{ text: 'OK' }]
       );
     } catch (error) {
       console.error('Error deleting account:', error);
-      Alert.alert('Error', 'Failed to delete your account. Please try again.');
+      showAlert('Error', 'Failed to delete your account. Please try again.');
       setLoading(false);
     }
   };

@@ -4,7 +4,6 @@ import {
   StyleSheet, 
   ScrollView, 
   ActivityIndicator, 
-  Alert,
   TouchableOpacity,
   Linking
 } from 'react-native';
@@ -18,7 +17,7 @@ import {
 import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser, signOut } from '../utils/auth';
 import { validPasswordSignup } from '../utils/validation';
-
+import {showAlert} from "../components/ShowAlert";
 const CompanyCompanyProfileScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [company, setCompany] = useState(null);
@@ -37,7 +36,7 @@ const [passwordConfirmVisible, setPasswordConfirmVisible] = useState(false);
         // Check if user has company role
         const isValidCompany = await checkUserRole('company');
         if (!isValidCompany) {
-          Alert.alert('Access Denied', 'You do not have permission to view this page.');
+          showAlert('Access Denied', 'You do not have permission to view this page.');
           navigation.goBack();
           return;
         }
@@ -45,7 +44,7 @@ const [passwordConfirmVisible, setPasswordConfirmVisible] = useState(false);
         // Get current user
         const user = await getCurrentUser();
         if (!user) {
-          Alert.alert('Error', 'User not found. Please log in again.');
+          showAlert('Error', 'User not found. Please log in again.');
           await signOut(navigation);
           return;
         }
@@ -69,7 +68,7 @@ const [passwordConfirmVisible, setPasswordConfirmVisible] = useState(false);
 
         if (error) {
           console.error('Error fetching company data:', error);
-            Alert.alert(
+            showAlert(
       'Error', 
       'Failed to load profile data',
       [
@@ -85,7 +84,7 @@ const [passwordConfirmVisible, setPasswordConfirmVisible] = useState(false);
         setCompany(data);
       } catch (error) {
         console.error('Error in fetchCompanyProfile:', error);
-        Alert.alert('Error', 'An unexpected error occurred');
+        showAlert('Error', 'An unexpected error occurred');
       } finally {
         setLoading(false);
       }
@@ -126,10 +125,10 @@ const updatePassword = async () => {
     setPasswordData({ password: '', confirmPassword: '' });
     setIsChangingPassword(false);
     setPasswordConfirmVisible(false);
-    Alert.alert('Success', 'Your password has been updated successfully.');
+    showAlert('Success', 'Your password has been updated successfully.');
   } catch (error) {
     console.error('Error updating password:', error.message);
-    Alert.alert('Error', 'Failed to update your password. Please try again.');
+    showAlert('Error', 'Failed to update your password. Please try again.');
   } finally {
     setPasswordChangeLoading(false);
   }
@@ -148,7 +147,7 @@ const updatePassword = async () => {
         if (supported) {
           return Linking.openURL(fullUrl);
         } else {
-          Alert.alert('Error', `Cannot open URL: ${fullUrl}`);
+          showAlert('Error', `Cannot open URL: ${fullUrl}`);
         }
       })
       .catch(err => console.error('Error opening URL:', err));
@@ -159,19 +158,19 @@ const updatePassword = async () => {
       // Get current user to verify permissions
       const user = await getCurrentUser();
       if (!user) {
-        Alert.alert('Error', 'User not found. Please log in again.');
+        showAlert('Error', 'User not found. Please log in again.');
         await signOut(navigation);
         return;
       }
 
       // Check if user has permission to delete
       if (user.id !== company.user_id || user.app_metadata?.permitted_to_work !== true) {
-        Alert.alert('Access Denied', 'You do not have permission to delete this account.');
+        showAlert('Access Denied', 'You do not have permission to delete this account.');
         return;
       }
 
       // Confirm deletion
-      Alert.alert(
+      showAlert(
         'Delete Account',
         'Are you sure you want to delete your company account? This action cannot be undone.',
         [
@@ -189,11 +188,11 @@ const updatePassword = async () => {
 
                 if (error) {
                   console.error('Error deleting company:', error);
-                  Alert.alert('Error', 'Failed to delete company account');
+                  showAlert('Error', 'Failed to delete company account');
                   return;
                 }
 
-                Alert.alert(
+                showAlert(
                   'Account Deleted',
                   'Your company account has been successfully deleted.',
                   [
@@ -208,7 +207,7 @@ const updatePassword = async () => {
                 );
               } catch (error) {
                 console.error('Error in delete process:', error);
-                Alert.alert('Error', 'An unexpected error occurred during deletion');
+                showAlert('Error', 'An unexpected error occurred during deletion');
               }
             }
           }
@@ -216,7 +215,7 @@ const updatePassword = async () => {
       );
     } catch (error) {
       console.error('Error in handleDeleteAccount:', error);
-      Alert.alert('Error', 'An unexpected error occurred');
+      showAlert('Error', 'An unexpected error occurred');
     }
   };
 

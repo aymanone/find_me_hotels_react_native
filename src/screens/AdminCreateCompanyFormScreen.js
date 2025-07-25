@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity, } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser } from '../utils/auth';
 import { validEmail, validPhoneNumber, validURL } from '../utils/validation';
 import { useNavigation } from '@react-navigation/native';
 import { ActivityIndicator } from 'react-native';
- 
+import {showAlert} from "../components/ShowAlert";
 const AdminCreateCompanyFormScreen = () => {
   const navigation = useNavigation();
   const [loading, setLoading] = useState(false);
@@ -46,7 +46,7 @@ const AdminCreateCompanyFormScreen = () => {
       setIsAdmin(isUserAdmin);
       
       if (!isUserAdmin) {
-        Alert.alert('Access Denied', 'You do not have permission to access this page.');
+        showAlert('Access Denied', 'You do not have permission to access this page.');
         navigation.goBack();
         return;
       }
@@ -57,7 +57,7 @@ const AdminCreateCompanyFormScreen = () => {
     }
     } catch (error) {
       console.error('Error checking admin status:', error);
-      Alert.alert('Error', 'Failed to verify your permissions.');
+      showAlert('Error', 'Failed to verify your permissions.');
       navigation.goBack();
     }
   };
@@ -77,7 +77,7 @@ const AdminCreateCompanyFormScreen = () => {
       
     } catch (error) {
       console.error('Error fetching countries:', error);
-      Alert.alert('Error', 'Failed to load countries list.');
+      showAlert('Error', 'Failed to load countries list.');
     } finally {
       setLoading(false);
     }
@@ -196,7 +196,7 @@ const AdminCreateCompanyFormScreen = () => {
       
       if (error) throw error;
       
-      Alert.alert(
+      showAlert(
         'Success',
         'Company created successfully!',
         [{ text: 'OK' }]
@@ -212,7 +212,7 @@ const AdminCreateCompanyFormScreen = () => {
       
     } catch (error) {
       console.error('Error creating company:', error);
-      Alert.alert('Error', 'Failed to create company. Please try again.');
+      showAlert('Error', 'Failed to create company. Please try again.');
     } finally {
       setLoading(false);
     }

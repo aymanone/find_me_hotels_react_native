@@ -5,14 +5,14 @@ import { Button, Input, Text, CheckBox } from 'react-native-elements';
 import { Dropdown } from 'react-native-element-dropdown';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
-import { checkUserRole, getCurrentUser,signOut } from '../utils/auth';
+import { checkUserRole, getCurrentUser,signOut} from '../utils/auth';
 import { removeFirstOccurrence } from '../utils/arrayUtils';  
+import {showAlert} from "../components/ShowAlert";
 import {unsubscribeChannels} from '../utils/channelUtils.js'; // Import the unsubscribe function
 
 export default function TravelRequestForm({ navigation, route }) {
   // Check if we're editing an existing request
-  const requestId = route?.params?.requestId;
-  const isEditing = !!requestId;
+ 
 
   // Check if user is client
   useEffect(() => {
@@ -21,6 +21,8 @@ export default function TravelRequestForm({ navigation, route }) {
 
   // State variables
   const channelsRef=useRef([]);
+  const [isEditing, setIsEditing] = useState(!!route?.params?.requestId);
+  const [requestId, setRequestId] = useState(route?.params?.requestId);
   const [allCountries, setAllCountries] = useState([]);
   const [areas, setAreas] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -70,12 +72,12 @@ export default function TravelRequestForm({ navigation, route }) {
   useEffect(() => {
     const fetchRequestData = async () => {
       if (!isEditing) return;
-
+      
       try {
         setInitialLoading(true);
         const user = await getCurrentUser();
         if (!user) {
-          Alert.alert('Error', 'User not found. Please log in again.');
+          showAlert('Error', 'User not found. Please log in again.');
           await signOut(navigation);
           return;
         }
@@ -89,10 +91,10 @@ export default function TravelRequestForm({ navigation, route }) {
 
         if (error) {
           if (error.code === 'PGRST116') {
-            Alert.alert('Error', 'Request not found or you do not have permission to edit it.');
+            showAlert('Error', 'Request not found or you do not have permission to edit it.');
             navigation.goBack();
           } else {
-                       Alert.alert(
+                       showAlert(
       'Error', 
       'Failed to Request data',
       [
@@ -114,19 +116,12 @@ export default function TravelRequestForm({ navigation, route }) {
           .eq('request_id', requestId);
 
         if (offersError) {
-          Alert.alert('Error', 'Failed to check request status.');
+          showAlert('Error', 'Failed to check request status.');
           navigation.goBack();
           return;
         }
 
-        if (offers && offers.length > 0 && false) {
-          Alert.alert(
-            'Cannot Edit',
-            'This request has received offers and cannot be edited. Please contact the agents directly or create a new request.',
-            [{ text: 'OK', onPress: () => navigation.goBack() }]
-          );
-          return;
-        }
+       
 
         // Populate form with existing data
         setFormData({
@@ -147,7 +142,7 @@ export default function TravelRequestForm({ navigation, route }) {
         });
 
       } catch (error) {
-        Alert.alert('Error', error.message);
+        showAlert('Error', error.message);
         navigation.goBack();
       } finally {
         setInitialLoading(false);
@@ -169,7 +164,7 @@ export default function TravelRequestForm({ navigation, route }) {
         if (error) throw error;
         setAllCountries(data);
       } catch (error) {
-        Alert.alert('Error', error.message);
+        showAlert('Error', error.message);
       }
     };
 
@@ -199,7 +194,7 @@ export default function TravelRequestForm({ navigation, route }) {
         if (error) throw error;
         setAreas(data);
       } catch (error) {
-        Alert.alert('Error', error.message);
+        showAlert('Error', error.message);
       }
     };
 
@@ -294,45 +289,56 @@ export default function TravelRequestForm({ navigation, route }) {
       // Basic form validation
       const today= new Date().setHours(0,0,0,0);
       if (formData.startDate < new Date(today)) {
-        throw new Error('The Dates are not valid');
+        showAlert('The Dates are not valid');
+        return;
       }
       if (formData.startDate >= formData.endDate) {
-        throw new Error('The Dates are not valid');
+        showAlert('The Dates are not valid');
+        return;
       }
       if (!formData.requestCountry) {
-        throw new Error('Please select a destination country');
+        showAlert('Please select a destination country');
+        return;
       }
       if (!formData.requestArea) {
-            Alert.alert('Please select a destination area');
-           return;
-        throw new Error('Please select a destination area');
+            
+           
+        showAlert('Please select a destination area');
+        return;
       }
       if (!formData.numOfAdults || parseInt(formData.numOfAdults) < 1) {
-        throw new Error('Please enter at least 1 adult');
+        showAlert('Please enter at least 1 adult');
+        return;
       }
       if (!formData.hotelRating && formData.hotelRating !== 0) {
-        throw new Error('Please select a hotel rating');
+        showAlert('Please select a hotel rating');
+        return;
       }
       if (!formData.numOfRooms || parseInt(formData.numOfRooms) < 1) {
-        throw new Error('Please enter at least 1 room');
+        showAlert('Please enter at least 1 room');
+        return;
       }
       if (!formData.minBudget || !formData.maxBudget) {
-        throw new Error('Please enter both minimum and maximum budget');
+        showAlert('Please enter both minimum and maximum budget');
+        return;
       }
       if (parseInt(formData.minBudget) > parseInt(formData.maxBudget)) {
-        throw new Error('Minimum budget cannot be greater than maximum budget');
+        showAlert('Minimum budget cannot be greater than maximum budget');
+        return;
       }
       if (!formData.travelersNationality) {
-        throw new Error('Please select travelers nationality');
+        showAlert('Please select travelers nationality');
+         return;
       }
       if (formData.preferredAgentsCountries.length === 0) {
-        throw new Error('Please choose at least one country where you can pay agents');
+        showAlert('Please choose at least one country where you can pay agents');
+        return;
       }
       
       setLoading(true);
       const user = await getCurrentUser();
       if (!user) {
-        Alert.alert('Error', 'User not found. Please log in again.');
+        showAlert('Error', 'User not found. Please log in again.');
         await signOut(navigation);
         return;
       }
@@ -343,11 +349,15 @@ export default function TravelRequestForm({ navigation, route }) {
         .select('*')
         .order('country_name');
       
-      if (countriesError) throw new Error('Failed to validate countries. Please try again.');
       
+     
       // Update the countries state with fresh data
       setAllCountries(refreshedCountries);
-      
+       if (countriesError){ 
+
+showAlert('Failed to validate countries. Please try again.');
+  return;
+}
       // Validate destination country
       const destinationCountry = refreshedCountries.find(c => c.id === formData.requestCountry);
       if (!destinationCountry || !destinationCountry.can_visit) {
@@ -366,7 +376,8 @@ export default function TravelRequestForm({ navigation, route }) {
           areaDropdownRef.current.reset();
         }
         
-        throw new Error('The selected destination country is no longer available for visits. Please select another country.');
+        showAlert('The selected destination country is no longer available for visits. Please select another country.');
+        return;
       }
       
       // Validate nationality country
@@ -383,7 +394,8 @@ export default function TravelRequestForm({ navigation, route }) {
           nationalityDropdownRef.current.reset();
         }
         
-        throw new Error('The selected nationality is no longer allowed to travel. Please select another nationality.');
+        showAlert('The selected nationality is no longer allowed to travel. Please select another nationality.');
+        return;
       }
       
       // Validate preferred agent countries
@@ -404,7 +416,8 @@ export default function TravelRequestForm({ navigation, route }) {
             preferredAgentsDropdownRef.current.reset();
           }
           
-          throw new Error('Some preferred agent countries are no longer available. They have been removed from your selection.');
+          showAlert('Some preferred agent countries are no longer available. They have been removed from your selection.');
+          return;
         }
       }
       
@@ -416,10 +429,14 @@ export default function TravelRequestForm({ navigation, route }) {
         .eq('can_visit', true)
         .order('area_name');
       
-      if (areasError) throw new Error('Failed to validate areas. Please try again.');
+     
       
       // Update the areas state with fresh data
       setAreas(refreshedAreas);
+       if (areasError) {
+        showAlert('Failed to validate areas. Please try again.');
+        return;
+}
       
       // Validate area
       const selectedArea = refreshedAreas.find(a => a.id === formData.requestArea);
@@ -435,7 +452,8 @@ export default function TravelRequestForm({ navigation, route }) {
           areaDropdownRef.current.reset();
         }
         
-        throw new Error('The selected area is no longer available for visits. Please select another area.');
+        showAlert('The selected area is no longer available for visits. Please select another area.');
+        return;
       }
 
       // Prepare data for insert/update
@@ -461,12 +479,14 @@ export default function TravelRequestForm({ navigation, route }) {
       
       if (isEditing) {
         // Update existing request
+
         const updateResult = await supabase
           .from('travel_requests')
           .update(requestData)
           .eq('id', requestId)
           .eq('creator_id', user.id);
         error = updateResult.error;
+        
       } else {
         // Create new request
         const insertResult = await supabase
@@ -476,11 +496,15 @@ export default function TravelRequestForm({ navigation, route }) {
             creator_id: user.id
           }]);
         error = insertResult.error;
+      
       }
 
-      if (error) throw error;
+      if (error){
+ 
+ throw error;
+}
       
-      Alert.alert(
+      showAlert(
         'Success', 
         isEditing ? 'Travel request updated successfully!' : 'Travel request submitted successfully!'
       );
@@ -495,7 +519,7 @@ export default function TravelRequestForm({ navigation, route }) {
       }, 3000);
       
     } catch (error) {
-      Alert.alert('Error', error.message);
+      showAlert('Error', "an error happened please try again");
     } finally {
       setLoading(false);
     }
@@ -946,7 +970,10 @@ const styles = StyleSheet.create({
     marginBottom: 8
   },
   input: {
-    marginBottom: 16
+    marginBottom: 16,
+   width:100,
+  
+     
   },
   dropdown: {
     height: 50,

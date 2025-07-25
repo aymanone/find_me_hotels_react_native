@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList,  } from 'react-native';
 import { Button } from 'react-native-elements';
 import { Dropdown } from 'react-native-element-dropdown';
 import { checkUserRole,getCurrentUser } from '../utils/auth';
 import  supabase  from '../config/supabase';
 import {MAXIMUM_OFFERS} from '../config/CONSTANTS';
 import { useNavigation } from '@react-navigation/native';
-
+import {showAlert} from "../components/ShowAlert";
 const AgentSearchTravelRequestsScreen = () => {
   const navigation = useNavigation();
   const [agent, setAgent] = useState(null);
@@ -45,7 +45,7 @@ const AgentSearchTravelRequestsScreen = () => {
   const checkUserIsAgent = async () => {
     const isAgent = await checkUserRole('agent');
     if (!isAgent) {
-      Alert.alert('Access Denied', 'You must be an agent to access this screen.');
+      showAlert('Access Denied', 'You must be an agent to access this screen.');
       navigation.goBack();
       return;
     }
@@ -67,7 +67,7 @@ const AgentSearchTravelRequestsScreen = () => {
       setAgent(data);
     } catch (error) {
       console.error('Error fetching agent data:', error);
-      Alert.alert('Error', 'Failed to fetch agent data');
+      showAlert('Error', 'Failed to fetch agent data');
     }
   };
 
@@ -85,13 +85,13 @@ const AgentSearchTravelRequestsScreen = () => {
       })));
     } catch (error) {
       console.error('Error fetching countries:', error);
-      Alert.alert('Error', 'Failed to fetch countries');
+      showAlert('Error', 'Failed to fetch countries');
     }
   };
 
   const searchTravelRequests = async () => {
   if (!selectedCountry) {
-    Alert.alert('Error', 'Please select a country');
+    showAlert('Error', 'Please select a country');
     return;
   }
 
@@ -99,7 +99,7 @@ const AgentSearchTravelRequestsScreen = () => {
    
     const user = await getCurrentUser();
     if (!user) {
-      Alert.alert('Error', 'User not authenticated');
+      showAlert('Error', 'User not authenticated');
       return;
     }
       // First verify the country exists
@@ -113,7 +113,7 @@ const AgentSearchTravelRequestsScreen = () => {
       console.error('Country validation error:', countryError);
       // Re-fetch countries as they might have changed
       await fetchCountries();
-      Alert.alert('Error', 'Selected country is no longer available. Please select another country.');
+      showAlert('Error', 'Selected country is no longer available. Please select another country.');
       return;
     }
       let response;
@@ -148,7 +148,7 @@ const AgentSearchTravelRequestsScreen = () => {
     
   } catch (error) {
     console.error('Error searching travel requests:', error);
-    Alert.alert('Error', 'Failed to search travel requests');
+    showAlert('Error', 'Failed to search travel requests');
   }
   
 };
@@ -203,7 +203,7 @@ const AgentSearchTravelRequestsScreen = () => {
       sortRequests(detailedRequests);
     } catch (error) {
       console.error('Error fetching request details:', error);
-      Alert.alert('Error', 'Failed to fetch request details');
+      showAlert('Error', 'Failed to fetch request details');
     }
   };
 

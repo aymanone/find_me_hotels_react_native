@@ -4,7 +4,6 @@ import {
   StyleSheet, 
   ScrollView, 
   ActivityIndicator, 
-  Alert,
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity
@@ -23,7 +22,7 @@ import { Dropdown } from 'react-native-element-dropdown';
 import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser, signOut } from '../utils/auth';
 import { validUrl, validEmail, validPhoneNumber } from '../utils/validation';
-
+import {showAlert} from "../components/ShowAlert";
 export default function AdminCompanyProfileScreen({ route, navigation }) {
   const { companyId } = route.params;
   const [loading, setLoading] = useState(true);
@@ -63,7 +62,7 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
         // Check if user is admin
         const isAdmin = await checkUserRole('admin');
         if (!isAdmin) {
-          Alert.alert('Access Denied', 'You do not have permission to access this page.');
+          showAlert('Access Denied', 'You do not have permission to access this page.');
           navigation.goBack();
           return;
         }
@@ -71,14 +70,14 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
         // Get current user
         const user = await getCurrentUser();
         if (!user) {
-          Alert.alert('Error', 'User not found. Please log in again.');
+          showAlert('Error', 'User not found. Please log in again.');
           await signOut(navigation);
           return;
         }
         
         // Check if user is permitted to work
         if (user.app_metadata?.permitted_to_work === false) {
-          Alert.alert('Access Restricted', 'Your account is currently restricted.');
+          showAlert('Access Restricted', 'Your account is currently restricted.');
           // We don't navigate away, just show the alert
         }
         
@@ -87,7 +86,7 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
         // Don't call fetchAgentsSummary here
       } catch (error) {
         console.error('Error in initial setup:', error);
-        Alert.alert('Error', 'Failed to load data');
+        showAlert('Error', 'Failed to load data');
       } finally {
         setLoading(false);
       }
@@ -127,7 +126,7 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
       setPermittedToWork(data.permitted_to_work);
     } catch (error) {
       console.error('Error fetching company details:', error);
-         Alert.alert(
+         showAlert(
       'Error', 
       'Failed to load profile data',
       [
@@ -154,7 +153,7 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
       setCountries(data || []);
     } catch (error) {
       console.error('Error fetching countries:', error);
-      Alert.alert('Error', 'Failed to load countries list');
+      showAlert('Error', 'Failed to load countries list');
     }
   };
 
@@ -184,7 +183,7 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
         
       if (error) throw error;
       
-      console.log("Agent summary data:", data);
+      
       
       if (data) {
         setAgentsSummary(data);
@@ -209,7 +208,7 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
       }
     } catch (error) {
       console.error('Error fetching agents summary:', error);
-      Alert.alert('Error', 'Failed to load agents summary');
+      showAlert('Error', 'Failed to load agents summary');
     }
   };
 
@@ -247,13 +246,13 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
       // Check if user is authenticated and has permission
       const user = await getCurrentUser();
       if (!user) {
-        Alert.alert('Error', 'User not found. Please log in again.');
+        showAlert('Error', 'User not found. Please log in again.');
         await signOut(navigation);
         return;
       }
       
       if (user.app_metadata?.permitted_to_work === false) {
-        Alert.alert('Access Denied', 'You do not have permission to update this company.');
+        showAlert('Access Denied', 'You do not have permission to update this company.');
         return;
       }
       
@@ -279,11 +278,11 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
       // Update local state
       await fetchCompanyDetails();
       
-      Alert.alert('Success', 'Company updated successfully');
+      showAlert('Success', 'Company updated successfully');
       setEditMode(false);
     } catch (error) {
       console.error('Error updating company:', error);
-      Alert.alert('Error', 'Failed to update company');
+      showAlert('Error', 'Failed to update company');
     }
   };
 
@@ -294,13 +293,13 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
       // Check if user is authenticated and has permission
       const user = await getCurrentUser();
       if (!user) {
-        Alert.alert('Error', 'User not found. Please log in again.');
+        showAlert('Error', 'User not found. Please log in again.');
         await signOut(navigation);
         return;
       }
       
       if (user.app_metadata?.permitted_to_work === false) {
-        Alert.alert('Access Denied', 'You do not have permission to delete this company.');
+        showAlert('Access Denied', 'You do not have permission to delete this company.');
         return;
       }
 
@@ -312,11 +311,11 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
 
       if (error) throw error;
 
-      Alert.alert('Success', 'Company deleted successfully');
+      showAlert('Success', 'Company deleted successfully');
       navigation.goBack();
     } catch (error) {
       console.error('Error deleting company:', error);
-      Alert.alert('Error', 'Failed to delete company');
+      showAlert('Error', 'Failed to delete company');
     } finally {
       setDeleteLoading(false);
       setDeleteConfirmVisible(false);

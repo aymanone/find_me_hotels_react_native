@@ -3,7 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { Button, Input, Text } from 'react-native-elements';
 import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser,notAllowedAuthenticatedUser } from '../utils/auth';
-
+import {showAlert} from "../components/ShowAlert";
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,7 +24,7 @@ export default function LoginScreen({ navigation }) {
    
       // The navigation will be handled automatically by our AppNavigator
     } catch (error) {
-      alert(error.message);
+      showAlert(error.message);
     } finally {
       setLoading(false);
     }

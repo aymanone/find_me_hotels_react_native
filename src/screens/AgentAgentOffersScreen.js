@@ -6,13 +6,13 @@ import {
   ActivityIndicator, 
   TouchableOpacity, 
   RefreshControl,
-  Alert
+  
 } from 'react-native';
 import { Text, Card, Divider, Icon } from 'react-native-elements';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser, signOut } from '../utils/auth';
-
+import {showAlert} from "../components/ShowAlert";
 export default function AgentAgentOffersScreen() {
   const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,7 +27,7 @@ export default function AgentAgentOffersScreen() {
       // Check if user is an agent
       const isAgent = await checkUserRole('agent');
       if (!isAgent) {
-        Alert.alert('Access Denied', 'Only agents can access this page.');
+        showAlert('Access Denied', 'Only agents can access this page.');
         navigation.navigate('Home');
         return;
       }
@@ -35,7 +35,7 @@ export default function AgentAgentOffersScreen() {
       // Get current user
       const user = await getCurrentUser();
       if (!user) {
-        Alert.alert('Error', 'User not found. Please log in again.');
+        showAlert('Error', 'User not found. Please log in again.');
         await signOut(navigation);
         return;
       }

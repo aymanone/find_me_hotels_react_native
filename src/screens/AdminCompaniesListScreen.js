@@ -5,12 +5,12 @@ import {
   ScrollView, 
   ActivityIndicator, 
   TouchableOpacity, 
-  Alert
+
 } from 'react-native';
 import { Text, Card, Button, Icon } from 'react-native-elements';
 import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser } from '../utils/auth';
-
+import {showAlert} from "../components/ShowAlert";
 export default function AdminCompaniesListScreen({ navigation }) {
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -21,7 +21,7 @@ export default function AdminCompaniesListScreen({ navigation }) {
     const checkRole = async () => {
       const isAdmin = await checkUserRole('admin');
       if (!isAdmin) {
-        Alert.alert('Access Denied', 'You do not have permission to access this page');
+        showAlert('Access Denied', 'You do not have permission to access this page');
         navigation.goBack();
       }
     };
@@ -40,7 +40,7 @@ export default function AdminCompaniesListScreen({ navigation }) {
       
       const user = await getCurrentUser();
       if (!user) {
-        Alert.alert('Error', 'User not found. Please log in again.');
+        showAlert('Error', 'User not found. Please log in again.');
         return;
       }
       
@@ -63,7 +63,7 @@ export default function AdminCompaniesListScreen({ navigation }) {
       setCompanies(data || []);
     } catch (error) {
       console.error('Error fetching companies:', error.message);
-      Alert.alert('Error', 'Failed to load companies');
+      showAlert('Error', 'Failed to load companies');
     } finally {
       setLoading(false);
       setRefreshing(false);

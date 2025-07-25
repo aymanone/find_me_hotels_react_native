@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity,  } from 'react-native';
 import { Text, Card, Button, Divider, Icon } from 'react-native-elements';
 import { format } from 'date-fns';
 import supabase from '../config/supabase';
 import {inDateReq} from '../utils/dateUtils';
 import { checkUserRole, signOut, getCurrentUser } from '../utils/auth';
 import { Dropdown } from 'react-native-element-dropdown';
-
+import {showAlert} from "../components/ShowAlert";
 export default function ClientTravelRequestDetailsScreen({ route, navigation }) {
   const { id } = route.params;
   const [request, setRequest] = useState(null);
@@ -82,7 +82,7 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
     const checkRole = async () => {
       const isClient = await checkUserRole('client');
       if (!isClient) {
-        alert('You do not have permission to access this page');
+        showAlert('You do not have permission to access this page');
         navigation.goBack();
       }
     };
@@ -101,7 +101,7 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
         const user = session?.user;
         if (!user) {
           
-          Alert.alert('Error', 'User not found. Please log in again.');
+          showAlert('Error', 'User not found. Please log in again.');
           await signOut(navigation);
           return;
         }
@@ -143,7 +143,7 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
       
       } catch (error) {
         console.error('Error fetching request details:', error.message);
-           Alert.alert(
+           showAlert(
       'Error', 
       'Failed to load Request Details',
       [
@@ -242,17 +242,17 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
             
             // Show appropriate message
             if (updateCount > 0 && newCount > 0) {
-              alert(`${newCount} new offer(s) and ${updateCount} updated offer(s) found!`);
+              showAlert(`${newCount} new offer(s) and ${updateCount} updated offer(s) found!`);
             } else if (updateCount > 0) {
-              alert(`${updateCount} offer(s) have been updated!`);
+              showAlert(`${updateCount} offer(s) have been updated!`);
             } else if (newCount > 0) {
-              alert(`${newCount} new offer(s) found!`);
+              showAlert(`${newCount} new offer(s) found!`);
             }
             
             return result;
           });
         } else {
-          alert('No offers updates available');
+          showAlert('No offers updates available');
         }
       } else {
         // If we don't have any offers yet, fetch all offers
@@ -267,19 +267,19 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
         setOffers(allOffersData || []);
 
         if (allOffersData.length === 0) {
-          alert('No offers available yet');
+          showAlert('No offers available yet');
         }
       }
     } catch (error) {
       console.error('Error refreshing offers:', error.message);
-      alert('Failed to refresh offers');
+      showAlert('Failed to refresh offers');
     } finally {
       setRefreshingOffers(false);
     }
   };
 
   const handleDeleteRequest = () => {
-    Alert.alert(
+    showAlert(
       "Delete Request",
       "Are you sure you want to delete this travel request?",
       [
@@ -302,11 +302,11 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
                 
               if (error) throw error;
               
-              Alert.alert("Success", "Travel request deleted successfully");
+              showAlert("Success", "Travel request deleted successfully");
               navigation.goBack();
             } catch (error) {
               console.error('Error deleting travel request:', error.message);
-              Alert.alert("Error", "Failed to delete travel request. Please try again.");
+              showAlert("Error", "Failed to delete travel request. Please try again.");
             } finally {
               setLoading(false);
             }

@@ -4,7 +4,6 @@ import {
   StyleSheet, 
   ScrollView, 
   ActivityIndicator, 
-  Alert,
   KeyboardAvoidingView,
   Platform
 } from 'react-native';
@@ -24,7 +23,7 @@ import { checkUserRole, getCurrentUser, signOut } from '../utils/auth';
 import { validPhoneNumber, validPasswordSignup
 
  } from '../utils/validation';
-
+import {showAlert} from "../components/ShowAlert";
 export default function AgentAgentProfileScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [profileData, setProfileData] = useState(null);
@@ -49,7 +48,7 @@ const [passwordConfirmVisible, setPasswordConfirmVisible] = useState(false);
     const checkPermission = async () => {
       const isAgent = await checkUserRole('agent');
       if (!isAgent) {
-        Alert.alert('Access Denied', 'You do not have permission to access this page.');
+        showAlert('Access Denied', 'You do not have permission to access this page.');
         navigation.goBack();
         return;
       }
@@ -67,7 +66,7 @@ const [passwordConfirmVisible, setPasswordConfirmVisible] = useState(false);
       
       const user = await getCurrentUser();
       if (!user) {
-        Alert.alert('Error', 'User not found. Please log in again.');
+        showAlert('Error', 'User not found. Please log in again.');
         await signOut(navigation);
         return;
       }
@@ -95,7 +94,7 @@ const [passwordConfirmVisible, setPasswordConfirmVisible] = useState(false);
       setMessagingApp(data.messaging_app || '');
     } catch (error) {
       console.error('Error fetching agent profile:', error.message);
-       Alert.alert(
+       showAlert(
       'Error', 
       'Failed to load profile data',
       [
@@ -172,10 +171,10 @@ const updatePassword = async () => {
     setPasswordData({ password: '', confirmPassword: '' });
     setIsChangingPassword(false);
     setPasswordConfirmVisible(false);
-    Alert.alert('Success', 'Your password has been updated successfully.');
+    showAlert('Success', 'Your password has been updated successfully.');
   } catch (error) {
     console.error('Error updating password:', error.message);
-    Alert.alert('Error', 'Failed to update your password. Please try again.');
+    showAlert('Error', 'Failed to update your password. Please try again.');
   } finally {
     setPasswordChangeLoading(false);
   }
@@ -192,7 +191,7 @@ const updatePassword = async () => {
       
       const user = await getCurrentUser();
       if (!user) {
-        Alert.alert('Error', 'User not found. Please log in again.');
+        showAlert('Error', 'User not found. Please log in again.');
         await signOut(navigation);
         return;
       }
@@ -207,12 +206,12 @@ const updatePassword = async () => {
       
       if (error) throw error;
       
-      Alert.alert('Success', 'Profile updated successfully');
+      showAlert('Success', 'Profile updated successfully');
       setEditMode(false);
       fetchAgentProfile();
     } catch (error) {
       console.error('Error updating profile:', error.message);
-      Alert.alert('Error', 'Failed to update profile');
+      showAlert('Error', 'Failed to update profile');
     }
   };
 
@@ -226,14 +225,14 @@ const updatePassword = async () => {
       
       const user = await getCurrentUser();
       if (!user) {
-        Alert.alert('Error', 'User not found. Please log in again.');
+        showAlert('Error', 'User not found. Please log in again.');
         await signOut(navigation);
         return;
       }
       
       // Check if agent is permitted to work
       if (profileData && profileData.permitted_to_work === false) {
-        Alert.alert(
+        showAlert(
           'Cannot Delete Account',
           'Your account is currently suspended. You cannot delete your account at this time.'
         );
@@ -250,14 +249,14 @@ const updatePassword = async () => {
       
       if (deleteError) throw deleteError;
       
-      Alert.alert(
+      showAlert(
         'Account Deleted',
         'Your account has been successfully deleted.',
         [{ text: 'OK', onPress: () => signOut(navigation) }]
       );
     } catch (error) {
       console.error('Error deleting account:', error.message);
-      Alert.alert('Error', 'Failed to delete account. Please try again later.');
+      showAlert('Error', 'Failed to delete account. Please try again later.');
     } finally {
       setDeleteLoading(false);
       setDeleteConfirmVisible(false);

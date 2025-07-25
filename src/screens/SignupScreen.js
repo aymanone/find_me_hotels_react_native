@@ -7,7 +7,7 @@ import {signOut,notAllowedAuthenticatedUser} from '../utils/auth';
 import { validEmail, validPasswordSignup, validPhoneNumber } from '../utils/validation';
 import supabase from '../config/supabase';
 import {MESSAGING_APPS} from '../config/CONSTANTS'
-
+import {showAlert} from "../components/ShowAlert";
 // Custom debounce hook
 const useDebounce = (value, delay) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -184,7 +184,7 @@ export default function SignupScreen({ navigation }) {
       }
 
       setLoading(true);
-      
+     
       // Sign up user with Supabase
       const { error } = await supabase.auth.signUp({
         email,
@@ -196,7 +196,7 @@ export default function SignupScreen({ navigation }) {
 
       if (error) throw error;
 
-      alert('Registration successful! Please sign in.');
+      showAlert('Registration successful! Please sign in.');
       
       // Wait for 5 seconds before navigating
       setTimeout(async () => {
@@ -210,7 +210,7 @@ export default function SignupScreen({ navigation }) {
       }, 5000);
       
     } catch (error) {
-      alert(error.message);
+      showAlert(error.message);
     } finally {
       setLoading(false);
     }

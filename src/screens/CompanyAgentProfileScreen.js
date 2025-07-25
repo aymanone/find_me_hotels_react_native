@@ -4,7 +4,6 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
-  Alert,
   TouchableOpacity
 } from 'react-native';
 import {
@@ -20,7 +19,7 @@ import { Dropdown } from 'react-native-element-dropdown';
 import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser, signOut } from '../utils/auth';
 import { validEmail } from '../utils/validation';
-
+import {showAlert} from "../components/ShowAlert";
 const CompanyAgentProfileScreen = ({ route, navigation }) => {
   const { agentId } = route.params;
   const [agent, setAgent] = useState(null);
@@ -45,7 +44,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
         // Check if user is a company
         const isCompany = await checkUserRole('company');
         if (!isCompany) {
-          Alert.alert('Access Denied', 'Only companies can access this page.');
+          showAlert('Access Denied', 'Only companies can access this page.');
           navigation.navigate('Home');
           return;
         }
@@ -53,7 +52,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
         // Get current user
         const user = await getCurrentUser();
         if (!user) {
-          Alert.alert('Error', 'User not found. Please log in again.');
+          showAlert('Error', 'User not found. Please log in again.');
           await signOut(navigation);
           return;
         }
@@ -80,7 +79,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
 
         // Make sure this agent belongs to the current company
         if (agentData.company_id !== user.id) {
-          Alert.alert('Access Denied', 'You can only view your own agents.');
+          showAlert('Access Denied', 'You can only view your own agents.');
           navigation.navigate('CompanyAgentsList');
           return;
         }
@@ -137,7 +136,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
         }
       } catch (error) {
         console.error('Error fetching agent data:', error);
-           Alert.alert(
+           showAlert(
       'Error', 
       'Failed to load profile data',
       [
@@ -161,7 +160,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
       // Get current user to check latest permission status
       const user = await getCurrentUser();
       if (!user) {
-        Alert.alert('Error', 'User not found. Please log in again.');
+        showAlert('Error', 'User not found. Please log in again.');
         await signOut(navigation);
         return;
       }
@@ -169,7 +168,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
       // Check if user is permitted to work before allowing edit
       if (user?.app_metadata?.permitted_to_work === false) {
         setIsPermittedToWork(false); // Update the state to reflect current permission
-        Alert.alert(
+        showAlert(
           'Permission Denied',
           'Your account is currently inactive. You cannot edit agent profiles.'
         );
@@ -191,7 +190,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
       setIsEditing(!isEditing);
     } catch (error) {
       console.error('Error checking permissions:', error);
-      Alert.alert('Error', 'Failed to verify permissions. Please try again.');
+      showAlert('Error', 'Failed to verify permissions. Please try again.');
     }
   };
 
@@ -199,7 +198,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
     try {
       // Check again if user is permitted to work before saving changes
       if (!isPermittedToWork) {
-        Alert.alert(
+        showAlert(
           'Permission Denied',
           'Your account is currently inactive. You cannot update agent profiles.'
         );
@@ -210,7 +209,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
       
       // Validate inputs
       if (!editedAgent.first_name.trim() || !editedAgent.second_name.trim()) {
-        Alert.alert('Validation Error', 'First name and last name are required');
+        showAlert('Validation Error', 'First name and last name are required');
         setSaving(false);
         return;
       }
@@ -218,7 +217,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
       // Validate email if agent hasn't signed up yet
       if (!agent.user_id) {
         if (!editedAgent.agent_email || !validEmail(editedAgent.agent_email)) {
-          Alert.alert('Validation Error', 'Please enter a valid email address');
+          showAlert('Validation Error', 'Please enter a valid email address');
           setSaving(false);
           return;
         }
@@ -227,7 +226,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
       // Get current user again to ensure we have the latest data
       const user = await getCurrentUser();
       if (!user) {
-        Alert.alert('Error', 'User not found. Please log in again.');
+        showAlert('Error', 'User not found. Please log in again.');
         await signOut(navigation);
         return;
       }
@@ -265,10 +264,10 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
       });
 
       setIsEditing(false);
-      Alert.alert('Success', 'Agent profile updated successfully');
+      showAlert('Success', 'Agent profile updated successfully');
     } catch (error) {
       console.error('Error updating agent:', error);
-      Alert.alert('Error', 'Failed to update agent profile');
+      showAlert('Error', 'Failed to update agent profile');
     } finally {
       setSaving(false);
     }

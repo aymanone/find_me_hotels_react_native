@@ -1,10 +1,11 @@
 import React, { useEffect,useState } from 'react';
-import { View, StyleSheet, Alert, Platform } from 'react-native';
+import { View, StyleSheet,  Platform } from 'react-native';
 import { Button, Input, Text } from 'react-native-elements';
 import supabase from '../config/supabase';
 import Constants from 'expo-constants';
 import {validEmail} from '../utils/validation';
 import {signOut,notAllowedAuthenticatedUser} from '../utils/auth';
+import {showAlert} from "../components/ShowAlert";
 export default function ForgotPasswordScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -26,7 +27,7 @@ useEffect(() => {
 }, [navigation]);
   const handleResetPassword = async () => {
     if (!email) {
-      Alert.alert('Error', 'Please enter your email address');
+      showAlert('Error', 'Please enter your email address');
       return;
     }
     
@@ -75,14 +76,14 @@ useEffect(() => {
 
       if (error) throw error;
       
-      Alert.alert(
+     showAlert (
         'Success', 
         'Password reset instructions have been sent to your email',
         [{ text: 'OK', onPress: () => navigation.navigate('Signin') }]
       );
     } catch (error) {
       console.error('Reset password error:', error.message);
-      Alert.alert('Error', error.message);
+     showAlert ('Error', "an error happened please try again.");
     } finally {
       setLoading(false);
     }

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity,  } from 'react-native';
 import { ActivityIndicator } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import supabase from '../config/supabase';
 import { checkUserRole,getCurrentUser ,signOut} from '../utils/auth';
 import { validEmail } from '../utils/validation';
-
+import {showAlert} from "../components/ShowAlert";
 const CompanyCreateAgentFormScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [isCompany, setIsCompany] = useState(false);
@@ -37,7 +37,7 @@ const CompanyCreateAgentFormScreen = ({ navigation }) => {
       setIsCompany(isUserCompany);
       
       if (!isUserCompany) {
-        Alert.alert('Access Denied', 'You do not have permission to access this page.');
+        showAlert('Access Denied', 'You do not have permission to access this page.');
         navigation.goBack();
         return;
       }
@@ -47,7 +47,7 @@ const CompanyCreateAgentFormScreen = ({ navigation }) => {
     }
     } catch (error) {
       console.error('Error checking company status:', error);
-      Alert.alert('Error', 'Failed to verify your permissions.');
+      showAlert('Error', 'Failed to verify your permissions.');
       navigation.goBack();
     }
   };
@@ -67,7 +67,7 @@ const CompanyCreateAgentFormScreen = ({ navigation }) => {
       
     } catch (error) {
       console.error('Error fetching countries:', error);
-      Alert.alert('Error', 'Failed to load countries list.');
+      showAlert('Error', 'Failed to load countries list.');
     } finally {
       setLoading(false);
     }
@@ -122,7 +122,7 @@ const CompanyCreateAgentFormScreen = ({ navigation }) => {
     const  user  = await getCurrentUser();
   
         if(!user) {
-          Alert.alert('Error', 'User not found. Please log in again.');
+          showAlert('Error', 'User not found. Please log in again.');
           await signOut(navigation);
           
           return;
@@ -173,7 +173,7 @@ const CompanyCreateAgentFormScreen = ({ navigation }) => {
     
     if (error) throw error;
     
-    Alert.alert(
+    showAlert(
       'Success',
       'Agent created successfully!',
       [{ text: 'OK' }]
@@ -187,7 +187,7 @@ const CompanyCreateAgentFormScreen = ({ navigation }) => {
     
   } catch (error) {
     console.error('Error creating agent:', error);
-    Alert.alert('Error', error.message || 'Failed to create agent. Please try again.');
+    showAlert('Error',  'Failed to create agent. Please try again.');
   } finally {
     setLoading(false);
   }

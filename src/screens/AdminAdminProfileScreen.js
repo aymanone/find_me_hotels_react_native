@@ -4,7 +4,6 @@ import {
   StyleSheet, 
   ScrollView, 
   ActivityIndicator, 
-  Alert,
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity
@@ -13,7 +12,7 @@ import { Text, Button, Input, Icon } from 'react-native-elements';
 import supabase from '../config/supabase';
 import { checkUserRole , getCurrentUser,signOut} from '../utils/auth';
 import { validPasswordSignup } from '../utils/validation';
-
+import {showAlert} from "../components/ShowAlert";
 export default function AdminAdminProfileScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [admin, setAdmin] = useState(null);
@@ -44,7 +43,7 @@ export default function AdminAdminProfileScreen({ navigation }) {
       // Fetch admin details
        const user = await getCurrentUser();
       if (!user) {
-        Alert.alert('Error', 'User not found. Please log in again.');
+        showAlert('Error', 'User not found. Please log in again.');
         await signOut(navigation);
         return;
       }
@@ -72,17 +71,17 @@ export default function AdminAdminProfileScreen({ navigation }) {
   const handlePasswordChange = async () => {
     // Validate passwords
     if (!newPassword || !confirmPassword) {
-      Alert.alert('Error', 'Please enter both password fields.');
+      showAlert('Error', 'Please enter both password fields.');
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match.');
+      showAlert('Error', 'Passwords do not match.');
       return;
     }
 
     if (!validPasswordSignup(newPassword)) {
-      Alert.alert('Error', 'Password must be at least 8 characters long and contain at least one number, one uppercase letter, and one special character.');
+      showAlert('Error', 'Password must be at least 8 characters long and contain at least one number, one uppercase letter, and one special character.');
       return;
     }
 
@@ -91,7 +90,7 @@ export default function AdminAdminProfileScreen({ navigation }) {
     try {
          const user = await getCurrentUser();
         if (!user) {
-          Alert.alert('Error', 'User not found. Please log in again.');
+          showAlert('Error', 'User not found. Please log in again.');
           await signOut(navigation);
           return;
         }
@@ -101,12 +100,12 @@ export default function AdminAdminProfileScreen({ navigation }) {
       
       if (error) throw error;
       
-      Alert.alert('Success', 'Password updated successfully.');
+      showAlert('Success', 'Password updated successfully.');
       setNewPassword('');
       setConfirmPassword('');
     } catch (err) {
       console.error('Error updating password:', err);
-      Alert.alert('Error', 'Failed to update password. Please try again.');
+      showAlert('Error', 'Failed to update password. Please try again.');
     } finally {
       setUpdating(false);
     }

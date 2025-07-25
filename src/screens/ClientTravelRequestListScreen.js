@@ -7,7 +7,7 @@ import supabase from '../config/supabase';
 import { checkUserRole, signOut, getCurrentUser } from '../utils/auth';
 import { unsubscribeChannels } from '../utils/channelUtils';
 import {earliestDate} from '../utils/dateUtils'; // Import earliestDate function
-
+import {showAlert} from "../components/ShowAlert";
 export default function ClientTravelRequestList({ navigation }) {
   const [travelRequests, setTravelRequests] = useState([]);
   const [allTravelRequests, setAllTravelRequests] = useState([]); // Store all requests
@@ -23,7 +23,7 @@ export default function ClientTravelRequestList({ navigation }) {
     const checkRole = async () => {
       const isClient = await checkUserRole('client');
       if (!isClient) {
-        alert('You do not have permission to access this page');
+        showAlert('You do not have permission to access this page');
         navigation.goBack();
       }
     };
@@ -70,7 +70,7 @@ const fetchTravelRequests = async () => {
     // Get current user
      const user= await getCurrentUser();
             if(!user) {
-              Alert.alert('Error', 'User not found. Please log in again.');
+              showAlert('Error', 'User not found. Please log in again.');
               await signOut(navigation);
               
               return;
@@ -135,7 +135,7 @@ const fetchTravelRequests = async () => {
     }
   } catch (error) {
     console.error('Error fetching travel requests:', error.message);
-    alert('Failed to load travel requests');
+    showAlert('Failed to load travel requests');
   } finally {
     setLoading(false);
   }
@@ -180,7 +180,7 @@ const fetchTravelRequests = async () => {
   };
 
   const handleDeleteRequest = async (requestId) => {
-    Alert.alert(
+    showAlert(
       "Delete Request",
       "Are you sure you want to delete this travel request?",
       [
@@ -208,10 +208,10 @@ const fetchTravelRequests = async () => {
                 prev.filter(request => request.id !== requestId)
               );
               
-              Alert.alert("Success", "Travel request deleted successfully");
+              showAlert("Success", "Travel request deleted successfully");
             } catch (error) {
               console.error('Error deleting travel request:', error.message);
-              Alert.alert("Error", "Failed to delete travel request. Please try again.");
+              showAlert("Error", "Failed to delete travel request. Please try again.");
             } finally {
               setLoading(false);
             }
@@ -301,10 +301,10 @@ const fetchTravelRequests = async () => {
     try {
       setRefreshing(true);
       await fetchTravelRequests();
-      Alert.alert("Success", "Travel requests refreshed successfully");
+      showAlert("Success", "Travel requests refreshed successfully");
     } catch (error) {
       console.error('Error refreshing travel requests:', error);
-      Alert.alert("Error", "Failed to refresh travel requests");
+      showAlert("Error", "Failed to refresh travel requests");
     } finally {
       setRefreshing(false);
     }

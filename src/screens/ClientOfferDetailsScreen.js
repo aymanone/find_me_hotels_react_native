@@ -6,7 +6,7 @@ import {
   ActivityIndicator, 
   TouchableOpacity, 
   Linking,
-  Alert
+  
 } from 'react-native';
 import { 
   Text, 
@@ -17,7 +17,7 @@ import {
 import supabase from '../config/supabase';
 import {MESSAGING_APPS} from '../config/CONSTANTS';
 import { checkUserRole } from '../utils/auth';
-
+import {showAlert} from "../components/ShowAlert";
 const ClientOfferDetailsScreen = ({ route, navigation }) => {
   const { offerId } = route.params;
   const [loading, setLoading] = useState(true);
@@ -33,7 +33,7 @@ const ClientOfferDetailsScreen = ({ route, navigation }) => {
         const isValidClient = await checkUserRole('client');
 
         if (!isValidClient) {
-          Alert.alert('Access Denied', 'You do not have permission to view this page.');
+          showAlert('Access Denied', 'You do not have permission to view this page.');
           navigation.goBack();
           return;
         }
@@ -58,7 +58,7 @@ const ClientOfferDetailsScreen = ({ route, navigation }) => {
 
         if (error) {
           console.error('Error fetching offer:', error);
-             Alert.alert(
+             showAlert(
       'Error', 
       'Failed to load profile data',
       [
@@ -80,7 +80,7 @@ const ClientOfferDetailsScreen = ({ route, navigation }) => {
         }
       } catch (error) {
         console.error('Error in fetchOfferDetails:', error);
-        Alert.alert('Error', 'An unexpected error occurred');
+        showAlert('Error', 'An unexpected error occurred');
       } finally {
         setLoading(false);
       }
@@ -117,14 +117,14 @@ const appHasLink =(messagingApp) =>{
         if (supported) {
           return Linking.openURL(fullUrl);
         } else {
-          Alert.alert('Error', `Cannot open URL: ${fullUrl}`);
+          showAlert('Error', `Cannot open URL: ${fullUrl}`);
         }
       })
       .catch(err => console.error('Error opening URL:', err));
   };
   const openMessagingApp = (phoneNumber, app) => {
   if (!phoneNumber) {
-    Alert.alert('Error', 'No phone number available');
+    showAlert('Error', 'No phone number available');
     return;
   }
   
@@ -161,13 +161,13 @@ const appHasLink =(messagingApp) =>{
           // Fallback to web WhatsApp
           return Linking.openURL(`https://wa.me/${formattedPhone}`);
         } else {
-          Alert.alert('Error', `${app} is not installed on your device`);
+          showAlert('Error', `${app} is not installed on your device`);
         }
       }
     })
     .catch(err => {
       console.error(`Error opening ${app}:`, err);
-      Alert.alert('Error', `Could not open ${app}`);
+      showAlert('Error', `Could not open ${app}`);
     });
 };
 

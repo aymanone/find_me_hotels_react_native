@@ -49,7 +49,7 @@ const fetchCount = async () => {
                   icon: '/favicon.ico',
                   tag: 'new-requests-updated',
                   // Add screen data directly to the notification content
-                  screen: "ClientApp",
+                  screen: "AgentApp",
                   params: {
                     screen: "Home", 
                     params: { screen: 'AgentUpdatedRequests' }
@@ -83,7 +83,7 @@ const fetchCount = async () => {
               'New Requests Updated!',
                  `You have ${data} request${data > 1 ? 's' : ''} you made offers to them updated`,
               {
-                screen: "ClientApp",
+                screen: "AgentApp",
                 params: {
                   screen: "Home",
                   params: { screen: 'AgentUpdatedRequests' }

@@ -46,6 +46,7 @@ const ClientNewOffersBadge = React.memo(() => {
       // Send notification only if count increased
       if (count > 0) {
         try {
+            
           if (Platform.OS === 'web') {
             // Web notifications using browser API  
             if ('Notification' in window) {
@@ -55,10 +56,10 @@ const ClientNewOffersBadge = React.memo(() => {
                   icon: '/favicon.ico',
                   tag: 'new-offers',
                   // Add screen data directly to the notification content
-                  screen: "ClientApp",
+                 screen: "ClientApp",
                   params: {
                     screen: "Home", 
-                    params: { screen: 'ClientUpdatedRequests' }
+                    params: { screen: 'AgentUpdatedRequests' }
                   }
                 });
                 

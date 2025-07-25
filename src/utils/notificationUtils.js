@@ -42,9 +42,9 @@ export async function registerForPushNotificationsAsync() {
     // This will prevent the error from appearing
     if (!Constants.appOwnership || Constants.appOwnership !== 'expo') {
       try {
-        token = (await Notifications.getExpoPushTokenAsync({ 
-          projectId: 'your-project-id' 
-        })).data;
+       // token = (await Notifications.getExpoPushTokenAsync({ 
+      //    projectId: 'your-project-id' 
+       // })).data;
       } catch (error) {
         console.log('Error getting push token:', error);
       }

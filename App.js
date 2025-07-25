@@ -76,7 +76,9 @@ export default function App() {
       const { data } = response.notification.request.content;
       
       // Navigate based on the notification data
+     
       if (data.screen) {
+    
      await navigate(data.screen, data.params);
       }
     });

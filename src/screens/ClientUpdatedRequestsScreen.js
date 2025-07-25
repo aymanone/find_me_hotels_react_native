@@ -6,14 +6,14 @@ import {
   ScrollView, 
   TouchableOpacity, 
   RefreshControl,
-  Alert,
+  
   ActivityIndicator 
 } from 'react-native';
 import { Card, Button, Icon } from 'react-native-elements';
 import { checkUserRole, getCurrentUser } from '../utils/auth';
 import supabase from '../config/supabase';
 import { format } from 'date-fns';
-
+import {showAlert} from "../components/ShowAlert";
 const ClientUpdatedRequestsScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -31,7 +31,7 @@ const ClientUpdatedRequestsScreen = ({ navigation }) => {
       setIsClient(isUserClient);
       
       if (!isUserClient) {
-        Alert.alert('Access Denied', 'You do not have permission to access this page.');
+        showAlert('Access Denied', 'You do not have permission to access this page.');
         navigation.goBack();
         return;
       }

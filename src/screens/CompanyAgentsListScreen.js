@@ -3,7 +3,6 @@ import {
   View,
   StyleSheet,
   ScrollView,
-  Alert,
   ActivityIndicator,
   TouchableOpacity
 } from 'react-native';
@@ -16,7 +15,7 @@ import {
 } from 'react-native-elements';
 import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser } from '../utils/auth';
-
+import {showAlert} from "../components/ShowAlert";
 const CompanyAgentsListScreen = ({ navigation }) => {
   const [agents, setAgents] = useState([]);
   const [filteredAgents, setFilteredAgents] = useState([]);
@@ -32,7 +31,7 @@ const CompanyAgentsListScreen = ({ navigation }) => {
       // Get current user
       const currentUser = await getCurrentUser();
       if (!currentUser) {
-        Alert.alert('Error', 'User not found. Please log in again.');
+        showAlert('Error', 'User not found. Please log in again.');
         navigation.navigate('Signin');
         return;
       }
@@ -57,7 +56,7 @@ const CompanyAgentsListScreen = ({ navigation }) => {
       setFilteredAgents(data);
     } catch (error) {
       console.error('Error fetching agents:', error);
-      Alert.alert('Error', 'Failed to load agents list');
+      showAlert('Error', 'Failed to load agents list');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -70,7 +69,7 @@ const CompanyAgentsListScreen = ({ navigation }) => {
         // Check if user is a company
         const userRole = await checkUserRole('company');
         if (!userRole) {
-          Alert.alert('Access Denied', 'Only companies can access this page.');
+          showAlert('Access Denied', 'Only companies can access this page.');
           navigation.navigate('Home');
           return;
         }
@@ -78,7 +77,7 @@ const CompanyAgentsListScreen = ({ navigation }) => {
         // Get current user
         const currentUser = await getCurrentUser();
         if (!currentUser) {
-          Alert.alert('Error', 'User not found. Please log in again.');
+          showAlert('Error', 'User not found. Please log in again.');
           navigation.navigate('Login');
           return;
         }
@@ -89,7 +88,7 @@ const CompanyAgentsListScreen = ({ navigation }) => {
         await fetchAgents();
       } catch (error) {
         console.error('Error fetching agents:', error);
-        Alert.alert('Error', 'Failed to load agents list');
+        showAlert('Error', 'Failed to load agents list');
         setLoading(false);
       }
     };
@@ -120,7 +119,7 @@ const CompanyAgentsListScreen = ({ navigation }) => {
   const handleDeleteAgent = async (agentId, agentName) => {
     try {
       // Confirm deletion
-      Alert.alert(
+      showAlert(
         'Confirm Deletion',
         `Are you sure you want to delete agent ${agentName}?`,
         [
@@ -135,13 +134,13 @@ const CompanyAgentsListScreen = ({ navigation }) => {
               const currentUser = await getCurrentUser();
               
               if (!currentUser) {
-                Alert.alert('Error', 'User not found. Please log in again.');
+                showAlert('Error', 'User not found. Please log in again.');
                 return;
               }
               
               // Check if user is permitted to work
               if (currentUser.app_metadata?.permitted_to_work !== true) {
-                Alert.alert('Permission Denied', 'You do not have permission to delete agents.');
+                showAlert('Permission Denied', 'You do not have permission to delete agents.');
                 return;
               }
               
@@ -157,7 +156,7 @@ const CompanyAgentsListScreen = ({ navigation }) => {
               setAgents(agents.filter(agent => agent.id !== agentId));
               setFilteredAgents(filteredAgents.filter(agent => agent.id !== agentId));
               
-              Alert.alert('Success', 'Agent deleted successfully');
+              showAlert('Success', 'Agent deleted successfully');
             },
             style: 'destructive'
           }
@@ -165,7 +164,7 @@ const CompanyAgentsListScreen = ({ navigation }) => {
       );
     } catch (error) {
       console.error('Error deleting agent:', error);
-      Alert.alert('Error', 'Failed to delete agent');
+      showAlert('Error', 'Failed to delete agent');
     }
   };
 

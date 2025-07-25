@@ -6,14 +6,14 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   RefreshControl,
-  Alert
+  
 } from 'react-native';
 import { Text, Card, Button, Icon, Badge } from 'react-native-elements';
 import { useFocusEffect } from '@react-navigation/native';
 import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser, signOut } from '../utils/auth';
 import { format } from 'date-fns';
-
+import {showAlert} from "../components/ShowAlert";
 const AgentUpdatedRequestsScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [updatedRequests, setUpdatedRequests] = useState([]);
@@ -26,7 +26,7 @@ const AgentUpdatedRequestsScreen = ({ navigation }) => {
       // Check if user is an agent
       const isAgent = await checkUserRole('agent');
       if (!isAgent) {
-        Alert.alert('Access Denied', 'You must be an agent to view this screen.');
+        showAlert('Access Denied', 'You must be an agent to view this screen.');
         navigation.goBack();
         return;
       }
@@ -34,7 +34,7 @@ const AgentUpdatedRequestsScreen = ({ navigation }) => {
       // Get current user
       const user = await getCurrentUser();
       if (!user) {
-        Alert.alert('Error', 'User not found. Please log in again.');
+        showAlert('Error', 'User not found. Please log in again.');
         await signOut(navigation);
         return;
       }
@@ -50,7 +50,7 @@ const AgentUpdatedRequestsScreen = ({ navigation }) => {
       setUpdatedRequests(data || []);
     } catch (error) {
       console.error('Error fetching updated requests:', error);
-      Alert.alert('Error', 'Failed to load updated requests. Please try again.');
+      showAlert('Error', 'Failed to load updated requests. Please try again.');
     } finally {
       setLoading(false);
       setRefreshing(false);
