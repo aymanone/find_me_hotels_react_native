@@ -35,6 +35,7 @@ const AgentSearchTravelRequestsScreen = () => {
     { label: 'Min Budget', value: 'min_budget' },
     { label: 'Max Budget', value: 'max_budget' },
     { label: 'Duration', value: 'duration' },
+    { label: 'Country', value: 'request_country_name' },
   ];
 
   useEffect(() => {
@@ -88,7 +89,38 @@ const AgentSearchTravelRequestsScreen = () => {
       showAlert('Error', 'Failed to fetch countries');
     }
   };
+  const searchLocalTravelers = async () => {
+  try {
+    const user = await getCurrentUser();
+    if (!user || !agent?.agent_country) {
+      showAlert('Error', 'Agent country information not available');
+      return;
+    }
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const formattedDate = today.toISOString();
+
+    const response = await supabase.rpc('agent_available_travel_requests_by_nationality', {
+       p_agent_id: user.id,
+      p_agent_country: agent.agent_country,
+     
+      // Only difference!
+       p_max_offers: MAXIMUM_OFFERS,
+      p_start_date: formattedDate
+     
+    });
+
+    // Rest is identical to main search
+    if (response.error) throw response.error;
+    setRequestsWithDetails(response.data || []);
+    setShowSortOptions((response.data || []).length > 0);
+    
+  } catch (error) {
+    console.error('Error searching local travelers:', error);
+    showAlert('Error', 'Failed to search travelers from your country');
+  }
+};
   const searchTravelRequests = async () => {
   if (!selectedCountry) {
     showAlert('Error', 'Please select a country');
@@ -207,29 +239,39 @@ const AgentSearchTravelRequestsScreen = () => {
     }
   };
 
-  const sortRequests = (requests) => {
-    const sortedRequests = [...requests];
+ const sortRequests = (requests) => {
+  const sortedRequests = [...requests];
+  
+  sortedRequests.sort((a, b) => {
+    let valueA, valueB;
     
-    sortedRequests.sort((a, b) => {
-      let valueA, valueB;
-      
-      if (sortField === 'duration') {
-        valueA = a.duration;
-        valueB = b.duration;
-      } else {
-        valueA = a[sortField];
-        valueB = b[sortField];
-      }
-      
+    if (sortField === 'duration') {
+      valueA = a.duration;
+      valueB = b.duration;
+    } else if (sortField === 'request_country_name') {
+      valueA = a.request_country_name;
+      valueB = b.request_country_name;
+      // For string sorting, we need different comparison
       if (sortOption === 'smaller first') {
-        return valueA - valueB;
+        return valueA.localeCompare(valueB);
       } else {
-        return valueB - valueA;
+        return valueB.localeCompare(valueA);
       }
-    });
+    } else {
+      valueA = a[sortField];
+      valueB = b[sortField];
+    }
     
-    setRequestsWithDetails(sortedRequests);
-  };
+    // For numeric fields (budget, duration)
+    if (sortOption === 'smaller first') {
+      return valueA - valueB;
+    } else {
+      return valueB - valueA;
+    }
+  });
+  
+  setRequestsWithDetails(sortedRequests);
+};
 
   const handleSort = () => {
     if (requestsWithDetails.length > 0) {
@@ -378,10 +420,23 @@ const AgentSearchTravelRequestsScreen = () => {
       </View>
 
       {/* Travel Requests Details Section */}
-       <View style={styles.row}>
-          <Text style={styles.label}>maximum {MAXIMUM_OFFERS} per request :</Text>
-          
-        </View>
+      {/* Travel Requests Details Section */}
+<View style={styles.row}>
+  <Text style={styles.label}>maximum {MAXIMUM_OFFERS} per request :</Text>
+  <Button
+    title="My Country Travelers"
+    onPress={searchLocalTravelers}
+    buttonStyle={styles.localSearchButton}
+    titleStyle={styles.localSearchButtonText}
+    icon={{
+      name: 'users',
+      type: 'font-awesome',
+      size: 14,
+      color: '#28a745'
+    }}
+    iconLeft
+  />
+</View>
       <FlatList
         data={requestsWithDetails}
         renderItem={renderTravelRequest}
@@ -486,7 +541,17 @@ const styles = StyleSheet.create({
   },
   maxOffersButtonText: {
     color: '#dc3545',
-  },       
+  }, 
+localSearchButton: {
+  backgroundColor: '#28a745',
+  paddingHorizontal: 12,
+  paddingVertical: 6,
+  marginLeft: 'auto', // Pushes button to the right
+},
+localSearchButtonText: {
+  fontSize: 13,
+  marginLeft: 5,
+},      
 
 });
 
