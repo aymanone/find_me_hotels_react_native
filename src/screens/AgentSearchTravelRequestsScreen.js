@@ -362,11 +362,7 @@ const AgentSearchTravelRequestsScreen = () => {
             value={requestOption}
             onChange={item => setRequestOption(item.value)}
           />
-          <Button
-            title="Search"
-            onPress={searchTravelRequests}
-            buttonStyle={styles.searchButton}
-          />
+ 
           <Dropdown
             style={styles.dropdown}
             data={countries}
@@ -378,7 +374,16 @@ const AgentSearchTravelRequestsScreen = () => {
             maxHeight={300}
             onChange={item => setSelectedCountry(item.value)}
           />
-         
+                 <Button
+  onPress={searchTravelRequests}
+  buttonStyle={styles.searchButton}
+  icon={{
+    name: 'search',
+    type: 'font-awesome',
+    size: 18,
+    color: '#ffffff'
+  }}
+     />
         </View>
 
         {/* Sort Search Result Row - Only shown when there are results */}
@@ -422,7 +427,7 @@ const AgentSearchTravelRequestsScreen = () => {
       {/* Travel Requests Details Section */}
       {/* Travel Requests Details Section */}
 <View style={styles.row}>
-  <Text style={styles.label}>maximum {MAXIMUM_OFFERS} per request :</Text>
+  <Text style={styles.label}>Max {MAXIMUM_OFFERS} Offers per request :</Text>
   <Button
     title="My Country Travelers"
     onPress={searchLocalTravelers}
@@ -473,8 +478,11 @@ const styles = StyleSheet.create({
   },
   searchButton: {
     backgroundColor: '#2089dc',
-    paddingHorizontal: 12,
-    marginRight: 8,
+  paddingHorizontal: 12,
+  paddingVertical: 8, // Added for better proportion
+  marginRight: 8,
+  minWidth: 45, // Ensures it's not too small but smaller than before
+  borderRadius: 8,
   },
   sortButton: {
     backgroundColor: '#2089dc',
@@ -552,7 +560,14 @@ localSearchButtonText: {
   fontSize: 13,
   marginLeft: 5,
 },      
-
+searchIconButton: {
+  backgroundColor: '#2089dc',
+  paddingHorizontal: 12,
+  paddingVertical: 8,
+  marginRight: 8,
+  minWidth: 45, // Ensures it's not too small
+  borderRadius: 8,
+},
 });
 
 export default AgentSearchTravelRequestsScreen;

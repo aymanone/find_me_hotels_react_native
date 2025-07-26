@@ -22,24 +22,29 @@
       },
       "edgeToEdgeEnabled": true,
       "intentFilters": [
-    {
-      "action": "VIEW",
-      "data": [
         {
-          "scheme": "findmehotels"
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "findmehotels"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
-      ],
-      "category": [
-        "BROWSABLE",
-        "DEFAULT"
       ]
-    }
-  ]
     },
     "web": {
-      "favicon": "./assets/favicon.png","bundler": "metro"
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
     },
-    "scheme": "findmehotels"
-  
+    "scheme": "findmehotels",
+    "extra": {
+      "eas": {
+        "projectId": "f471f78a-b912-4c2b-bc8c-7ae0a22f5a20"
+      }
+    }
   }
 }
