@@ -15,7 +15,7 @@ import ResetPasswordScreen from '../screens/ResetPasswordScreen';
 import ClientTravelRequestList from '../screens/ClientTravelRequestListScreen';
 import ClientTravelRequestDetailsScreen from '../screens/ClientTravelRequestDetailsScreen';
 import TravelRequestForm from '../screens/TravelRequestForm';
-import OfferDetailsScreen from '../screens/OfferDetailsScreen';
+
 import AdminCreateCompanyFormScreen from '../screens/AdminCreateCompanyFormScreen';
 import CompanyCreateAgentFormScreen from '../screens/CompanyCreateAgentFormScreen';
 import AgentSearchTravelRequestsScreen from '../screens/AgentSearchTravelRequestsScreen';

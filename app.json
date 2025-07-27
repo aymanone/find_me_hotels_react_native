@@ -13,7 +13,8 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.ayman-ayman.findmehotels"
     },
     "android": {
       "adaptiveIcon": {
@@ -46,6 +47,9 @@
       "eas": {
         "projectId": "f471f78a-b912-4c2b-bc8c-7ae0a22f5a20"
       }
-    }
+    },
+    "plugins": [
+      "expo-build-properties"
+    ]
   }
 }
