@@ -7,12 +7,14 @@ import  supabase  from '../config/supabase';
 import {MAXIMUM_OFFERS} from '../config/CONSTANTS';
 import { useNavigation } from '@react-navigation/native';
 import {showAlert} from "../components/ShowAlert";
+
 const AgentSearchTravelRequestsScreen = () => {
   const navigation = useNavigation();
   const [agent, setAgent] = useState(null);
   const [countries, setCountries] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState(null);
-  const [requestOption, setRequestOption] = useState('prefered requests');
+  const [requestOption, setRequestOption] = useState('preferred requests');
+   const [localRequestOption, setLocalRequestOption] = useState('all');
   const [travelRequests, setTravelRequests] = useState([]);
   const [sortOption, setSortOption] = useState('smaller first');
   const [sortField, setSortField] = useState('min_budget');
@@ -22,8 +24,12 @@ const AgentSearchTravelRequestsScreen = () => {
 
   // Options for dropdowns
   const requestOptions = [
-    { label: 'Prefered Requests', value: 'prefered requests' },
+    { label: 'Preferred Requests', value: 'preferred requests' },
     { label: 'All Requests', value: 'all requests' },
+  ];
+   const localRequestOptions = [
+    { label: 'All', value: 'all' },
+     { label: 'Preferred', value: 'preferred' },
   ];
 
   const sortOptions = [
@@ -36,6 +42,7 @@ const AgentSearchTravelRequestsScreen = () => {
     { label: 'Max Budget', value: 'max_budget' },
     { label: 'Duration', value: 'duration' },
     { label: 'Country', value: 'request_country_name' },
+    { label: 'Nationality', value: 'travelers_nationality_name' },
   ];
 
   useEffect(() => {
@@ -80,110 +87,143 @@ const AgentSearchTravelRequestsScreen = () => {
         .order('country_name');
 
       if (error) throw error;
-      setCountries(data.map(country => ({
-        label: country.country_name,
-        value: country.id
-      })));
+    setCountries([
+  { label: "Preferred Requests", value: "preferred" },
+  ...data.map(country => ({
+    label: country.country_name,
+    value: country.id
+  }))
+]);
     } catch (error) {
       console.error('Error fetching countries:', error);
       showAlert('Error', 'Failed to fetch countries');
     }
   };
+
   const searchLocalTravelers = async () => {
-  try {
-    const user = await getCurrentUser();
-    if (!user || !agent?.agent_country) {
-      showAlert('Error', 'Agent country information not available');
-      return;
-    }
+    try {
+      const user = await getCurrentUser();
+      if (!user || !agent?.agent_country) {
+        showAlert('Error', 'Agent country information not available');
+        return;
+      }
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const formattedDate = today.toISOString();
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const formattedDate = today.toISOString();
+     let response;
+     if(localRequestOption == "all"){
 
-    const response = await supabase.rpc('agent_available_travel_requests_by_nationality', {
-       p_agent_id: user.id,
-      p_agent_country: agent.agent_country,
-     
-      // Only difference!
-       p_max_offers: MAXIMUM_OFFERS,
-      p_start_date: formattedDate
-     
-    });
-
-    // Rest is identical to main search
-    if (response.error) throw response.error;
-    setRequestsWithDetails(response.data || []);
-    setShowSortOptions((response.data || []).length > 0);
-    
-  } catch (error) {
-    console.error('Error searching local travelers:', error);
-    showAlert('Error', 'Failed to search travelers from your country');
+       response = await supabase.rpc('agent_available_travel_requests_by_nationality', {
+         p_agent_id: user.id,
+        p_agent_country: agent.agent_country,
+       
+        // Only difference!
+         p_max_offers: MAXIMUM_OFFERS,
+        p_start_date: formattedDate
+       
+      });
+   }
+     else{
+          response = await supabase.rpc('agent_preferred_travel_requests_by_nationality', {
+         p_agent_id: user.id,
+        p_agent_country: agent.agent_country,
+       
+        // Only difference!
+         p_max_offers: MAXIMUM_OFFERS,
+        p_start_date: formattedDate
+       
+      });
   }
-};
+
+      // Rest is identical to main search
+      if (response.error) throw response.error;
+      setRequestsWithDetails(response.data || []);
+      setShowSortOptions((response.data || []).length > 0);
+      
+    } catch (error) {
+      console.error('Error searching local travelers:', error);
+      showAlert('Error', 'Failed to search travelers from your country');
+    }
+  };
+
   const searchTravelRequests = async () => {
-  if (!selectedCountry) {
-    showAlert('Error', 'Please select a country');
-    return;
-  }
+    if (!selectedCountry) {
+      showAlert('Error', 'Please select a country');
+      return;
+    }
 
-  try {
-   
-    const user = await getCurrentUser();
-    if (!user) {
-      showAlert('Error', 'User not authenticated');
-      return;
-    }
-      // First verify the country exists
-    const { data: countryCheck, error: countryError } = await supabase
-      .from('countries')
-      .select('id')
-      .eq('id', selectedCountry)
-      .single();
-    
-    if (!countryCheck) {
-      console.error('Country validation error:', countryError);
-      // Re-fetch countries as they might have changed
-      await fetchCountries();
-      showAlert('Error', 'Selected country is no longer available. Please select another country.');
-      return;
-    }
-      let response;
-    // Create a proper date object and format it correctly for PostgreSQL
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const formattedDate = today.toISOString(); // Convert to ISO string format
-    if (requestOption === 'prefered requests') {
-      // Call the RPC function for preferred requests
-      response = await supabase.rpc('agent_preferred_travel_requests', {
-        p_agent_id: user.id,
-        p_request_country: selectedCountry,
-        p_start_date:formattedDate, // Use the formatted date
-        p_agent_country: agent?.agent_country || null, // Agent's country ID
-        p_max_offers: MAXIMUM_OFFERS // Maximum number of offers allowed
+    try {
+     
+      const user = await getCurrentUser();
+      if (!user) {
+        showAlert('Error', 'User not authenticated');
+        return;
+      }
+        // First verify the country exists
+     if(selectedCountry !== "preferred"){
+      const { data: countryCheck, error: countryError } = await supabase
+        .from('countries')
+        .select('id')
+        .eq('id', selectedCountry)
+        .single();
+        if (!countryCheck) {
+        console.error('Country validation error:', countryError);
+        // Re-fetch countries as they might have changed
+        await fetchCountries();
+        showAlert('Error', 'Selected country is no longer available. Please select another country.');
+        return;
+      }
+}
+      
+     
+        let response;
+      // Create a proper date object and format it correctly for PostgreSQL
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const formattedDate = today.toISOString(); // Convert to ISO string format
+      if (selectedCountry === "preferred"){
+        response = await supabase.rpc('agent_preferred_travel_requests', {
+         p_agent_id: user.id,
+        p_agent_country: agent.agent_country,
+       
+        // Only difference!
+         p_max_offers: MAXIMUM_OFFERS,
+        p_start_date: formattedDate
+       
       });
-    } else {
-      // Call the RPC function for all available requests
-      response = await supabase.rpc('agent_available_travel_requests', {
-        p_agent_id: user.id,
-        p_request_country: selectedCountry,
-        p_start_date:formattedDate, // Use the formatted date
-        p_max_offers: MAXIMUM_OFFERS // Maximum number of offers allowed
-      });
+}
+     else if (requestOption === 'preferred requests') {
+        // Call the RPC function for preferred requests
+        response = await supabase.rpc('agent_preferred_travel_requests', {
+          p_agent_id: user.id,
+          p_request_country: selectedCountry,
+          p_start_date:formattedDate, // Use the formatted date
+          p_agent_country: agent?.agent_country || null, // Agent's country ID
+          p_max_offers: MAXIMUM_OFFERS // Maximum number of offers allowed
+        });
+      } else {
+        // Call the RPC function for all available requests
+        response = await supabase.rpc('agent_available_travel_requests', {
+          p_agent_id: user.id,
+          p_request_country: selectedCountry,
+          p_start_date:formattedDate, // Use the formatted date
+          p_max_offers: MAXIMUM_OFFERS // Maximum number of offers allowed
+        });
+      }
+      
+      if (response.error) throw response.error;
+      
+      // Since the RPC function already includes all details, we can directly use the results
+      setRequestsWithDetails(response.data || []);
+      setShowSortOptions((response.data || []).length > 0);
+      
+    } catch (error) {
+      console.error('Error searching travel requests:', error);
+      showAlert('Error', 'Failed to search travel requests');
     }
     
-    if (response.error) throw response.error;
-    
-    // Since the RPC function already includes all details, we can directly use the results
-    setRequestsWithDetails(response.data || []);
-    setShowSortOptions((response.data || []).length > 0);
-    
-  } catch (error) {
-    console.error('Error searching travel requests:', error);
-    showAlert('Error', 'Failed to search travel requests');
-  }
-  
-};
+  };
 
   const fetchRequestDetails = async (requests) => {
     try {
@@ -239,39 +279,42 @@ const AgentSearchTravelRequestsScreen = () => {
     }
   };
 
- const sortRequests = (requests) => {
-  const sortedRequests = [...requests];
-  
-  sortedRequests.sort((a, b) => {
-    let valueA, valueB;
+  const sortRequests = (requests) => {
+    const sortedRequests = [...requests];
     
-    if (sortField === 'duration') {
-      valueA = a.duration;
-      valueB = b.duration;
-    } else if (sortField === 'request_country_name') {
-      valueA = a.request_country_name;
-      valueB = b.request_country_name;
-      // For string sorting, we need different comparison
-      if (sortOption === 'smaller first') {
-        return valueA.localeCompare(valueB);
+    sortedRequests.sort((a, b) => {
+      let valueA, valueB;
+      
+      if (sortField === 'duration') {
+        valueA = a.duration;
+        valueB = b.duration;
+      } else if (sortField === 'request_country_name' || sortField === 'travelers_nationality_name') {
+        // Handle string fields (country and nationality)
+        valueA = a[sortField] || '';
+        valueB = b[sortField] || '';
+        
+        // For string sorting, we need different comparison
+        if (sortOption === 'smaller first') {
+          return valueA.localeCompare(valueB);
+        } else {
+          return valueB.localeCompare(valueA);
+        }
       } else {
-        return valueB.localeCompare(valueA);
+        // Handle numeric fields (budgets)
+        valueA = a[sortField] || 0;
+        valueB = b[sortField] || 0;
       }
-    } else {
-      valueA = a[sortField];
-      valueB = b[sortField];
-    }
+      
+      // For numeric fields (budget, duration)
+      if (sortOption === 'smaller first') {
+        return valueA - valueB;
+      } else {
+        return valueB - valueA;
+      }
+    });
     
-    // For numeric fields (budget, duration)
-    if (sortOption === 'smaller first') {
-      return valueA - valueB;
-    } else {
-      return valueB - valueA;
-    }
-  });
-  
-  setRequestsWithDetails(sortedRequests);
-};
+    setRequestsWithDetails(sortedRequests);
+  };
 
   const handleSort = () => {
     if (requestsWithDetails.length > 0) {
@@ -351,9 +394,9 @@ const AgentSearchTravelRequestsScreen = () => {
     <View style={styles.container}>
       {/* Search Controller Section */}
       <View style={styles.searchController}>
-        {/* Search Parameters Row */}
+        {/* Main Search Parameters Row */}
         <View style={styles.row}>
-           <Dropdown
+          <Dropdown
             style={styles.dropdown}
             data={requestOptions}
             labelField="label"
@@ -362,7 +405,7 @@ const AgentSearchTravelRequestsScreen = () => {
             value={requestOption}
             onChange={item => setRequestOption(item.value)}
           />
- 
+
           <Dropdown
             style={styles.dropdown}
             data={countries}
@@ -370,26 +413,58 @@ const AgentSearchTravelRequestsScreen = () => {
             valueField="value"
             placeholder="Select Country"
             value={selectedCountry}
-             search
+            search
             maxHeight={300}
             onChange={item => setSelectedCountry(item.value)}
           />
-                 <Button
-  onPress={searchTravelRequests}
-  buttonStyle={styles.searchButton}
-  icon={{
-    name: 'search',
-    type: 'font-awesome',
-    size: 18,
-    color: '#ffffff'
-  }}
-     />
+          
+          <Button
+            onPress={searchTravelRequests}
+            buttonStyle={styles.searchButton}
+            icon={{
+              name: 'search',
+              type: 'font-awesome',
+              size: 18,
+              color: '#ffffff'
+            }}
+          />
         </View>
 
-        {/* Sort Search Result Row - Only shown when there are results */}
+        {/* Local Search Row */}
+     
+
+      
+      </View>
+       <View style={styles.localSearchRow}>
+          <Text style={styles.maxOffersInfo}>Max {MAXIMUM_OFFERS} Offers per request</Text>
+          <Dropdown
+            style={styles.localDropdown}
+            data={localRequestOptions}
+            labelField="label"
+            valueField="value"
+            placeholder="Request Type"
+            value={localRequestOption}
+            onChange={item => setLocalRequestOption(item.value)}
+          />
+
+          <Button
+            title="My Country Travelers"
+            onPress={searchLocalTravelers}
+            buttonStyle={styles.localSearchButton}
+            titleStyle={styles.localSearchButtonText}
+            icon={{
+              name: 'users',
+              type: 'font-awesome',
+              size: 14,
+              color: '#28a745'
+            }}
+            iconLeft
+          />
+        </View>
+       {/* Sort Options Row - Only shown when there are results */}
         {showSortOptions && (
           <View style={styles.row}>
-             <Dropdown
+            <Dropdown
               style={styles.dropdown}
               data={sortFieldOptions}
               labelField="label"
@@ -401,7 +476,8 @@ const AgentSearchTravelRequestsScreen = () => {
                 setTimeout(handleSort, 100);
               }}
             />
-             <Dropdown
+            
+            <Dropdown
               style={styles.dropdown}
               data={sortOptions}
               labelField="label"
@@ -413,35 +489,15 @@ const AgentSearchTravelRequestsScreen = () => {
                 setTimeout(handleSort, 100);
               }}
             />
+            
             <Button
               title="Sort"
               onPress={handleSort}
               buttonStyle={styles.sortButton}
             />
-           
-           
           </View>
         )}
-      </View>
-
       {/* Travel Requests Details Section */}
-      {/* Travel Requests Details Section */}
-<View style={styles.row}>
-  <Text style={styles.label}>Max {MAXIMUM_OFFERS} Offers per request :</Text>
-  <Button
-    title="My Country Travelers"
-    onPress={searchLocalTravelers}
-    buttonStyle={styles.localSearchButton}
-    titleStyle={styles.localSearchButtonText}
-    icon={{
-      name: 'users',
-      type: 'font-awesome',
-      size: 14,
-      color: '#28a745'
-    }}
-    iconLeft
-  />
-</View>
       <FlatList
         data={requestsWithDetails}
         renderItem={renderTravelRequest}
@@ -476,13 +532,20 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     flexWrap: 'wrap',
   },
+  localSearchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+    flexWrap: 'nowrap',
+  },
   searchButton: {
     backgroundColor: '#2089dc',
-  paddingHorizontal: 12,
-  paddingVertical: 8, // Added for better proportion
-  marginRight: 8,
-  minWidth: 45, // Ensures it's not too small but smaller than before
-  borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginRight: 8,
+    minWidth: 45,
+    borderRadius: 8,
   },
   sortButton: {
     backgroundColor: '#2089dc',
@@ -498,6 +561,32 @@ const styles = StyleSheet.create({
     marginRight: 8,
     flex: 1,
     minWidth: 120,
+  },
+  localDropdown: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 0.5,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    marginRight: 8,
+    width: 100,
+  },
+  maxOffersInfo: {
+    fontSize: 12,
+    color: '#666',
+    fontWeight: '500',
+    flex: 1,
+    marginRight: 8,
+  },
+  localSearchButton: {
+    backgroundColor: '#28a745',
+    paddingHorizontal: 6,
+    paddingVertical: 6,
+    flexShrink: 0,
+  },
+  localSearchButtonText: {
+    fontSize: 11,
+    marginLeft: 2,
   },
   requestsList: {
     paddingBottom: 20,
@@ -535,7 +624,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginRight: 5,
   },
-   maxOffersCard: {
+  maxOffersCard: {
     borderColor: '#dc3545',
     borderWidth: 2,
     opacity: 0.8,
@@ -549,25 +638,7 @@ const styles = StyleSheet.create({
   },
   maxOffersButtonText: {
     color: '#dc3545',
-  }, 
-localSearchButton: {
-  backgroundColor: '#28a745',
-  paddingHorizontal: 12,
-  paddingVertical: 6,
-  marginLeft: 'auto', // Pushes button to the right
-},
-localSearchButtonText: {
-  fontSize: 13,
-  marginLeft: 5,
-},      
-searchIconButton: {
-  backgroundColor: '#2089dc',
-  paddingHorizontal: 12,
-  paddingVertical: 8,
-  marginRight: 8,
-  minWidth: 45, // Ensures it's not too small
-  borderRadius: 8,
-},
+  },
 });
 
 export default AgentSearchTravelRequestsScreen;

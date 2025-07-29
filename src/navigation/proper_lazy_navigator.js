@@ -783,7 +783,7 @@ export default function AppNavigator({navigationRef}) {
   }, []);
 // In your AppNavigator, add this useEffect
 useEffect(() => {
-  if (userType && navigationRef.current) {
+  if (userType && navigationRef.current && session && (!isResettingPassword)) {
     // Reset navigation when user type changes
     navigationRef.current.reset({
       index: 0,
