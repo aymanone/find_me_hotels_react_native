@@ -40,12 +40,12 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
   const [companyPhone, setCompanyPhone] = useState('');
   const [countryId, setCountryId] = useState(null);
   const [permittedToWork, setPermittedToWork] = useState(true);
-  
+  const [licenseNum, setLicenseNum] = useState('');
   // Validation errors
   const [urlError, setUrlError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [phoneError, setPhoneError] = useState('');
-  
+  const [licenseError, setLicenseError] = useState('');
   // Agent summary stats
   const [agentsSummary, setAgentsSummary] = useState([]);
   const [summaryStats, setSummaryStats] = useState({
@@ -124,6 +124,7 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
       setCompanyPhone(data.phone || '');
       setCountryId(data?.countries?.id || null);
       setPermittedToWork(data.permitted_to_work);
+      setLicenseNum(data.license_num || '');
     } catch (error) {
       console.error('Error fetching company details:', error);
          showAlert(
@@ -219,7 +220,7 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
     setUrlError('');
     setEmailError('');
     setPhoneError('');
-    
+    setLicenseError(''); 
     // Validate URL if provided
     if (companyUrl && !validUrl(companyUrl)) {
       setUrlError('Please enter a valid URL');
@@ -237,7 +238,10 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
       setPhoneError('Please enter a valid phone number');
       isValid = false;
     }
-    
+    if (licenseNum && licenseNum.trim().length < 2) {
+  setLicenseError('License number must be at least 2 characters');
+  isValid = false;
+}
     return isValid;
   };
 
@@ -269,7 +273,8 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
           url: companyUrl,
           company_email: companyEmail,
           phone: companyPhone,
-          permitted_to_work: permittedToWork
+          permitted_to_work: permittedToWork,
+          license_num: licenseNum
         })
         .eq('id', companyId);
 
@@ -363,7 +368,10 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
             <Text style={styles.label}>Headquarter:</Text>
             <Text style={styles.value}>{company?.address || 'Not specified'}</Text>
           </View>
-          
+          <View style={styles.infoRow}>
+  <Text style={styles.label}>License Number:</Text>
+  <Text style={styles.value}>{company?.license_num || 'Not specified'}</Text>
+</View>
           <View style={styles.infoRow}>
             <Text style={styles.label}>Website:</Text>
             <Text style={styles.value}>{company?.url || 'Not specified'}</Text>
@@ -480,7 +488,16 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
                 </View>
               )}
             />
-            
+            <Input
+  label="License Number"
+  value={licenseNum}
+  onChangeText={(text) => {
+    setLicenseNum(text);
+    if (licenseError) setLicenseError('');
+  }}
+  placeholder="Enter company license number"
+  errorMessage={licenseError}
+/>
             <Input
               label="Address"
               value={companyAddress}

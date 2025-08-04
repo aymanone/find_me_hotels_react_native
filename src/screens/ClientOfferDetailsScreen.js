@@ -48,7 +48,7 @@ const ClientOfferDetailsScreen = ({ route, navigation }) => {
       first_name, second_name, id, phone_number, messaging_app,
     
         countries!agents_agent_country_fkey(country_name),
-          companies!agents_company_id_fkey (company_name, url,
+          companies!agents_company_id_fkey (company_name, url,license_num,
           company_country:countries!companies_company_country_id_fkey(country_name)
           )
     )
@@ -377,6 +377,13 @@ const appHasLink =(messagingApp) =>{
               <View style={styles.fullWidth}>
                 <Text style={styles.label}>Company Headquarter:</Text>
                 <Text style={styles.value}>{agent.companies?.company_country?.country_name || 'Not specified'}</Text>
+              </View>
+            </View>
+              {/* Company license */}
+            <View style={styles.infoRow}>
+              <View style={styles.fullWidth}>
+                <Text style={styles.label}>Company license:</Text>
+                <Text style={styles.value}>{agent.companies?.license_num || 'Not specified'}</Text>
               </View>
             </View>
             {/* Company Address */}

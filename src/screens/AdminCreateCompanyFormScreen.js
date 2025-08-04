@@ -13,7 +13,7 @@ const AdminCreateCompanyFormScreen = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [countries, setCountries] = useState([]);
   const [isPermittedToWork, setIsPermittedToWork] = useState(true);
-  
+  const [licenseNum, setLicenseNum] = useState('');
   // Form state
   const [companyName, setCompanyName] = useState('');
   const [companyCountry, setCompanyCountry] = useState('');
@@ -30,6 +30,7 @@ const AdminCreateCompanyFormScreen = () => {
     address: '',
     url: '',
     phone: '',
+   licenseNum: '', 
   });
 
   useEffect(() => {
@@ -120,7 +121,10 @@ const AdminCreateCompanyFormScreen = () => {
       newErrors.address = 'Address is required';
       isValid = false;
     }
-
+   if (licenseNum.trim() && licenseNum.trim().length < 2) {
+  newErrors.licenseNum = 'License number must be at least 2 characters';
+  isValid = false;
+  }
     // Validate URL if provided
     if (url.trim() && !validURL(url)) {
       newErrors.url = 'Please enter a valid URL';
@@ -179,7 +183,8 @@ const AdminCreateCompanyFormScreen = () => {
         company_country: companyCountry,
         company_email: companyEmail,
         address: address,
-        admin_id: user.id
+        admin_id: user.id,
+        license_num:licenseNum
       };
       
       // Add optional fields if they exist
@@ -209,7 +214,7 @@ const AdminCreateCompanyFormScreen = () => {
       setAddress('');
       setUrl('');
       setPhone('');
-      
+      setLicenseNum('');
     } catch (error) {
       console.error('Error creating company:', error);
       showAlert('Error', 'Failed to create company. Please try again.');
@@ -310,7 +315,16 @@ const AdminCreateCompanyFormScreen = () => {
         />
         {errors.address ? <Text style={styles.errorText}>{errors.address}</Text> : null}
       </View>
-      
+      <View style={styles.formGroup}>
+  <Text style={styles.label}>License Number</Text>
+  <TextInput
+    style={[styles.input, errors.licenseNum ? styles.inputError : null]}
+    value={licenseNum}
+    onChangeText={setLicenseNum}
+    placeholder="Enter company license number"
+  />
+  {errors.licenseNum ? <Text style={styles.errorText}>{errors.licenseNum}</Text> : null}
+</View>
       <View style={styles.formGroup}>
         <Text style={styles.label}>Website URL (Optional)</Text>
         <TextInput
