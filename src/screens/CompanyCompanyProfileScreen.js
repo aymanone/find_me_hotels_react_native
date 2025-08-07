@@ -99,7 +99,7 @@ const [passwordConfirmVisible, setPasswordConfirmVisible] = useState(false);
   setPasswordError('');
 };
 
-const confirmPasswordChange = () => {
+const confirmPasswordChange = async () => {
   // Validate passwords
   if (passwordData.password !== passwordData.confirmPassword) {
     setPasswordError('Passwords do not match');
@@ -111,7 +111,7 @@ const confirmPasswordChange = () => {
     return;
   }
 
-  setPasswordConfirmVisible(true);
+  await updatePassword();
 };
 
 const updatePassword = async () => {
@@ -126,7 +126,7 @@ const updatePassword = async () => {
     
     setPasswordData({ password: '', confirmPassword: '' });
     setIsChangingPassword(false);
-    setPasswordConfirmVisible(false);
+    
     showAlert('Success', 'Your password has been updated successfully.');
   } catch (error) {
     console.error('Error updating password:', error.message);
