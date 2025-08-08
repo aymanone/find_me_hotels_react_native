@@ -26,7 +26,10 @@ import { checkUserRole } from '../utils/auth';
 import { getCurrentUser,signOut } from '../utils/auth';
 import {inDateReq} from '../utils/dateUtils';
 import {showAlert} from "../components/ShowAlert";
+import { useTranslation } from '../config/localization';
+
 const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
+  const { t,language } = useTranslation();
   const { requestId, offerId } = route.params; // Added offerId parameter
   const [loading, setLoading] = useState(true);
   const [request, setRequest] = useState(null);
@@ -56,7 +59,7 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
   
   // Rating dropdown data
   const ratingData = Array.from({ length: 8 }, (_, i) => ({
-    label: `${i} stars`,
+    label: t('AgentTravelRequestDetailsScreen', 'starsLabel', { count: i }),
     value: i
   }));
   
@@ -67,7 +70,10 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
       //setIsAgent(isUserAgent);
       
       if (!isUserAgent) {
-        showAlert('Access Denied', 'You must be an agent to access this screen.');
+        showAlert(
+          t('AgentTravelRequestDetailsScreen', 'accessDenied'), 
+          t('AgentTravelRequestDetailsScreen', 'accessDeniedMessage')
+        );
         navigation.goBack();
         return false;
       }
@@ -82,7 +88,10 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
       return true;
     } catch (error) {
       console.error('Error checking agent status:', error);
-      showAlert('Error', 'Failed to verify your permissions.');
+      showAlert(
+        t('AgentTravelRequestDetailsScreen', 'error'), 
+        t('AgentTravelRequestDetailsScreen', 'failedToVerifyPermissions')
+      );
       navigation.goBack();
       return false;
     }
@@ -101,7 +110,10 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
         // Get current user
         const user= await getCurrentUser();
         if(!user) {
-          showAlert('Error', 'User not found. Please log in again.');
+          showAlert(
+            t('AgentTravelRequestDetailsScreen', 'error'), 
+            t('AgentTravelRequestDetailsScreen', 'userNotFound')
+          );
           await signOut(navigation);
           return;
         }
@@ -149,17 +161,17 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
         setRequest(data);
       } catch (error) {
         console.error('Error fetching data:', error);
-           showAlert(
-      'Error', 
-      'Failed to load profile data',
-      [
-        { text: 'Try Again', onPress: () => {
-          setTimeout(() => fetchData(), 100);
-        } },
-        { text: 'Cancel', style: 'cancel' }
-      ]
-    );
-     return;
+        showAlert(
+          t('AgentTravelRequestDetailsScreen', 'error'), 
+          t('AgentTravelRequestDetailsScreen', 'failedToLoadProfileData'),
+          [
+            { text: t('AgentTravelRequestDetailsScreen', 'tryAgain'), onPress: () => {
+              setTimeout(() => fetchData(), 100);
+            } },
+            { text: t('AgentTravelRequestDetailsScreen', 'cancel'), style: 'cancel' }
+          ]
+        );
+        return;
       } finally {
         setLoading(false);
       }
@@ -220,7 +232,10 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
     // Validate inputs
     if (!hotelName || !hotelAddress || !hotelRooms || !hotelRoomSize || 
         hotelRating === null || !hotelCost) {
-      showAlert('Missing Information', 'Please fill all required fields');
+      showAlert(
+        t('AgentTravelRequestDetailsScreen', 'missingInformation'), 
+        t('AgentTravelRequestDetailsScreen', 'fillAllRequiredFields')
+      );
       return;
     }
     
@@ -253,14 +268,20 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
 
   const addHotel = () => {
     if (offerHotels.length >= MAXIMUM_HOTELS) {
-      showAlert(`Limit Reached, You can only add up to ${MAXIMUM_HOTELS} hotels per offer`);
+      showAlert(
+        t('AgentTravelRequestDetailsScreen', 'limitReached'),
+        t('AgentTravelRequestDetailsScreen', 'limitReachedMessage', { maxHotels: MAXIMUM_HOTELS })
+      );
       return;
     }
     
     // Validate inputs
     if (!hotelName || !hotelAddress || !hotelRooms || !hotelRoomSize || 
         hotelRating === null || !hotelCost) {
-      showAlert('Missing Information', 'Please fill all required fields');
+      showAlert(
+        t('AgentTravelRequestDetailsScreen', 'missingInformation'), 
+        t('AgentTravelRequestDetailsScreen', 'fillAllRequiredFields')
+      );
       return;
     }
     
@@ -316,7 +337,10 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
 
   const makeOffer = async () => {
     if (offerHotels.length === 0) {
-      showAlert('No Hotels', 'Please add at least one hotel to make an offer');
+      showAlert(
+        t('AgentTravelRequestDetailsScreen', 'noHotels'), 
+        t('AgentTravelRequestDetailsScreen', 'addAtLeastOneHotel')
+      );
       return;
     }
     
@@ -333,17 +357,26 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
       
       const user= await getCurrentUser();
       if(!user) {
-        showAlert('Error', 'User not found. Please log in again.');
+        showAlert(
+          t('AgentTravelRequestDetailsScreen', 'error'), 
+          t('AgentTravelRequestDetailsScreen', 'userNotFound')
+        );
         await signOut(navigation);
         return;
       }
       if(user?.app_metadata?.permitted_to_work === false) {
-        showAlert('Access Denied', 'You are not permitted to make offers.');
+        showAlert(
+          t('AgentTravelRequestDetailsScreen', 'accessDenied'), 
+          t('AgentTravelRequestDetailsScreen', 'accessDeniedOffer')
+        );
         return;
 
       }
       if(! inDateReq(request)) {
-        showAlert('Request Outdated', 'This request is no longer valid.');
+        showAlert(
+          t('AgentTravelRequestDetailsScreen', 'requestOutdated'), 
+          t('AgentTravelRequestDetailsScreen', 'requestNoLongerValid')
+        );
         return;
       }
       if (isEditMode && existingOffer) {
@@ -366,9 +399,9 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
         if (error) throw error;
         
         showAlert(
-          'Success', 
-          'Your offer has been updated successfully',
-          [{ text: 'OK', onPress: () => navigation.goBack() }]
+          t('AgentTravelRequestDetailsScreen', 'success'), 
+          t('AgentTravelRequestDetailsScreen', 'offerUpdatedSuccessfully'),
+          [{ text: t('AgentTravelRequestDetailsScreen', 'ok'), onPress: () => navigation.goBack() }]
         );
       } else {
         // Insert new offer into database
@@ -390,14 +423,17 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
         if (error) throw error;
         
         showAlert(
-          'Success', 
-          'Your offer has been submitted successfully',
-          [{ text: 'OK', onPress: () => navigation.navigate('Home') }]
+          t('AgentTravelRequestDetailsScreen', 'success'), 
+          t('AgentTravelRequestDetailsScreen', 'offerSubmittedSuccessfully'),
+          [{ text: t('AgentTravelRequestDetailsScreen', 'ok'), onPress: () => navigation.navigate('Home') }]
         );
       }
     } catch (error) {
       console.error('Error making offer:', error);
-      showAlert('Error', 'Failed to submit offer. Please try again.');
+      showAlert(
+        t('AgentTravelRequestDetailsScreen', 'error'), 
+        t('AgentTravelRequestDetailsScreen', 'failedToSubmitOffer')
+      );
     }
   };
 
@@ -440,7 +476,7 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
             style={styles.sectionHeader} 
             onPress={toggleRequestSection}
           >
-            <Text style={styles.sectionTitle}>Request Details</Text>
+            <Text style={styles.sectionTitle}>{t('AgentTravelRequestDetailsScreen', 'requestDetails')}</Text>
             <Icon 
               name={requestSectionCollapsed ? 'chevron-down' : 'chevron-up'} 
               type="ionicon" 
@@ -452,25 +488,7 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
               {/* Dates */}
               <View style={styles.infoRow}>
                 <View style={styles.infoColumn}>
-                  <Text style={styles.label}>Start Date:</Text>
-                  <Text>{new Date(request.start_date).toLocaleDateString()}</Text>
-                </View>
-                <View style={styles.infoColumn}>
-                  <Text style={styles.label}>End Date:</Text>
-                  <Text>{new Date(request.end_date).toLocaleDateString()}</Text>
-                </View>
-              </View>
-              
-              {/* Destinations */}
-              <View style={styles.infoRow}>
-                <View style={styles.fullWidth}>
-                  <Text style={styles.label}>Country:</Text>
-                  <Text>{request.country_name}</Text>
-                </View>
-              </View>
-              <View style={styles.infoRow}>
-                <View style={styles.fullWidth}>
-                  <Text style={styles.label}>Area:</Text>
+                  <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'area')}</Text>
                   <Text>{request.area_name}</Text>
                 </View>
               </View>
@@ -478,47 +496,47 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
               {/* Travelers */}
               <View style={styles.infoRow}>
                 <View style={styles.fullWidth}>
-                  <Text style={styles.label}>Travelers:</Text>
-                  <Text>Adults: {request.adults}</Text>
+                  <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'travelers')}</Text>
+                  <Text>{t('AgentTravelRequestDetailsScreen', 'adults')} {request.adults}</Text>
                   {request.children && request.children > 0 ? (
                     <View>
-                      <Text>Children: {request.children.length}</Text>
+                      <Text>{t('AgentTravelRequestDetailsScreen', 'children')} {request.children.length}</Text>
                       {request.children && (
                         <View style={styles.childrenAges}>
-                        <Text>Ages: {request.children.join(', ')} Years</Text>
+                        <Text>{t('AgentTravelRequestDetailsScreen', 'ages')} {request.children.join(', ')} {t('AgentTravelRequestDetailsScreen', 'years')}</Text>
                         </View>
                       )}
                     </View>
                   ) : (
-                    <Text>No children</Text>
+                    <Text>{t('AgentTravelRequestDetailsScreen', 'noChildren')}</Text>
                   )}
                 </View>
                 {/* travelers nationality */}
               </View>
               <View style={styles.infoRow}>
                 <View style={styles.fullWidth}>
-                  <Text style={styles.label}>nationality:</Text>
+                  <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'nationality')}</Text>
                   <Text>{request.travelers_nationality_name}</Text>
                 </View>
               </View>
               {/* Hotels Info */}
               <View style={styles.infoRow}>
                 <View style={styles.fullWidth}>
-                  <Text style={styles.label}>Hotel Information:</Text>
-                  <Text>Rating: {request.hotel_rating} stars</Text>
-                  <Text>Rooms: {request.rooms} rooms</Text>
-                  <Text>Meals: {request.meals?.join(', ') || 'None'}</Text>
+                  <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'hotelInformation')}</Text>
+                  <Text>{t('AgentTravelRequestDetailsScreen', 'rating')} {request.hotel_rating} {t('AgentTravelRequestDetailsScreen', 'stars')}</Text>
+                  <Text>{t('AgentTravelRequestDetailsScreen', 'rooms')} {request.rooms} {t('AgentTravelRequestDetailsScreen', 'roomsUnit')}</Text>
+                  <Text>{t('AgentTravelRequestDetailsScreen', 'meals')} {request.meals?.join(', ') || t('AgentTravelRequestDetailsScreen', 'none')}</Text>
                 </View>
               </View>
               
               {/* Budget */}
               <View style={styles.infoRow}>
                 <View style={styles.infoColumn}>
-                  <Text style={styles.label}>Min Budget:</Text>
+                  <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'minBudget')}</Text>
                   <Text>${request.min_budget}</Text>
                 </View>
                 <View style={styles.infoColumn}>
-                  <Text style={styles.label}>Max Budget:</Text>
+                  <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'maxBudget')}</Text>
                   <Text>${request.max_budget}</Text>
                 </View>
               </View>
@@ -526,9 +544,9 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
               {/* Notes */}
               <View style={styles.infoRow}>
                 <View style={styles.fullWidth}>
-                  <Text style={styles.label}>Notes:</Text>
+                  <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'notes')}</Text>
                   <ScrollView style={styles.notesContainer}>
-                    <Text>{request.notes || 'No notes provided'}</Text>
+                    <Text>{request.notes || t('AgentTravelRequestDetailsScreen', 'noNotesProvided')}</Text>
                   </ScrollView>
                 </View>
               </View>
@@ -540,8 +558,7 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
         {!isEditMode && request && inDateReq(request) && request?.offers_number >= MAXIMUM_OFFERS && (
           <Card containerStyle={styles.warningCard}>
             <Text style={styles.warningText}>
-              This request already has the maximum number of offers ({MAXIMUM_OFFERS}).
-              You cannot make additional offers.
+              {t('AgentTravelRequestDetailsScreen', 'maximumOffersReached', { maxOffers: MAXIMUM_OFFERS })}
             </Text>
           </Card>
         )}
@@ -550,7 +567,7 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
         {!isPermittedToWork && (
           <Card containerStyle={styles.warningCard}>
             <Text style={styles.warningText}>
-              You are not permitted to work on this request.
+              {t('AgentTravelRequestDetailsScreen', 'notPermittedToWork')}
             </Text>
           </Card>
         )}
@@ -558,39 +575,39 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
         {/* Offers Info Section */}
         {offerHotels.length > 0 && (
           <Card containerStyle={styles.card}>
-            <Text style={styles.sectionTitle}>Offer Summary</Text>
+            <Text style={styles.sectionTitle}>{t('AgentTravelRequestDetailsScreen', 'offerSummary')}</Text>
             
             <View style={styles.infoRow}>
               <View style={styles.infoColumn}>
-                <Text style={styles.label}>Min Cost:</Text>
+                <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'minCost')}</Text>
                 <Text>${minCost}</Text>
               </View>
               <View style={styles.infoColumn}>
-                <Text style={styles.label}>Max Cost:</Text>
+                <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'maxCost')}</Text>
                 <Text>${maxCost}</Text>
               </View>
             </View>
             
             <View style={styles.infoRow}>
               <View style={styles.infoColumn}>
-                <Text style={styles.label}>Min Rating:</Text>
-                <Text>{minRating} stars</Text>
+                <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'minRating')}</Text>
+                <Text>{minRating} {t('AgentTravelRequestDetailsScreen', 'stars')}</Text>
               </View>
               <View style={styles.infoColumn}>
-                <Text style={styles.label}>Max Rating:</Text>
-                <Text>{maxRating} stars</Text>
+                <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'maxRating')}</Text>
+                <Text>{maxRating} {t('AgentTravelRequestDetailsScreen', 'stars')}</Text>
               </View>
             </View>
             
             <View style={styles.infoRow}>
               <View style={styles.infoColumn}>
-                <Text style={styles.label}>Number of Hotels:</Text>
+                <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'numberOfHotels')}</Text>
                 <Text>{offerHotels.length}</Text>
               </View>
               <View style={styles.infoColumn}>
                 {userCanMakeOffer && (
                   <Button
-                    title={isEditMode ? "Update Offer" : "Make Offer"}
+                    title={isEditMode ? t('AgentTravelRequestDetailsScreen', 'updateOffer') : t('AgentTravelRequestDetailsScreen', 'makeOffer')}
                     onPress={makeOffer}
                     buttonStyle={styles.makeOfferButton}
                   />
@@ -608,7 +625,7 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
               onPress={() => setAddHotelSectionCollapsed(!addHotelSectionCollapsed)}
             >
               <Text style={styles.sectionTitle}>
-                {editingHotelIndex >= 0 ? 'Edit Hotel' : 'Add Hotel to Offer'}
+                {editingHotelIndex >= 0 ? t('AgentTravelRequestDetailsScreen', 'editHotel') : t('AgentTravelRequestDetailsScreen', 'addHotelToOffer')}
               </Text>
               <Icon 
                 name={addHotelSectionCollapsed ? 'chevron-down' : 'chevron-up'} 
@@ -620,23 +637,23 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
               <View style={styles.sectionContent}>
                 {/* Hotel Form */}
                 <Input
-                  label="Hotel Name"
+                  label={t('AgentTravelRequestDetailsScreen', 'hotelName')}
                   value={hotelName}
                   onChangeText={setHotelName}
                 />
                 <Input
-                  label="Hotel Address"
+                  label={t('AgentTravelRequestDetailsScreen', 'hotelAddress')}
                   value={hotelAddress}
                   onChangeText={setHotelAddress}
                 />
                 <Input
-                  label="Number of Rooms"
+                  label={t('AgentTravelRequestDetailsScreen', 'numberOfRooms')}
                   value={hotelRooms}
                   onChangeText={setHotelRooms}
                   keyboardType="numeric"
                 />
                 <Input
-                  label="Room Size in Meter"
+                  label={t('AgentTravelRequestDetailsScreen', 'roomSizeInMeter')}
                   value={hotelRoomSize}
                   onChangeText={setHotelRoomSize}
                   keyboardType="numeric"
@@ -645,7 +662,7 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
                 {/* Rating and Cost in same row */}
                 <View style={styles.row}>
                   <View style={styles.halfWidth}>
-                    <Text style={styles.dropdownLabel}>Hotel Rating</Text>
+                    <Text style={styles.dropdownLabel}>{t('AgentTravelRequestDetailsScreen', 'hotelRating')}</Text>
                     <Dropdown
                       style={styles.dropdown}
                       data={ratingData}
@@ -653,11 +670,11 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
                       valueField="value"
                       value={hotelRating}
                       onChange={item => setHotelRating(item.value)}
-                      placeholder="Select rating"
+                      placeholder={t('AgentTravelRequestDetailsScreen', 'selectRating')}
                     />
                   </View>
                   <View style={styles.halfWidth}>
-                    <Text style={styles.dropdownLabel}>Total Cost in $</Text>
+                    <Text style={styles.dropdownLabel}>{t('AgentTravelRequestDetailsScreen', 'totalCostInDollars')}</Text>
                     <Input
                       value={hotelCost}
                       onChangeText={setHotelCost}
@@ -669,7 +686,7 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
                 </View>
                 
                 <Input
-                  label="Notes"
+                  label={t('AgentTravelRequestDetailsScreen', 'notesLabel')}
                   value={hotelNotes}
                   onChangeText={setHotelNotes}
                   multiline
@@ -680,22 +697,22 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
                 />
                 
                 {/* Meals in one row */}
-                <Text style={styles.mealsLabel}>Meals</Text>
+                <Text style={styles.mealsLabel}>{t('AgentTravelRequestDetailsScreen', 'mealsLabel')}</Text>
                 <View style={styles.mealsContainer}>
                   <CheckBox
-                    title="Breakfast"
+                    title={t('AgentTravelRequestDetailsScreen', 'breakfast')}
                     checked={selectedMeals.breakfast}
                     onPress={() => setSelectedMeals({ ...selectedMeals, breakfast: !selectedMeals.breakfast })}
                     containerStyle={styles.mealCheckbox}
                   />
                   <CheckBox
-                    title="Lunch"
+                    title={t('AgentTravelRequestDetailsScreen', 'lunch')}
                     checked={selectedMeals.lunch}
                     onPress={() => setSelectedMeals({ ...selectedMeals, lunch: !selectedMeals.lunch })}
                     containerStyle={styles.mealCheckbox}
                   />
                   <CheckBox
-                    title="Dinner"
+                    title={t('AgentTravelRequestDetailsScreen', 'dinner')}
                     checked={selectedMeals.dinner}
                     onPress={() => setSelectedMeals({ ...selectedMeals, dinner: !selectedMeals.dinner })}
                     containerStyle={styles.mealCheckbox}
@@ -707,13 +724,13 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
                   {editingHotelIndex >= 0 ? (
                     <>
                       <Button
-                        title="Update Hotel"
+                        title={t('AgentTravelRequestDetailsScreen', 'updateHotel')}
                         onPress={updateHotel}
                         buttonStyle={[styles.addButton, { backgroundColor: '#007bff' }]}
                         containerStyle={styles.buttonContainer}
                       />
                       <Button
-                        title="Cancel"
+                        title={t('AgentTravelRequestDetailsScreen', 'cancel')}
                         onPress={cancelEditingHotel}
                         buttonStyle={[styles.addButton, { backgroundColor: '#6c757d' }]}
                         containerStyle={styles.buttonContainer}
@@ -721,7 +738,7 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
                     </>
                   ) : (
                     <Button
-                      title="Add Hotel"
+                      title={t('AgentTravelRequestDetailsScreen', 'addHotel')}
                       onPress={addHotel}
                       buttonStyle={styles.addButton}
                       containerStyle={styles.buttonContainer}
@@ -741,7 +758,7 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
               onPress={toggleHotelsSection}
             >
               <Text style={styles.sectionTitle}>
-                {isEditMode ? 'Current Hotels in Offer:' : 'Added Hotels:'}
+                {isEditMode ? t('AgentTravelRequestDetailsScreen', 'currentHotelsInOffer') : t('AgentTravelRequestDetailsScreen', 'addedHotels')}
               </Text>
               <Icon 
                 name={hotelsSectionCollapsed ? 'chevron-down' : 'chevron-up'} 
@@ -784,31 +801,31 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
                   <View style={styles.hotelDetailRow}>
                     <Icon name="bed-outline" type="ionicon" size={16} color="#007bff" />
                     <Text style={styles.hotelDetailText}>
-                      {hotel.rooms} {hotel.rooms === 1 ? 'room' : 'rooms'}, {hotel.room_size} meters²
+                      {hotel.rooms} {hotel.rooms === 1 ? t('AgentTravelRequestDetailsScreen', 'room') : t('AgentTravelRequestDetailsScreen', 'roomsUnit')}, {hotel.room_size} {t('AgentTravelRequestDetailsScreen', 'metersSquared')}
                     </Text>
                   </View>
                   
                   <View style={styles.hotelDetailRow}>
                     <Icon name="star" type="ionicon" size={16} color="#FFD700" />
-                    <Text style={styles.hotelDetailText}>{hotel.rating} stars</Text>
+                    <Text style={styles.hotelDetailText}>{hotel.rating} {t('AgentTravelRequestDetailsScreen', 'stars')}</Text>
                   </View>
                   
                   <View style={styles.hotelDetailRow}>
                     <Icon name="restaurant-outline" type="ionicon" size={16} color="#007bff" />
                     <Text style={styles.hotelDetailText}>
-                      Meals: {hotel.meals.length > 0 ? hotel.meals.join(', ') : 'None'}
+                      {t('AgentTravelRequestDetailsScreen', 'mealsColon')} {hotel.meals.length > 0 ? hotel.meals.join(', ') : t('AgentTravelRequestDetailsScreen', 'none')}
                     </Text>
                   </View>
                   
                   <View style={styles.hotelDetailRow}>
                     <Icon name="cash-outline" type="ionicon" size={16} color="#28a745" />
-                    <Text style={styles.hotelDetailText}>Total Cost: ${hotel.cost}</Text>
+                    <Text style={styles.hotelDetailText}>{t('AgentTravelRequestDetailsScreen', 'totalCost')} ${hotel.cost}</Text>
                   </View>
                   
                   {hotel.notes && (
                     <View style={styles.hotelDetailRow}>
                       <Icon name="document-text-outline" type="ionicon" size={16} color="#007bff" />
-                      <Text style={styles.hotelDetailText}>Notes: {hotel.notes}</Text>
+                      <Text style={styles.hotelDetailText}>{t('AgentTravelRequestDetailsScreen', 'notesColon')} {hotel.notes}</Text>
                     </View>
                   )}
                 </View>
@@ -820,6 +837,7 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
     </KeyboardAvoidingView>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -1026,4 +1044,4 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
-export default AgentTravelRequestDetailsScreen;
+export default AgentTravelRequestDetailsScreen; 

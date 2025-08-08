@@ -8,6 +8,8 @@ import { validEmail, validPasswordSignup, validPhoneNumber } from '../utils/vali
 import supabase from '../config/supabase';
 import {MESSAGING_APPS} from '../config/CONSTANTS'
 import {showAlert} from "../components/ShowAlert";
+import LanguageSelector from '../components/LanguageSelector';
+import { useTranslation } from '../config/localization';
 // Custom debounce hook
 const useDebounce = (value, delay) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -26,6 +28,7 @@ const useDebounce = (value, delay) => {
 };
 
 export default function SignupScreen({ navigation }) {
+  const { language,t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -45,10 +48,10 @@ export default function SignupScreen({ navigation }) {
   const [countrySearch, setCountrySearch] = useState('');
    const [showPassword, setShowPassword] = useState(false);
   const roles = [
-    { label: 'Client', value: 'client' },
-    { label: 'Agent', value: 'agent' },
-    { label: 'Company', value: 'company' },
-    { label: 'Admin', value: 'admin' }
+    { label: t('SignupScreen', 'client'), value: 'client' },
+    { label: t('SignupScreen', 'agent'), value: 'agent' },
+    { label: t('SignupScreen', 'company'), value: 'company' },
+    { label: t('SignupScreen', 'admin'), value: 'admin' }
   ];
   const messaging_apps = MESSAGING_APPS.map(app => { return { label: app, value: app }});
  useEffect(() => {
@@ -103,22 +106,22 @@ export default function SignupScreen({ navigation }) {
     try {
       // Validate required fields
       if (!email || !password || !confirmPassword) {
-        throw new Error('Please fill in all required fields');
+        throw new Error(t('SignupScreen', 'validationError'));
       }
 
       // Validate email format
       if (!validEmail(email)) {
-        throw new Error('Please enter a valid email address');
+        throw new Error(t('SignupScreen', 'invalidEmail'));
       }
 
       // Validate password
       if (!validPasswordSignup(password)) {
-        throw new Error('Password must be at least 8 characters with letters and numbers');
+        throw new Error(t('SignupScreen', 'invalidPassword'));
       }
 
       // Validate password confirmation
       if (password !== confirmPassword) {
-        throw new Error('Passwords do not match');
+        throw new Error(t('SignupScreen', 'passwordMismatch'));
       }
 
       // Prepare role-specific data
@@ -127,7 +130,7 @@ export default function SignupScreen({ navigation }) {
       switch (role) {
         case 'client':
           if (!first_name || !second_name || !client_country) {
-            throw new Error('Please fill in all client fields');
+            throw new Error(t('SignupScreen', 'validationError'));
           }
           userData = {
             ...userData,
@@ -139,10 +142,10 @@ export default function SignupScreen({ navigation }) {
 
         case 'agent':
           if (!first_name || !second_name || !company_email || !agent_phone || !messaging_app) {
-            throw new Error('Please fill in all agent fields');
+            throw new Error(t('SignupScreen', 'validationError'));
           }
           if (!validEmail(company_email)) {
-            throw new Error('Please enter a valid company email');
+            throw new Error(t('SignupScreen', 'invalidEmail'));
           }
           if (!validPhoneNumber(agent_phone)) {
             throw new Error('Please enter a valid phone number');
@@ -159,7 +162,7 @@ export default function SignupScreen({ navigation }) {
 
         case 'admin':
           if (!first_name || !second_name) {
-            throw new Error('Please fill in all admin fields');
+            throw new Error(t('SignupScreen', 'validationError'));
           }
           userData = {
             ...userData,
@@ -170,10 +173,10 @@ export default function SignupScreen({ navigation }) {
 
         case 'company':
           if ( !admin_email) {
-            throw new Error('Please fill in all company fields');
+            throw new Error(t('SignupScreen', 'validationError'));
           }
           if (!validEmail(admin_email)) {
-            throw new Error('Please enter a valid admin email');
+            throw new Error(t('SignupScreen', 'invalidEmail'));
           }
           userData = {
             ...userData,
@@ -196,7 +199,7 @@ export default function SignupScreen({ navigation }) {
 
       if (error) throw error;
 
-      showAlert('Registration successful! Please sign in.');
+      showAlert(t('SignupScreen', 'registrationSuccess'));
       
       // Wait for 5 seconds before navigating
       setTimeout(async () => {
@@ -227,24 +230,27 @@ export default function SignupScreen({ navigation }) {
     showsVerticalScrollIndicator={true}
     keyboardShouldPersistTaps="handled"
   >
-      <Text h3 style={styles.title}>Sign Up</Text>
+      <View style={styles.languageSelectorContainer}>
+        <LanguageSelector />
+      </View>
+      <Text h3 style={styles.title}>{t('SignupScreen', 'title')}</Text>
       <View style={styles.form}>
         <Input
-          placeholder="Email"
+          placeholder={t('SignupScreen', 'email')}
           onChangeText={setEmail}
           value={email}
           autoCapitalize="none"
           keyboardType="email-address"
-          errorMessage={email && !validEmail(email) ? 'Please enter a valid email address' : ''}
+          errorMessage={email && !validEmail(email) ? t('SignupScreen', 'invalidEmail') : ''}
         />
         
         <Input
-          placeholder="Password"
+          placeholder={t('SignupScreen', 'password')}
           onChangeText={setPassword}
           value={password}
           secureTextEntry={!showPassword}
           errorMessage={password && !validPasswordSignup(password) ? 
-            "Password must be at least 8 characters with uppercase, lowercase, and numbers" : ""}
+            t('SignupScreen', 'invalidPassword') : ""}
             rightIcon={{ 
           type: 'font-awesome', 
           name: showPassword ? 'eye-slash' : 'eye',
@@ -258,11 +264,11 @@ export default function SignupScreen({ navigation }) {
         </Text>
         
         <Input
-          placeholder="Confirm Password"
+          placeholder={t('SignupScreen', 'confirmPassword')}
           onChangeText={setConfirmPassword}
           value={confirmPassword}
           secureTextEntry={!showPassword}
-          errorMessage={confirmPassword && password !== confirmPassword ? 'Passwords do not match' : ''}
+          errorMessage={confirmPassword && password !== confirmPassword ? t('SignupScreen', 'passwordMismatch') : ''}
           rightIcon={{ 
           type: 'font-awesome', 
           name: showPassword ? 'eye-slash' : 'eye',
@@ -278,18 +284,18 @@ export default function SignupScreen({ navigation }) {
         {['client', 'agent', 'admin'].includes(role) && (
           <>
             <Input
-              placeholder="First Name"
+              placeholder={t('SignupScreen', 'firstName')}
               onChangeText={text => setFirstName(text.slice(0, 30))}
               value={first_name}
               maxLength={30}
-              errorMessage={first_name === '' ? 'First name is required' : ''}
+              errorMessage={first_name === '' ? t('SignupScreen', 'firstName') + ' is required' : ''}
             />
             <Input
-              placeholder="Second Name"
+              placeholder={t('SignupScreen', 'secondName')}
               onChangeText={text => setSecondName(text.slice(0, 30))}
               value={second_name}
               maxLength={30}
-              errorMessage={second_name === '' ? 'Second name is required' : ''}
+              errorMessage={second_name === '' ? t('SignupScreen', 'secondName') + ' is required' : ''}
             />
           </>
         )}
@@ -297,11 +303,11 @@ export default function SignupScreen({ navigation }) {
         {/* Client specific fields */}
         {role === 'client' && (
           <>
-            <Text style={styles.label}>Select Country:</Text>
+            <Text style={styles.label}>{t('SignupScreen', 'clientCountry')}:</Text>
             {loadingCountries ? (
               <Text style={styles.loadingText}>Loading countries...</Text>
             ) : countriesError ? (
-              <Text style={styles.errorText}>{countriesError}</Text>
+              <Text style={styles.errorText}>{t('SignupScreen', 'countriesError')}</Text>
             ) : (
               <Dropdown
                 style={[styles.dropdown,styles.clientCountries]}
@@ -342,16 +348,16 @@ export default function SignupScreen({ navigation }) {
         {role === 'agent' && (
           <>
             <Input
-              placeholder="Company Email"
+              placeholder={t('SignupScreen', 'companyEmail')}
               onChangeText={setCompanyEmail}
               value={company_email}
               keyboardType="email-address"
               autoCapitalize="none"
-              errorMessage={company_email === '' ? 'Company email is required' : 
-                (company_email && !validEmail(company_email)) ? 'Please enter a valid email' : ''}
+              errorMessage={company_email === '' ? t('SignupScreen', 'companyEmail') + ' is required' : 
+                (company_email && !validEmail(company_email)) ? t('SignupScreen', 'invalidEmail') : ''}
             />
             <>
-            <Text style={styles.label}>Messaging App for Clients to contact you:</Text>
+            <Text style={styles.label}>{t('SignupScreen', 'messagingApp')} for Clients to contact you:</Text>
     <Dropdown
       data={messaging_apps}
       labelField="label"
@@ -369,7 +375,7 @@ export default function SignupScreen({ navigation }) {
                 onChangeText={setAgentPhone}
                 value={agent_phone}
                 keyboardType="phone-pad"
-                errorMessage={agent_phone === '' ? 'Phone number is required' : 
+                errorMessage={agent_phone === '' ? t('SignupScreen', 'agentPhone') + ' is required' : 
                   (agent_phone && !validPhoneNumber(agent_phone)) ? 'Please enter a valid international phone number' : ''}
               />
               <Text style={styles.phoneHint}>
@@ -384,17 +390,17 @@ export default function SignupScreen({ navigation }) {
           <>
             
             <Input
-              placeholder="Admin Email"
+              placeholder={t('SignupScreen', 'adminEmail')}
               onChangeText={setAdminEmail}
               value={admin_email}
               keyboardType="email-address"
               autoCapitalize="none"
-              errorMessage={admin_email === '' ? 'Admin email is required' : 
-                (admin_email && !validEmail(admin_email)) ? 'Please enter a valid email' : ''}
+              errorMessage={admin_email === '' ? t('SignupScreen', 'adminEmail') + ' is required' : 
+                (admin_email && !validEmail(admin_email)) ? t('SignupScreen', 'invalidEmail') : ''}
             />
           </>
         )}
-         <Text style={styles.label}>Select Role:</Text>
+         <Text style={styles.label}>{t('SignupScreen', 'role')}:</Text>
         <Dropdown
           data={roles}
           labelField="label"
@@ -408,13 +414,13 @@ export default function SignupScreen({ navigation }) {
           activeColor="#e8e8e8"
         />
         <Button
-          title="Sign Up"
+          title={t('SignupScreen', 'createAccount')}
           onPress={handleSignup}
           loading={loading}
           containerStyle={styles.signupButton}
         />
         <Button
-          title="Back to Sign In"
+          title={t('SignupScreen', 'backToLogin')}
           type="clear"
           onPress={() => navigation.navigate("Signin")}
         />
@@ -512,5 +518,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   
   },
-  
+  languageSelectorContainer: {
+    alignItems: 'flex-end',
+    marginBottom: 20,
+  },
 });
+

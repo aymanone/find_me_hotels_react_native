@@ -14,12 +14,16 @@ import { checkUserRole, getCurrentUser } from '../utils/auth';
 import supabase from '../config/supabase';
 import { format } from 'date-fns';
 import {showAlert} from "../components/ShowAlert";
+import {  useTranslation } from '../config/localization';
+
 const ClientUpdatedRequestsScreen = ({ navigation }) => {
+  const { t,language } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [requests, setRequests] = useState([]);
   const [isClient, setIsClient] = useState(false);
   const [error, setError] = useState(null);
+ 
 
   useEffect(() => {
     checkClientStatus();
@@ -31,7 +35,7 @@ const ClientUpdatedRequestsScreen = ({ navigation }) => {
       setIsClient(isUserClient);
       
       if (!isUserClient) {
-        showAlert('Access Denied', 'You do not have permission to access this page.');
+        showAlert(t('ClientUpdatedRequestsScreen', 'accessDeniedTitle'), t('ClientUpdatedRequestsScreen', 'accessDenied'));
         navigation.goBack();
         return;
       }
@@ -39,7 +43,7 @@ const ClientUpdatedRequestsScreen = ({ navigation }) => {
       fetchRequests();
     } catch (error) {
       console.error('Error checking client status:', error);
-      setError('Failed to verify your permissions.');
+      setError(t('ClientUpdatedRequestsScreen', 'failedToVerifyPermissions'));
       setLoading(false);
     }
   };
@@ -50,7 +54,7 @@ const ClientUpdatedRequestsScreen = ({ navigation }) => {
       setError(null);
       
       const user = await getCurrentUser();
-      if (!user) throw new Error('User not found');
+      if (!user) throw new Error(t('ClientUpdatedRequestsScreen', 'userNotFound'));
       
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -68,7 +72,7 @@ const ClientUpdatedRequestsScreen = ({ navigation }) => {
       setRequests(data || []);
     } catch (error) {
       console.error('Error fetching requests:', error);
-      setError('Failed to load your updated requests. Please try again.');
+      setError(t('ClientUpdatedRequestsScreen', 'failedToLoadRequests'));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -93,7 +97,7 @@ const ClientUpdatedRequestsScreen = ({ navigation }) => {
     try {
       return format(new Date(dateString), 'MMM dd, yyyy');
     } catch (error) {
-      return 'Invalid date';
+      return t('ClientUpdatedRequestsScreen', 'invalidDate');
     }
   };
 
@@ -101,7 +105,7 @@ const ClientUpdatedRequestsScreen = ({ navigation }) => {
     return (
       <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color="#0000ff" />
-        <Text style={styles.loadingText}>Loading your updated requests...</Text>
+        <Text style={styles.loadingText}>{t('ClientUpdatedRequestsScreen', 'loading')}</Text>
       </View>
     );
   }
@@ -113,12 +117,12 @@ const ClientUpdatedRequestsScreen = ({ navigation }) => {
         <Text style={styles.errorText}>{error}</Text>
         <View style={styles.buttonContainer}>
           <Button
-            title="Retry"
+            title={t('ClientUpdatedRequestsScreen', 'retry')}
             onPress={handleRetry}
             buttonStyle={styles.retryButton}
           />
           <Button
-            title="Go Back"
+            title={t('ClientUpdatedRequestsScreen', 'goBack')}
             onPress={() => navigation.goBack()}
             buttonStyle={styles.backButton}
             titleStyle={{ color: '#007AFF' }}
@@ -141,12 +145,12 @@ const ClientUpdatedRequestsScreen = ({ navigation }) => {
       }
     >
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Requests with New Offers</Text>
+        <Text style={styles.headerTitle}>{t('ClientUpdatedRequestsScreen', 'requestsWithNewOffers')}</Text>
         <Text style={styles.requestCount}>
-          {requests.length} {requests.length === 1 ? 'request' : 'requests'} with new offers
+          {requests.length} {requests.length === 1 ? t('ClientUpdatedRequestsScreen', 'request') : t('ClientUpdatedRequestsScreen', 'requests')} {t('ClientUpdatedRequestsScreen', 'withNewOffers')}
         </Text>
         <Button
-          title="Refresh"
+          title={t('ClientUpdatedRequestsScreen', 'refresh')}
           onPress={onRefresh}
           icon={<Icon name="refresh-outline" type="ionicon" size={20} color="white" />}
           buttonStyle={styles.refreshButton}
@@ -156,9 +160,9 @@ const ClientUpdatedRequestsScreen = ({ navigation }) => {
       {requests.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Icon name="information-circle-outline" type="ionicon" size={50} color="#8E8E93" />
-          <Text style={styles.emptyText}>No updated requests found</Text>
+          <Text style={styles.emptyText}>{t('ClientUpdatedRequestsScreen', 'noUpdatedRequestsFound')}</Text>
           <Text style={styles.emptySubText}>
-            When you receive new offers for your travel requests, they will appear here.
+            {t('ClientUpdatedRequestsScreen', 'whenYouReceiveNewOffers')}
           </Text>
         </View>
       ) : (
@@ -174,7 +178,7 @@ const ClientUpdatedRequestsScreen = ({ navigation }) => {
                 <View style={styles.offersContainer}>
                   <Icon name="notifications" type="ionicon" size={16} color="#FF9500" />
                   <Text style={styles.offersText}>
-                    {request.offers_number} {request.offers_number === 1 ? 'offer' : 'offers'}
+                    {request.offers_number} {request.offers_number === 1 ? t('ClientUpdatedRequestsScreen', 'offer') : t('ClientUpdatedRequestsScreen', 'offers')}
                   </Text>
                 </View>
               </View>
@@ -184,7 +188,7 @@ const ClientUpdatedRequestsScreen = ({ navigation }) => {
               <View style={styles.infoRow}>
                 <View style={styles.infoItem}>
                   <Icon name="location-outline" type="ionicon" size={16} color="#007AFF" />
-                  <Text style={styles.infoLabel}>Destination:</Text>
+                  <Text style={styles.infoLabel}>{t('ClientUpdatedRequestsScreen', 'destination')}</Text>
                 </View>
                 <Text style={styles.infoValue}>
                   {request.country_name}{request.area_name ? `, ${request.area_name}` : ''}
@@ -194,12 +198,12 @@ const ClientUpdatedRequestsScreen = ({ navigation }) => {
               <View style={styles.infoRow}>
                 <View style={styles.infoItem}>
                   <Icon name="people-outline" type="ionicon" size={16} color="#007AFF" />
-                  <Text style={styles.infoLabel}>Travelers:</Text>
+                  <Text style={styles.infoLabel}>{t('ClientUpdatedRequestsScreen', 'travelers')}</Text>
                 </View>
                 <Text style={styles.infoValue}>
-                  {request.adults} {request.adults === 1 ? 'adult' : 'adults'}
+                  {request.adults} {request.adults === 1 ? t('ClientUpdatedRequestsScreen', 'adult') : t('ClientUpdatedRequestsScreen', 'adults')}
                   {request.children && request.children.length > 0 ? 
-                    `, ${request.children.length} ${request.children.length === 1 ? 'child' : 'children'}` : 
+                    `, ${request.children.length} ${request.children.length === 1 ? t('ClientUpdatedRequestsScreen', 'child') : t('ClientUpdatedRequestsScreen', 'children')}` : 
                     ''}
                 </Text>
               </View>
@@ -207,7 +211,7 @@ const ClientUpdatedRequestsScreen = ({ navigation }) => {
               <View style={styles.infoRow}>
                 <View style={styles.infoItem}>
                   <Icon name="cash-outline" type="ionicon" size={16} color="#007AFF" />
-                  <Text style={styles.infoLabel}>Budget:</Text>
+                  <Text style={styles.infoLabel}>{t('ClientUpdatedRequestsScreen', 'budget')}</Text>
                 </View>
                 <Text style={styles.infoValue}>
                   ${request.min_budget} - ${request.max_budget}
@@ -218,7 +222,7 @@ const ClientUpdatedRequestsScreen = ({ navigation }) => {
                 <View style={styles.infoRow}>
                   <View style={styles.infoItem}>
                     <Icon name="restaurant-outline" type="ionicon" size={16} color="#007AFF" />
-                    <Text style={styles.infoLabel}>Meals:</Text>
+                    <Text style={styles.infoLabel}>{t('ClientUpdatedRequestsScreen', 'meals')}</Text>
                   </View>
                   <Text style={styles.infoValue}>
                     {Array.isArray(request.meals) ? request.meals.join(', ') : request.meals}
@@ -227,7 +231,7 @@ const ClientUpdatedRequestsScreen = ({ navigation }) => {
               )}
 
               <View style={styles.viewDetailsContainer}>
-                <Text style={styles.viewDetailsText}>View Details</Text>
+                <Text style={styles.viewDetailsText}>{t('ClientUpdatedRequestsScreen', 'viewDetails')}</Text>
                 <Icon name="chevron-forward-outline" type="ionicon" size={16} color="#007AFF" />
               </View>
             </Card>

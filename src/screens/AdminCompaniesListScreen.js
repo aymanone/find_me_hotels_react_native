@@ -11,7 +11,10 @@ import { Text, Card, Button, Icon } from 'react-native-elements';
 import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser } from '../utils/auth';
 import {showAlert} from "../components/ShowAlert";
+import { useTranslation } from '../config/localization';
+
 export default function AdminCompaniesListScreen({ navigation }) {
+  const { t,language } = useTranslation();
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -21,7 +24,7 @@ export default function AdminCompaniesListScreen({ navigation }) {
     const checkRole = async () => {
       const isAdmin = await checkUserRole('admin');
       if (!isAdmin) {
-        showAlert('Access Denied', 'You do not have permission to access this page');
+        showAlert(t('Alerts', 'error'), t('AdminCompaniesListScreen', 'accessDenied'));
         navigation.goBack();
       }
     };
@@ -40,7 +43,7 @@ export default function AdminCompaniesListScreen({ navigation }) {
       
       const user = await getCurrentUser();
       if (!user) {
-        showAlert('Error', 'User not found. Please log in again.');
+        showAlert(t('Alerts', 'error'), t('AdminCompaniesListScreen', 'userNotFound'));
         return;
       }
       
@@ -63,7 +66,7 @@ export default function AdminCompaniesListScreen({ navigation }) {
       setCompanies(data || []);
     } catch (error) {
       console.error('Error fetching companies:', error.message);
-      showAlert('Error', 'Failed to load companies');
+      showAlert(t('Alerts', 'error'), t('AdminCompaniesListScreen', 'loadError'));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -93,20 +96,20 @@ export default function AdminCompaniesListScreen({ navigation }) {
       contentContainerStyle={styles.contentContainer}
     >
       <View style={styles.header}>
-        <Text h4>Your Companies</Text>
+        <Text h4>{t('AdminCompaniesListScreen', 'title')}</Text>
         <Button
          
           onPress={handleRefresh}
           loading={refreshing}
           type="clear"
-          title="update Companies"
+          title={t('AdminCompaniesListScreen', 'updateCompanies')}
           titleStyle={{ color: '#007bff' }}
         />
       </View>
       
       {companies.length === 0 ? (
         <Card containerStyle={styles.noDataCard}>
-          <Text style={styles.noDataText}>No companies found</Text>
+          <Text style={styles.noDataText}>{t('AdminCompaniesListScreen', 'noCompaniesFound')}</Text>
         </Card>
       ) : (
         companies.map((company) => (
@@ -115,23 +118,23 @@ export default function AdminCompaniesListScreen({ navigation }) {
             
             <View style={styles.infoRow}>
               <Icon name="mail-outline" type="ionicon" size={16} color="#007bff" />
-              <Text style={styles.infoText}>{company.company_email || 'No email provided'}</Text>
+              <Text style={styles.infoText}>{company.company_email || t('AdminCompaniesListScreen', 'noEmailProvided')}</Text>
             </View>
             
             <View style={styles.infoRow}>
               <Icon name="globe-outline" type="ionicon" size={16} color="#007bff" />
               <Text style={styles.infoText}>
-                {company.countries?.country_name || 'Country not specified'}
+                {company.countries?.country_name || t('AdminCompaniesListScreen', 'countryNotSpecified')}
               </Text>
             </View>
             
             <View style={styles.infoRow}>
               <Icon name="location-outline" type="ionicon" size={16} color="#007bff" />
-              <Text style={styles.infoText}>{company.address || 'No address provided'}</Text>
+              <Text style={styles.infoText}>{company.address || t('AdminCompaniesListScreen', 'noAddressProvided')}</Text>
             </View>
             
             <Button
-              title="View Profile"
+              title={t('AdminCompaniesListScreen', 'viewProfile')}
               onPress={() => viewCompanyProfile(company.id)}
               buttonStyle={styles.viewButton}
               icon={<Icon name="arrow-forward" type="ionicon" color="#fff" size={16} style={styles.buttonIcon} />}

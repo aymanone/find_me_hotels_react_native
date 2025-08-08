@@ -22,8 +22,11 @@ import { Dropdown } from 'react-native-element-dropdown';
 import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser, signOut } from '../utils/auth';
 import { validUrl, validEmail, validPhoneNumber } from '../utils/validation';
-import {showAlert} from "../components/ShowAlert";
+import { showAlert } from "../components/ShowAlert";
+import {  useTranslation } from '../config/localization';
+
 export default function AdminCompanyProfileScreen({ route, navigation }) {
+  const { t,language } = useTranslation();
   const { companyId } = route.params;
   const [loading, setLoading] = useState(true);
   const [company, setCompany] = useState(null);
@@ -62,7 +65,7 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
         // Check if user is admin
         const isAdmin = await checkUserRole('admin');
         if (!isAdmin) {
-          showAlert('Access Denied', 'You do not have permission to access this page.');
+          showAlert(t('AdminCompanyProfileScreen', 'accessDenied'), t('AdminCompanyProfileScreen', 'accessDenied'));
           navigation.goBack();
           return;
         }
@@ -70,14 +73,14 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
         // Get current user
         const user = await getCurrentUser();
         if (!user) {
-          showAlert('Error', 'User not found. Please log in again.');
+          showAlert(t('AdminCompanyProfileScreen', 'userNotFound'), t('AdminCompanyProfileScreen', 'userNotFound'));
           await signOut(navigation);
           return;
         }
         
         // Check if user is permitted to work
         if (user.app_metadata?.permitted_to_work === false) {
-          showAlert('Access Restricted', 'Your account is currently restricted.');
+          showAlert(t('AdminCompanyProfileScreen', 'accessRestricted'), t('AdminCompanyProfileScreen', 'accessRestricted'));
           // We don't navigate away, just show the alert
         }
         
@@ -86,7 +89,7 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
         // Don't call fetchAgentsSummary here
       } catch (error) {
         console.error('Error in initial setup:', error);
-        showAlert('Error', 'Failed to load data');
+        showAlert(t('AdminCompanyProfileScreen', 'loadDataError'), t('AdminCompanyProfileScreen', 'loadDataError'));
       } finally {
         setLoading(false);
       }
@@ -128,15 +131,15 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
     } catch (error) {
       console.error('Error fetching company details:', error);
          showAlert(
-      'Error', 
-      'Failed to load profile data',
+      t('AdminCompanyProfileScreen', 'loadError'), 
+      t('AdminCompanyProfileScreen', 'loadError'),
       [
-        { text: 'Try Again', onPress: () =>{
+        { text: t('AdminCompanyProfileScreen', 'tryAgain'), onPress: () =>{
         setTimeout(() => fetchCompanyDetails(), 100);
 
                } 
       },
-        { text: 'Cancel', style: 'cancel' }
+        { text: t('AdminCompanyProfileScreen', 'cancel'), style: 'cancel' }
       ]
     );
       return;
@@ -154,7 +157,7 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
       setCountries(data || []);
     } catch (error) {
       console.error('Error fetching countries:', error);
-      showAlert('Error', 'Failed to load countries list');
+      showAlert(t('AdminCompanyProfileScreen', 'loadCountriesError'), t('AdminCompanyProfileScreen', 'loadCountriesError'));
     }
   };
 
@@ -209,7 +212,7 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
       }
     } catch (error) {
       console.error('Error fetching agents summary:', error);
-      showAlert('Error', 'Failed to load agents summary');
+      showAlert(t('AdminCompanyProfileScreen', 'loadAgentsSummaryError'), t('AdminCompanyProfileScreen', 'loadAgentsSummaryError'));
     }
   };
 
@@ -223,23 +226,23 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
     setLicenseError(''); 
     // Validate URL if provided
     if (companyUrl && !validUrl(companyUrl)) {
-      setUrlError('Please enter a valid URL');
+      setUrlError(t('AdminCompanyProfileScreen', 'validUrlError'));
       isValid = false;
     }
     
     // Validate email if provided
     if (companyEmail && !validEmail(companyEmail)) {
-      setEmailError('Please enter a valid email address');
+      setEmailError(t('AdminCompanyProfileScreen', 'validEmailError'));
       isValid = false;
     }
     
     // Validate phone number if provided
     if (companyPhone && !validPhoneNumber(companyPhone)) {
-      setPhoneError('Please enter a valid phone number');
+      setPhoneError(t('AdminCompanyProfileScreen', 'validPhoneError'));
       isValid = false;
     }
     if (licenseNum && licenseNum.trim().length < 2) {
-  setLicenseError('License number must be at least 2 characters');
+  setLicenseError(t('AdminCompanyProfileScreen', 'validLicenseError'));
   isValid = false;
 }
     return isValid;
@@ -250,13 +253,13 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
       // Check if user is authenticated and has permission
       const user = await getCurrentUser();
       if (!user) {
-        showAlert('Error', 'User not found. Please log in again.');
+        showAlert(t('AdminCompanyProfileScreen', 'userNotFound'), t('AdminCompanyProfileScreen', 'userNotFound'));
         await signOut(navigation);
         return;
       }
       
       if (user.app_metadata?.permitted_to_work === false) {
-        showAlert('Access Denied', 'You do not have permission to update this company.');
+        showAlert(t('AdminCompanyProfileScreen', 'updateDenied'), t('AdminCompanyProfileScreen', 'updateDenied'));
         return;
       }
       
@@ -283,11 +286,11 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
       // Update local state
       await fetchCompanyDetails();
       
-      showAlert('Success', 'Company updated successfully');
+      showAlert(t('AdminCompanyProfileScreen', 'updateSuccess'), t('AdminCompanyProfileScreen', 'updateSuccess'));
       setEditMode(false);
     } catch (error) {
       console.error('Error updating company:', error);
-      showAlert('Error', 'Failed to update company');
+      showAlert(t('AdminCompanyProfileScreen', 'updateError'), t('AdminCompanyProfileScreen', 'updateError'));
     }
   };
 
@@ -298,13 +301,13 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
       // Check if user is authenticated and has permission
       const user = await getCurrentUser();
       if (!user) {
-        showAlert('Error', 'User not found. Please log in again.');
+        showAlert(t('AdminCompanyProfileScreen', 'userNotFound'), t('AdminCompanyProfileScreen', 'userNotFound'));
         await signOut(navigation);
         return;
       }
       
       if (user.app_metadata?.permitted_to_work === false) {
-        showAlert('Access Denied', 'You do not have permission to delete this company.');
+        showAlert(t('AdminCompanyProfileScreen', 'deleteDenied'), t('AdminCompanyProfileScreen', 'deleteDenied'));
         return;
       }
 
@@ -316,11 +319,11 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
 
       if (error) throw error;
 
-      showAlert('Success', 'Company deleted successfully');
+      showAlert(t('AdminCompanyProfileScreen', 'deleteSuccess'), t('AdminCompanyProfileScreen', 'deleteSuccess'));
       navigation.goBack();
     } catch (error) {
       console.error('Error deleting company:', error);
-      showAlert('Error', 'Failed to delete company');
+      showAlert(t('AdminCompanyProfileScreen', 'deleteError'), t('AdminCompanyProfileScreen', 'deleteError'));
     } finally {
       setDeleteLoading(false);
       setDeleteConfirmVisible(false);
@@ -344,7 +347,7 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
         {/* Company Info Card */}
         <Card containerStyle={styles.card}>
           <View style={styles.cardHeader}>
-            <Text style={styles.cardTitle}>Company Profile</Text>
+            <Text style={styles.cardTitle}>{t('AdminCompanyProfileScreen', 'companyProfile')}</Text>
             {!editMode && (
               <TouchableOpacity onPress={() => setEditMode(true)}>
                 <Icon name="pencil" type="ionicon" color="#007bff" />
@@ -355,90 +358,90 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
           <Divider style={styles.divider} />
           
           <View style={styles.infoRow}>
-            <Text style={styles.label}>Company Name:</Text>
+            <Text style={styles.label}>{t('AdminCompanyProfileScreen', 'companyName')}</Text>
             <Text style={styles.value}>{company?.company_name}</Text>
           </View>
           
           <View style={styles.infoRow}>
-            <Text style={styles.label}>Country:</Text>
+            <Text style={styles.label}>{t('AdminCompanyProfileScreen', 'country')}</Text>
             <Text style={styles.value}>{company?.countries?.country_name}</Text>
           </View>
           
           <View style={styles.infoRow}>
-            <Text style={styles.label}>Headquarter:</Text>
-            <Text style={styles.value}>{company?.address || 'Not specified'}</Text>
+            <Text style={styles.label}>{t('AdminCompanyProfileScreen', 'headquarter')}</Text>
+            <Text style={styles.value}>{company?.address || t('AdminCompanyProfileScreen', 'notSpecified')}</Text>
           </View>
           <View style={styles.infoRow}>
-  <Text style={styles.label}>License Number:</Text>
-  <Text style={styles.value}>{company?.license_num || 'Not specified'}</Text>
+  <Text style={styles.label}>{t('AdminCompanyProfileScreen', 'licenseNumber')}</Text>
+  <Text style={styles.value}>{company?.license_num || t('AdminCompanyProfileScreen', 'notSpecified')}</Text>
 </View>
           <View style={styles.infoRow}>
-            <Text style={styles.label}>Website:</Text>
-            <Text style={styles.value}>{company?.url || 'Not specified'}</Text>
+            <Text style={styles.label}>{t('AdminCompanyProfileScreen', 'website')}</Text>
+            <Text style={styles.value}>{company?.url || t('AdminCompanyProfileScreen', 'notSpecified')}</Text>
           </View>
           
           <View style={styles.infoRow}>
-            <Text style={styles.label}>Email:</Text>
-            <Text style={styles.value}>{company?.company_email || 'Not specified'}</Text>
+            <Text style={styles.label}>{t('AdminCompanyProfileScreen', 'email')}</Text>
+            <Text style={styles.value}>{company?.company_email || t('AdminCompanyProfileScreen', 'notSpecified')}</Text>
           </View>
           
           <View style={styles.infoRow}>
-            <Text style={styles.label}>Phone:</Text>
-            <Text style={styles.value}>{company?.phone || 'Not specified'}</Text>
+            <Text style={styles.label}>{t('AdminCompanyProfileScreen', 'phone')}</Text>
+            <Text style={styles.value}>{company?.phone || t('AdminCompanyProfileScreen', 'notSpecified')}</Text>
           </View>
           
           <View style={styles.infoRow}>
-            <Text style={styles.label}>Status:</Text>
+            <Text style={styles.label}>{t('AdminCompanyProfileScreen', 'status')}</Text>
             <Text style={[
               styles.statusText, 
               company?.permitted_to_work ? styles.activeStatus : styles.inactiveStatus
             ]}>
-              {company?.permitted_to_work ? 'Active' : 'Inactive'}
+              {company?.permitted_to_work ? t('AdminCompanyProfileScreen', 'active') : t('AdminCompanyProfileScreen', 'inactive')}
             </Text>
           </View>
         </Card>
         
         {/* Agents Summary Card */}
         <Card containerStyle={styles.card}>
-          <Text style={styles.cardTitle}>Agents Summary</Text>
+          <Text style={styles.cardTitle}>{t('AdminCompanyProfileScreen', 'agentsSummary')}</Text>
           <Divider style={styles.divider} />
           
           <View style={styles.statsContainer}>
             <View style={styles.statItem}>
               <Icon name="people" type="ionicon" color="#007bff" size={24} />
               <Text style={styles.statValue}>{summaryStats.totalAgents}</Text>
-              <Text style={styles.statLabel}>Total Agents</Text>
+              <Text style={styles.statLabel}>{t('AdminCompanyProfileScreen', 'totalAgents')}</Text>
             </View>
             
             <View style={styles.statItem}>
               <Icon name="eye-off" type="ionicon" color="#ffc107" size={24} />
               <Text style={styles.statValue}>{summaryStats.notViewedOffers}</Text>
-              <Text style={styles.statLabel}>Not Viewed</Text>
+              <Text style={styles.statLabel}>{t('AdminCompanyProfileScreen', 'notViewed')}</Text>
             </View>
             
             <View style={styles.statItem}>
               <Icon name="eye" type="ionicon" color="#17a2b8" size={24} />
               <Text style={styles.statValue}>{summaryStats.viewedOffers}</Text>
-              <Text style={styles.statLabel}>Viewed</Text>
+              <Text style={styles.statLabel}>{t('AdminCompanyProfileScreen', 'viewed')}</Text>
             </View>
             
             <View style={styles.statItem}>
               <Icon name="close-circle" type="ionicon" color="#dc3545" size={24} />
               <Text style={styles.statValue}>{summaryStats.rejectedOffers}</Text>
-              <Text style={styles.statLabel}>Rejected</Text>
+              <Text style={styles.statLabel}>{t('AdminCompanyProfileScreen', 'rejected')}</Text>
             </View>
             
             <View style={styles.statItem}>
               <Icon name="checkmark-circle" type="ionicon" color="#28a745" size={24} />
               <Text style={styles.statValue}>{summaryStats.acceptedOffers}</Text>
-              <Text style={styles.statLabel}>Accepted</Text>
+              <Text style={styles.statLabel}>{t('AdminCompanyProfileScreen', 'accepted')}</Text>
             </View>
           </View>
         </Card>
         
         {/* Delete Button */}
         <Button
-          title="Delete Company"
+          title={t('AdminCompanyProfileScreen', 'deleteCompany')}
           icon={<Icon name="trash" type="ionicon" color="white" style={{ marginRight: 10 }} />}
           buttonStyle={styles.deleteButton}
           containerStyle={styles.deleteButtonContainer}
@@ -452,16 +455,16 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
           overlayStyle={styles.overlay}
         >
           <ScrollView>
-            <Text style={styles.overlayTitle}>Edit Company</Text>
+            <Text style={styles.overlayTitle}>{t('AdminCompanyProfileScreen', 'editCompany')}</Text>
             
             <Input
-              label="Company Name"
+              label={t('AdminCompanyProfileScreen', 'companyNameLabel')}
               value={companyName}
               onChangeText={setCompanyName}
-              placeholder="Enter company name"
+              placeholder={t('AdminCompanyProfileScreen', 'enterCompanyName')}
             />
             
-            <Text style={styles.pickerLabel}>Country</Text>
+            <Text style={styles.pickerLabel}>{t('AdminCompanyProfileScreen', 'countryLabel')}</Text>
             <Dropdown
               style={styles.dropdown}
               placeholderStyle={styles.placeholderStyle}
@@ -476,8 +479,8 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
               maxHeight={300}
               labelField="label"
               valueField="value"
-              placeholder="Select country"
-              searchPlaceholder="Search country..."
+              placeholder={t('AdminCompanyProfileScreen', 'selectCountry')}
+              searchPlaceholder={t('AdminCompanyProfileScreen', 'searchCountry')}
               value={countryId}
               onChange={item => {
                 setCountryId(item.value);
@@ -489,59 +492,59 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
               )}
             />
             <Input
-  label="License Number"
+  label={t('AdminCompanyProfileScreen', 'licenseNumberLabel')}
   value={licenseNum}
   onChangeText={(text) => {
     setLicenseNum(text);
     if (licenseError) setLicenseError('');
   }}
-  placeholder="Enter company license number"
+  placeholder={t('AdminCompanyProfileScreen', 'enterLicenseNumber')}
   errorMessage={licenseError}
 />
             <Input
-              label="Address"
+              label={t('AdminCompanyProfileScreen', 'addressLabel')}
               value={companyAddress}
               onChangeText={setCompanyAddress}
-              placeholder="Enter company address"
+              placeholder={t('AdminCompanyProfileScreen', 'enterAddress')}
               multiline
             />
             
             <Input
-              label="Website URL"
+              label={t('AdminCompanyProfileScreen', 'websiteUrlLabel')}
               value={companyUrl}
               onChangeText={(text) => {
                 setCompanyUrl(text);
                 if (urlError) setUrlError('');
               }}
-              placeholder="Enter website URL"
+              placeholder={t('AdminCompanyProfileScreen', 'enterWebsiteUrl')}
               errorMessage={urlError}
             />
             
             { !company.user_id &&  (<Input
-              label="Email"
+              label={t('AdminCompanyProfileScreen', 'emailLabel')}
               value={companyEmail}
               onChangeText={(text) => {
                 setCompanyEmail(text);
                 if (emailError) setEmailError('');
               }}
-              placeholder="Enter company email"
+              placeholder={t('AdminCompanyProfileScreen', 'enterEmail')}
               errorMessage={emailError}
             />) }
             
             <Input
-              label="Phone Number"
+              label={t('AdminCompanyProfileScreen', 'phoneLabel')}
               value={companyPhone}
               onChangeText={(text) => {
                 setCompanyPhone(text);
                 if (phoneError) setPhoneError('');
               }}
-              placeholder="Enter company phone number"
+              placeholder={t('AdminCompanyProfileScreen', 'enterPhone')}
               keyboardType="phone-pad"
               errorMessage={phoneError}
             />
             
             <View style={styles.switchContainer}>
-              <Text style={styles.switchLabel}>Permitted to Work:</Text>
+              <Text style={styles.switchLabel}>{t('AdminCompanyProfileScreen', 'permittedToWork')}</Text>
               <Switch
                 value={permittedToWork}
                 onValueChange={setPermittedToWork}
@@ -551,14 +554,14 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
             </View>
             
             <Button
-              title="Update Company"
+              title={t('AdminCompanyProfileScreen', 'updateCompany')}
               icon={<Icon name="save" type="ionicon" color="white" style={{ marginRight: 10 }} />}
               buttonStyle={styles.updateButton}
               onPress={handleUpdateCompany}
             />
             
             <Button
-              title="Cancel"
+              title={t('AdminCompanyProfileScreen', 'cancel')}
               type="outline"
               icon={<Icon name="close" type="ionicon" color="#007bff" style={{ marginRight: 10 }} />}
               buttonStyle={styles.cancelButton}
@@ -573,18 +576,18 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
           onBackdropPress={() => setDeleteConfirmVisible(false)}
           overlayStyle={styles.confirmOverlay}
         >
-          <Text style={styles.confirmTitle}>Confirm Deletion</Text>
-          <Text style={styles.confirmMessage}>Are you sure you want to delete this company?</Text>
+          <Text style={styles.confirmTitle}>{t('AdminCompanyProfileScreen', 'confirmDeletion')}</Text>
+          <Text style={styles.confirmMessage}>{t('AdminCompanyProfileScreen', 'confirmDeleteMessage')}</Text>
           <View style={styles.confirmButtons}>
             <Button
-              title="Cancel"
+              title={t('AdminCompanyProfileScreen', 'cancel')}
               type="outline"
               icon={<Icon name="close" type="ionicon" color="#007bff" style={{ marginRight: 10 }} />}
               buttonStyle={styles.cancelButton}
               onPress={() => setDeleteConfirmVisible(false)}
             />
             <Button
-              title="Delete"
+              title={t('AdminCompanyProfileScreen', 'delete')}
               icon={<Icon name="trash" type="ionicon" color="white" style={{ marginRight: 10 }} />}
               buttonStyle={styles.deleteConfirmButton}
               loading={deleteLoading}

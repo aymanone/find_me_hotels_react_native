@@ -4,8 +4,10 @@ import supabase from '../config/supabase';
 import { getCurrentUser } from '../utils/auth';
 import { sendLocalNotification } from '../utils/notificationUtils';
 import { Platform } from 'react-native';
+import {useTranslation} from "../config/localization";
 import { useNavigation } from '@react-navigation/native';
 const ClientNewOffersBadge = React.memo(() => {
+  const {t,language} = useTranslation();
   const [requestsCount, setRequestsCount] = useState(0);
   const intervalRef = useRef(null);
   const previousCountRef = useRef(0);
@@ -52,7 +54,8 @@ const ClientNewOffersBadge = React.memo(() => {
             if ('Notification' in window) {
               const showWebNotification = () => {
                 const notification = new Notification('New Offers Available!', {
-                  body: `You have New Offers for ${count} request${count > 1 ? 's' : ''}.`,
+                  //body: `You have New Offers for ${count} request${count > 1 ? 's' : ''}.`,
+                  body:t("ClientNewOffersBadge","msg",{count:count}),
                   icon: '/favicon.ico',
                   tag: 'new-offers',
                   // Add screen data directly to the notification content
@@ -88,7 +91,7 @@ const ClientNewOffersBadge = React.memo(() => {
             // Mobile notifications using Expo
             await sendLocalNotification(
               'New Offers Available!',
-              `You have New Offers for ${count} request${count > 1 ? 's' : ''}.`,
+              t("ClientNewOffersBadge","msg",{count:count}),
               {
                 screen: "ClientApp",
                 params: {

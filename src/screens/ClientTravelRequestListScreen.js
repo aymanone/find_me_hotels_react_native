@@ -8,7 +8,10 @@ import { checkUserRole, signOut, getCurrentUser } from '../utils/auth';
 import { unsubscribeChannels } from '../utils/channelUtils';
 import {earliestDate} from '../utils/dateUtils'; // Import earliestDate function
 import {showAlert} from "../components/ShowAlert";
+import { useTranslation } from '../config/localization';
+
 export default function ClientTravelRequestList({ navigation }) {
+  const { t , language} = useTranslation();
   const [travelRequests, setTravelRequests] = useState([]);
   const [allTravelRequests, setAllTravelRequests] = useState([]); // Store all requests
   const [filteredRequests, setFilteredRequests] = useState([]); // Store filtered requests
@@ -23,7 +26,7 @@ export default function ClientTravelRequestList({ navigation }) {
     const checkRole = async () => {
       const isClient = await checkUserRole('client');
       if (!isClient) {
-        showAlert('You do not have permission to access this page');
+        showAlert(t('ClientTravelRequestListScreen', 'accessDenied'));
         navigation.goBack();
       }
     };
@@ -70,7 +73,7 @@ const fetchTravelRequests = async () => {
     // Get current user
      const user= await getCurrentUser();
             if(!user) {
-              showAlert('Error', 'User not found. Please log in again.');
+              showAlert(t('ClientTravelRequestListScreen', 'error'), t('ClientTravelRequestListScreen', 'userNotFound'));
               await signOut(navigation);
               
               return;
@@ -135,7 +138,7 @@ const fetchTravelRequests = async () => {
     }
   } catch (error) {
     console.error('Error fetching travel requests:', error.message);
-    showAlert('Failed to load travel requests');
+    showAlert(t('ClientTravelRequestListScreen', 'loadError'));
   } finally {
     setLoading(false);
   }
@@ -181,15 +184,15 @@ const fetchTravelRequests = async () => {
 
   const handleDeleteRequest = async (requestId) => {
     showAlert(
-      "Delete Request",
-      "Are you sure you want to delete this travel request?",
+      t('ClientTravelRequestListScreen', 'deleteRequest'),
+      t('ClientTravelRequestListScreen', 'deleteConfirm'),
       [
         {
-          text: "Cancel",
+          text: t('ClientTravelRequestListScreen', 'cancel'),
           style: "cancel"
         },
         {
-          text: "Delete",
+          text: t('ClientTravelRequestListScreen', 'delete'),
           style: "destructive",
           onPress: async () => {
             try {
@@ -208,10 +211,10 @@ const fetchTravelRequests = async () => {
                 prev.filter(request => request.id !== requestId)
               );
               
-              showAlert("Success", "Travel request deleted successfully");
+              showAlert(t('ClientTravelRequestListScreen', 'success'), t('ClientTravelRequestListScreen', 'deleteSuccess'));
             } catch (error) {
               console.error('Error deleting travel request:', error.message);
-              showAlert("Error", "Failed to delete travel request. Please try again.");
+              showAlert(t('ClientTravelRequestListScreen', 'error'), t('ClientTravelRequestListScreen', 'deleteError'));
             } finally {
               setLoading(false);
             }
@@ -235,7 +238,7 @@ const fetchTravelRequests = async () => {
           {item.new_offers && (
             <View style={styles.newOffersIndicator}>
               <Icon name="bell" type="font-awesome" size={14} color="#fff" />
-              <Text style={styles.newOffersText}>New Offers</Text>
+              <Text style={styles.newOffersText}>{t('ClientTravelRequestListScreen', 'newOffers')}</Text>
             </View>
           )}
           
@@ -254,7 +257,7 @@ const fetchTravelRequests = async () => {
         {/* Destination Row */}
         <View style={styles.row}>
           <Icon name="map-marker" type="font-awesome" size={16} color="#007bff" />
-          <Text style={styles.label}>Destination:</Text>
+          <Text style={styles.label}>{t('ClientTravelRequestListScreen', 'destination')}:</Text>
           <Text style={styles.value}>
             {item.country_name}{item.area_name ? `, ${item.area_name}` : ''}
           </Text>
@@ -263,7 +266,7 @@ const fetchTravelRequests = async () => {
         {/* Dates Row */}
         <View style={styles.row}>
           <Icon name="calendar" type="font-awesome" size={16} color="#007bff" />
-          <Text style={styles.label}>Dates:</Text>
+          <Text style={styles.label}>{t('ClientTravelRequestListScreen', 'dates')}:</Text>
           <Text style={styles.value}>
             {format(startDate, 'MMM dd, yyyy')} - {format(endDate, 'MMM dd, yyyy')}
           </Text>
@@ -272,7 +275,7 @@ const fetchTravelRequests = async () => {
         {/* Info Row */}
         <View style={styles.row}>
           <Icon name="info-circle" type="font-awesome" size={16} color="#007bff" />
-          <Text style={styles.label}>Status:</Text>
+          <Text style={styles.label}>{t('ClientTravelRequestListScreen', 'status')}:</Text>
           <Text style={[
             styles.statusText,
             { color: isRequestActive(item) ? '#28a745' : '#6c757d' }
@@ -280,7 +283,7 @@ const fetchTravelRequests = async () => {
             {item.status.toUpperCase()}
           </Text>
           <Text style={styles.offersText}>
-            {item.offers_number} {item.offers_number === 1 ? 'offer' : 'offers'}
+            {item.offers_number} {item.offers_number === 1 ? t('ClientTravelRequestListScreen', 'offer') : t('ClientTravelRequestListScreen', 'offers')}
           </Text>
           <Icon 
             name="chevron-right" 
@@ -301,10 +304,10 @@ const fetchTravelRequests = async () => {
     try {
       setRefreshing(true);
       await fetchTravelRequests();
-      showAlert("Success", "Travel requests refreshed successfully");
+      showAlert(t('ClientTravelRequestListScreen', 'success'), t('ClientTravelRequestListScreen', 'refreshSuccess'));
     } catch (error) {
       console.error('Error refreshing travel requests:', error);
-      showAlert("Error", "Failed to refresh travel requests");
+      showAlert(t('ClientTravelRequestListScreen', 'error'), t('ClientTravelRequestListScreen', 'refreshError'));
     } finally {
       setRefreshing(false);
     }
@@ -313,19 +316,19 @@ const fetchTravelRequests = async () => {
   // Modify your return statement to include the refresh button
   return (
     <View style={styles.container}>
-      <Text h4 style={styles.title}>My Travel Requests</Text>
+      <Text h4 style={styles.title}>{t('ClientTravelRequestListScreen', 'title')}</Text>
       
       {/* Filter Toggle */}
       <ButtonGroup
         onPress={setFilterIndex}
         selectedIndex={filterIndex}
-        buttons={['Active Requests', 'All Requests']}
+        buttons={[t('ClientTravelRequestListScreen', 'activeRequests'), t('ClientTravelRequestListScreen', 'allRequests')]}
         containerStyle={styles.filterContainer}
       />
       
       {/* Add refresh button */}
       <Button
-        title={refreshing ? "Refreshing..." : "Refresh Requests"}
+        title={refreshing ? t('ClientTravelRequestListScreen', 'refreshing') : t('ClientTravelRequestListScreen', 'refreshRequests')}
         type="outline"
         disabled={refreshing || loading}
         buttonStyle={styles.refreshButton}
@@ -346,9 +349,9 @@ const fetchTravelRequests = async () => {
         <ActivityIndicator size="large" color="#007bff" style={styles.loader} />
       ) : filteredRequests.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No travel requests found</Text>
+          <Text style={styles.emptyText}>{t('ClientTravelRequestListScreen', 'noRequests')}</Text>
           <Button
-            title="Create New Request"
+            title={t('ClientTravelRequestListScreen', 'createNewRequest')}
             onPress={() => navigation.navigate('TravelRequestForm')}
             containerStyle={styles.newRequestButton}
           />

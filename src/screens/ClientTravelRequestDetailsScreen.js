@@ -7,7 +7,10 @@ import {inDateReq} from '../utils/dateUtils';
 import { checkUserRole, signOut, getCurrentUser } from '../utils/auth';
 import { Dropdown } from 'react-native-element-dropdown';
 import {showAlert} from "../components/ShowAlert";
+import { useTranslation} from '../config/localization';
+
 export default function ClientTravelRequestDetailsScreen({ route, navigation }) {
+  const { t,language } = useTranslation();
   const { id } = route.params;
   const [request, setRequest] = useState(null);
   const [offers, setOffers] = useState([]);
@@ -16,6 +19,7 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
   const [offersSectionExpanded, setOffersSectionExpanded] = useState(false);
   const [refreshingOffers, setRefreshingOffers] = useState(false);
   const [visitedOffers, setVisitedOffers] = useState({});  // Using an object
+
   
   // Add sort state variables
   const [sortField, setSortField] = useState('created_at');
@@ -23,29 +27,29 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
   
   // Sort options data
   const sortFieldOptions = [
-    { label: 'Created Date', value: 'created_at' },
-    { label: 'Updated Date', value: 'updated_at' },
-    { label: 'Maximum Cost', value: 'max_cost' },
-    { label: 'Minimum Cost', value: 'min_cost' },
-    { label: 'Maximum Rating', value: 'max_rating' },
-    { label: 'Minimum Rating', value: 'min_rating' },
-    { label: 'Number of Hotels', value: 'num_of_hotels' },
+    { label: t('ClientTravelRequestDetailsScreen', 'createdDate'), value: 'created_at' },
+    { label: t('ClientTravelRequestDetailsScreen', 'updatedDate'), value: 'updated_at' },
+    { label: t('ClientTravelRequestDetailsScreen', 'maxCost'), value: 'max_cost' },
+    { label: t('ClientTravelRequestDetailsScreen', 'minCost'), value: 'min_cost' },
+    { label: t('ClientTravelRequestDetailsScreen', 'maxRating'), value: 'max_rating' },
+    { label: t('ClientTravelRequestDetailsScreen', 'minRating'), value: 'min_rating' },
+    { label: t('ClientTravelRequestDetailsScreen', 'numberOfHotels'), value: 'num_of_hotels' },
   ];
   
   const sortDirectionOptions = [
-    { label: 'Bigger First', value: 'desc' },
-    { label: 'Smaller First', value: 'asc' },
+    { label: t('ClientTravelRequestDetailsScreen', 'biggerFirst'), value: 'desc' },
+    { label: t('ClientTravelRequestDetailsScreen', 'smallerFirst'), value: 'asc' },
   ];
  
   const offerUpToDateState = (offer) => {
     // Check if the offer is new or updated
     if (new Date(offer.updated_at) < new Date(request.updated_at)) {
-      return 'before last update ';
+      return t('ClientTravelRequestDetailsScreen', 'beforeLastUpdate');
     }
     if( offer.new_update) {
-      return 'new updates ';
+      return t('ClientTravelRequestDetailsScreen', 'newUpdates');
     }
-    return 'up to date ';
+    return t('ClientTravelRequestDetailsScreen', 'upToDate');
   };
   
   // Function to sort offers based on current sort settings
@@ -82,7 +86,7 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
     const checkRole = async () => {
       const isClient = await checkUserRole('client');
       if (!isClient) {
-        showAlert('You do not have permission to access this page');
+        showAlert(t('ClientTravelRequestDetailsScreen', 'accessDenied'));
         navigation.goBack();
       }
     };
@@ -101,7 +105,7 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
         const user = session?.user;
         if (!user) {
           
-          showAlert('Error', 'User not found. Please log in again.');
+          showAlert(t('ClientTravelRequestDetailsScreen', 'error'), t('ClientTravelRequestDetailsScreen', 'userNotFound'));
           await signOut(navigation);
           return;
         }
@@ -115,7 +119,7 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
           .single();
 
         if (requestError) throw requestError;
-        if (!requestData) throw new Error('Travel request not found');
+        if (!requestData) throw new Error(t('ClientTravelRequestDetailsScreen', 'requestNotFound'));
 
         setRequest(requestData);
         
@@ -144,13 +148,13 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
       } catch (error) {
         console.error('Error fetching request details:', error.message);
            showAlert(
-      'Error', 
-      'Failed to load Request Details',
+      t('ClientTravelRequestDetailsScreen', 'error'), 
+      t('ClientTravelRequestDetailsScreen', 'failedLoadRequestDetails'),
       [
-        { text: 'Try Again', onPress: () => {
+        { text: t('ClientTravelRequestDetailsScreen', 'tryAgain'), onPress: () => {
             setTimeout(() => fetchRequestDetails(), 100);
                   } },
-        { text: 'Cancel', style: 'cancel' }
+        { text: t('ClientTravelRequestDetailsScreen', 'cancel'), style: 'cancel' }
       ]
     );
         return;
@@ -242,17 +246,17 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
             
             // Show appropriate message
             if (updateCount > 0 && newCount > 0) {
-              showAlert(`${newCount} new offer(s) and ${updateCount} updated offer(s) found!`);
+              showAlert(`${newCount} ${t('ClientTravelRequestDetailsScreen', 'newOffer')}${newCount > 1 ? 's' : ''} ${t('ClientTravelRequestDetailsScreen', 'and')} ${updateCount} ${t('ClientTravelRequestDetailsScreen', 'updatedOffer')}${updateCount > 1 ? 's' : ''} ${t('ClientTravelRequestDetailsScreen', 'found')}!`);
             } else if (updateCount > 0) {
-              showAlert(`${updateCount} offer(s) have been updated!`);
+              showAlert(`${updateCount} ${t('ClientTravelRequestDetailsScreen', 'offer')}${updateCount > 1 ? 's' : ''} ${t('ClientTravelRequestDetailsScreen', 'haveBeenUpdated')}!`);
             } else if (newCount > 0) {
-              showAlert(`${newCount} new offer(s) found!`);
+              showAlert(`${newCount} ${t('ClientTravelRequestDetailsScreen', 'newOffer')}${newCount > 1 ? 's' : ''} ${t('ClientTravelRequestDetailsScreen', 'found')}!`);
             }
             
             return result;
           });
         } else {
-          showAlert('No offers updates available');
+          showAlert(t('ClientTravelRequestDetailsScreen', 'noOffersUpdatesAvailable'));
         }
       } else {
         // If we don't have any offers yet, fetch all offers
@@ -267,12 +271,12 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
         setOffers(allOffersData || []);
 
         if (allOffersData.length === 0) {
-          showAlert('No offers available yet');
+          showAlert(t('ClientTravelRequestDetailsScreen', 'noOffersAvailableYet'));
         }
       }
     } catch (error) {
       console.error('Error refreshing offers:', error.message);
-      showAlert('Failed to refresh offers');
+      showAlert(t('ClientTravelRequestDetailsScreen', 'failedRefreshOffers'));
     } finally {
       setRefreshingOffers(false);
     }
@@ -280,15 +284,15 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
 
   const handleDeleteRequest = () => {
     showAlert(
-      "Delete Request",
-      "Are you sure you want to delete this travel request?",
+      t('ClientTravelRequestDetailsScreen', 'deleteRequest'),
+      t('ClientTravelRequestDetailsScreen', 'areYouSureDeleteRequest'),
       [
         {
-          text: "Cancel",
+          text: t('ClientTravelRequestDetailsScreen', 'cancel'),
           style: "cancel"
         },
         {
-          text: "Delete",
+          text: t('ClientTravelRequestDetailsScreen', 'delete'),
           style: "destructive",
           onPress: async () => {
             try {
@@ -302,11 +306,11 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
                 
               if (error) throw error;
               
-              showAlert("Success", "Travel request deleted successfully");
+              showAlert(t('ClientTravelRequestDetailsScreen', 'success'), t('ClientTravelRequestDetailsScreen', 'travelRequestDeletedSuccessfully'));
               navigation.goBack();
             } catch (error) {
               console.error('Error deleting travel request:', error.message);
-              showAlert("Error", "Failed to delete travel request. Please try again.");
+              showAlert(t('ClientTravelRequestDetailsScreen', 'error'), t('ClientTravelRequestDetailsScreen', 'failedDeleteTravelRequest'));
             } finally {
               setLoading(false);
             }
@@ -334,7 +338,7 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
           }}
         > 
           <Icon name="edit" type="font-awesome" size={14} color="#007bff" />
-          <Text style={styles.actionButtonText}>Edit</Text>
+          <Text style={styles.actionButtonText}>{t('ClientTravelRequestDetailsScreen', 'edit')}</Text>
         </TouchableOpacity>)}
 
         <TouchableOpacity
@@ -342,7 +346,7 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
           onPress={handleDeleteRequest}
         >
           <Icon name="trash" type="font-awesome" size={14} color="#dc3545" />
-          <Text style={styles.actionButtonText}>Delete</Text>
+          <Text style={styles.actionButtonText}>{t('ClientTravelRequestDetailsScreen', 'delete')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -351,7 +355,7 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
           style={styles.sectionHeader}
           onPress={() => setRequestSectionExpanded(!requestSectionExpanded)}
         >
-          <Text h4 style={styles.sectionTitle}>Request Details</Text>
+          <Text h4 style={styles.sectionTitle}>{t('ClientTravelRequestDetailsScreen', 'requestDetails')}</Text>
           <Icon
             name={requestSectionExpanded ? 'chevron-up' : 'chevron-down'}
             type="font-awesome"
@@ -364,13 +368,13 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
             {/* Dates Row */}
             <View style={styles.infoRow}>
               <View style={styles.infoColumn}>
-                <Text style={styles.infoLabel}>Start Date</Text>
+                <Text style={styles.infoLabel}>{t('ClientTravelRequestDetailsScreen', 'startDate')}</Text>
                 <Text style={styles.infoValue}>
                   {format(new Date(request.start_date), 'MMM dd, yyyy')}
                 </Text>
               </View>
               <View style={styles.infoColumn}>
-                <Text style={styles.infoLabel}>End Date</Text>
+                <Text style={styles.infoLabel}>{t('ClientTravelRequestDetailsScreen', 'endDate')}</Text>
                 <Text style={styles.infoValue}>
                   {format(new Date(request.end_date), 'MMM dd, yyyy')}
                 </Text>
@@ -382,7 +386,7 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
             {/* Destinations Row */}
             <View style={styles.infoRow}>
               <View style={styles.fullWidth}>
-                <Text style={styles.infoLabel}>Destination</Text>
+                <Text style={styles.infoLabel}>{t('ClientTravelRequestDetailsScreen', 'destination')}</Text>
                 <Text style={styles.infoValue}>{request.country_name}</Text>
                 {request.area_name && (
                   <Text style={styles.infoValue}>{request.area_name}</Text>
@@ -393,7 +397,7 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
             <Divider style={styles.divider} />
             <View style={styles.infoRow}>
               <View style={styles.fullWidth}>
-                <Text style={styles.infoLabel}>Nationality</Text>
+                <Text style={styles.infoLabel}>{t('ClientTravelRequestDetailsScreen', 'nationality')}</Text>
                 <Text style={styles.infoValue}>{request.travelers_nationality_name}</Text>
               </View>
             </View>
@@ -401,42 +405,42 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
             {/* Travelers Column */}
             <View style={styles.infoRow}>
               <View style={styles.fullWidth}>
-                <Text style={styles.infoLabel}>Travelers</Text>
+                <Text style={styles.infoLabel}>{t('ClientTravelRequestDetailsScreen', 'travelers')}</Text>
                 <Text style={styles.infoValue}>
-                  {request.adults} {request.adults === 1 ? 'Adult' : 'Adults'}
+                  {request.adults} {request.adults === 1 ? t('ClientTravelRequestDetailsScreen', 'adult') : t('ClientTravelRequestDetailsScreen', 'adults')}
                 </Text>
               </View>
             </View>
             {request.children && request.children.length > 0 ? (
               <View>
                 <Text style={styles.infoValue}>
-                  {request.children.length} {request.children.length === 1 ? 'Child' : 'Children'}
+                  {request.children.length} {request.children.length === 1 ? t('ClientTravelRequestDetailsScreen', 'child') : t('ClientTravelRequestDetailsScreen', 'children')}
                 </Text>
                 <Text style={[styles.infoValue, styles.childrenAges]}>
-                  Ages: {request.children.join(', ')}
+                  {t('ClientTravelRequestDetailsScreen', 'ages')}: {request.children.join(', ')}
                 </Text>
               </View>
             ) : (
-              <Text style={styles.infoValue}>No children</Text>
+              <Text style={styles.infoValue}>{t('ClientTravelRequestDetailsScreen', 'noChildren')}</Text>
             )}
             <Divider style={styles.divider} />
 
             {/* Hotel Info Column */}
             <View style={styles.infoRow}>
               <View style={styles.fullWidth}>
-                <Text style={styles.infoLabel}>Hotel Information</Text>
+                <Text style={styles.infoLabel}>{t('ClientTravelRequestDetailsScreen', 'hotelInformation')}</Text>
                 <Text style={styles.infoValue}>
-                  {request.hotel_rating} stars
+                  {request.hotel_rating} {t('ClientTravelRequestDetailsScreen', 'stars')}
                 </Text>
                 <Text style={styles.infoValue}>
-                  {request.rooms} {request.rooms === 1 ? 'room' : 'rooms'}
+                  {request.rooms} {request.rooms === 1 ? t('ClientTravelRequestDetailsScreen', 'room') : t('ClientTravelRequestDetailsScreen', 'rooms')}
                 </Text>
                 {request.meals && request.meals.length > 0 ? (
                   <Text style={styles.infoValue}>
-                    Meals: {request.meals.join(', ')}
+                    {t('ClientTravelRequestDetailsScreen', 'meals')}: {request.meals.join(', ')}
                   </Text>
                 ) : (
-                  <Text style={styles.infoValue}>No meals specified</Text>
+                  <Text style={styles.infoValue}>{t('ClientTravelRequestDetailsScreen', 'noMealsSpecified')}</Text>
                 )}
               </View>
             </View>
@@ -446,11 +450,11 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
             {/* Budget Row */}
             <View style={styles.infoRow}>
               <View style={styles.infoColumn}>
-                <Text style={styles.infoLabel}>Min Budget</Text>
+                <Text style={styles.infoLabel}>{t('ClientTravelRequestDetailsScreen', 'minBudget')}</Text>
                 <Text style={styles.infoValue}>${request.min_budget}</Text>
               </View>
               <View style={styles.infoColumn}>
-                <Text style={styles.infoLabel}>Max Budget</Text>
+                <Text style={styles.infoLabel}>{t('ClientTravelRequestDetailsScreen', 'maxBudget')}</Text>
                 <Text style={styles.infoValue}>${request.max_budget}</Text>
               </View>
             </View>
@@ -461,7 +465,7 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
             {request.notes && (
               <View style={styles.infoRow}>
                 <View style={styles.fullWidth}>
-                  <Text style={styles.infoLabel}>Notes</Text>
+                  <Text style={styles.infoLabel}>{t('ClientTravelRequestDetailsScreen', 'notes')}</Text>
                   <ScrollView style={styles.notesContainer}>
                     <Text style={styles.notesText}>{request.notes}</Text>
                   </ScrollView>
@@ -478,7 +482,7 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
           style={styles.sectionHeader}
           onPress={() => setOffersSectionExpanded(!offersSectionExpanded)}
         >
-          <Text h4 style={styles.sectionTitle}>Offers ({offers.length})</Text>
+          <Text h4 style={styles.sectionTitle}>{t('ClientTravelRequestDetailsScreen', 'offers')} ({offers.length})</Text>
           <Icon
             name={offersSectionExpanded ? 'chevron-up' : 'chevron-down'}
             type="font-awesome"
@@ -489,7 +493,7 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
 
         <View style={styles.refreshButtonContainer}>
           <Button
-            title={refreshingOffers ? "Loading..." : "Refresh Offers"}
+            title={refreshingOffers ? t('ClientTravelRequestDetailsScreen', 'loading') : t('ClientTravelRequestDetailsScreen', 'refreshOffersBtn')}
             type="outline"
             disabled={refreshingOffers}
             buttonStyle={styles.refreshButton}
@@ -503,7 +507,7 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
             {/* Add sort options if there are offers */}
             {offers.length > 0 && (
               <View style={styles.sortContainer}>
-                <Text style={styles.sortLabel}>Sort by:</Text>
+                <Text style={styles.sortLabel}>{t('ClientTravelRequestDetailsScreen', 'sortBy')}</Text>
                 <View style={styles.sortDropdownsContainer}>
                   <Dropdown
                     data={sortFieldOptions}
@@ -535,10 +539,10 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
               getSortedOffers().map((offer, index) => (
                 <Card key={index} containerStyle={styles.offerCard}>
                   <View style={styles.offerHeader}>
-                    <Text style={styles.offerTitle}>Offer #{index + 1}</Text>
+                    <Text style={styles.offerTitle}>{t('ClientTravelRequestDetailsScreen', 'offer')} #{index + 1}</Text>
                     <View style={styles.statusContainer}>
                       <Text style={[styles.statusText, { color: offer.status === 'not viewed' ? '#FFA500' : '#28a745' }]}>
-                        {offerUpToDateState(offer)}  {offer.status}
+                        {offerUpToDateState(offer)} {offer.status === 'not viewed' ? t('ClientTravelRequestDetailsScreen', 'notViewed') : offer.status}
                       </Text>
                     </View>
                   </View>
@@ -549,27 +553,27 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
                     <View style={styles.offerDetailRow}>
                       <Icon name="cash-outline" type="ionicon" size={16} color="#28a745" />
                       <Text style={styles.offerDetailText}>
-                        Price Range: ${offer.min_cost} - ${offer.max_cost}
+                        {t('ClientTravelRequestDetailsScreen', 'priceRange')}: ${offer.min_cost} - ${offer.max_cost}
                       </Text>
                     </View>
 
                     <View style={styles.offerDetailRow}>
                       <Icon name="star" type="ionicon" size={16} color="#FFD700" />
                       <Text style={styles.offerDetailText}>
-                        Hotels Rating: {offer.min_rating} - {offer.max_rating} stars
+                        {t('ClientTravelRequestDetailsScreen', 'hotelsRating')}: {offer.min_rating} - {offer.max_rating} {t('ClientTravelRequestDetailsScreen', 'stars')}
                       </Text>
                     </View>
 
                     <View style={styles.offerDetailRow}>
                       <Icon name="business" type="ionicon" size={16} color="#007bff" />
                       <Text style={styles.offerDetailText}>
-                        Number of Hotels: {offer.num_of_hotels}
+                        {t('ClientTravelRequestDetailsScreen', 'numHotels')}: {offer.num_of_hotels}
                       </Text>
                     </View>
                   </View>
 
                   <Button
-                    title="View Details"
+                    title={t('ClientTravelRequestDetailsScreen', 'viewDetails')}
                     icon={<Icon name="eye-outline" type="ionicon" color="#fff" size={16} style={styles.buttonIcon} />}
                     buttonStyle={[
                       styles.viewDetailsButton,
@@ -580,7 +584,7 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
                 </Card>
               ))
             ) : (
-              <Text style={styles.noOffersText}>No offers yet for this request</Text>
+              <Text style={styles.noOffersText}>{t('ClientTravelRequestDetailsScreen', 'noOffersYetForThisRequest')}</Text>
             )}
           </View>
         )}

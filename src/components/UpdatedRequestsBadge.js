@@ -3,10 +3,12 @@ import { Badge } from 'react-native-elements';
 import supabase from '../config/supabase';
 import { getCurrentUser } from '../utils/auth';
 import { sendLocalNotification } from '../utils/notificationUtils';
+import {useTranslation} from "../config/localization";
 import { Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 const UpdatedRequestsBadge = React.memo(() => {
+  const {t,language} = useTranslation();
   const [count, setCount] = useState(0);
   const intervalRef = useRef(null);
   const previousCountRef = useRef(0);
@@ -45,7 +47,8 @@ const fetchCount = async () => {
             if ('Notification' in window) {
               const showWebNotification = () => {
                 const notification = new Notification('New Requests Updated!', {
-                  body: `You have ${data} request${data > 1 ? 's' : ''} you made offers to them updated`,
+                  //body: `You have ${data} request${data > 1 ? 's' : ''} you made offers to them updated`,
+                  body: t("UpdatedRequestsBadge","msg",{data:data}),
                   icon: '/favicon.ico',
                   tag: 'new-requests-updated',
                   // Add screen data directly to the notification content
@@ -81,7 +84,7 @@ const fetchCount = async () => {
             // Mobile notifications using Expo
             await sendLocalNotification(
               'New Requests Updated!',
-                 `You have ${data} request${data > 1 ? 's' : ''} you made offers to them updated`,
+                 t("UpdatedRequestsBadge","msg",{data:data}),
               {
                 screen: "AgentApp",
                 params: {

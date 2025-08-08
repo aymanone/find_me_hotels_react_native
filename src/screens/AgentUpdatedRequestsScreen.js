@@ -14,30 +14,34 @@ import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser, signOut } from '../utils/auth';
 import { format } from 'date-fns';
 import {showAlert} from "../components/ShowAlert";
+import { useTranslation } from '../config/localization';
+
 const AgentUpdatedRequestsScreen = ({ navigation }) => {
+  const { t,language } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [updatedRequests, setUpdatedRequests] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  
 
   const fetchUpdatedRequests = async () => {
     try {
       setLoading(true);
       
-      // Check if user is an agent
-      const isAgent = await checkUserRole('agent');
-      if (!isAgent) {
-        showAlert('Access Denied', 'You must be an agent to view this screen.');
-        navigation.goBack();
-        return;
-      }
+              // Check if user is an agent
+        const isAgent = await checkUserRole('agent');
+        if (!isAgent) {
+          showAlert(t('Alerts', 'accessDenied'), t('AgentUpdatedRequestsScreen', 'accessDenied'));
+          navigation.goBack();
+          return;
+        }
       
-      // Get current user
-      const user = await getCurrentUser();
-      if (!user) {
-        showAlert('Error', 'User not found. Please log in again.');
-        await signOut(navigation);
-        return;
-      }
+              // Get current user
+        const user = await getCurrentUser();
+        if (!user) {
+          showAlert(t('Alerts', 'error'), t('AgentUpdatedRequestsScreen', 'userNotFound'));
+          await signOut(navigation);
+          return;
+        }
       
       // Fetch updated requests using RPC function
       // Note: Changed parameter name from 'agent_id' to 'agent' based on error logs
@@ -48,10 +52,10 @@ const AgentUpdatedRequestsScreen = ({ navigation }) => {
       if (error) throw error;
       
       setUpdatedRequests(data || []);
-    } catch (error) {
-      console.error('Error fetching updated requests:', error);
-      showAlert('Error', 'Failed to load updated requests. Please try again.');
-    } finally {
+          } catch (error) {
+        console.error('Error fetching updated requests:', error);
+        showAlert(t('Alerts', 'error'), t('AgentUpdatedRequestsScreen', 'loadError'));
+      } finally {
       setLoading(false);
       setRefreshing(false);
     }
@@ -94,7 +98,7 @@ const AgentUpdatedRequestsScreen = ({ navigation }) => {
     <View style={styles.container}>
       {/* Header with count */}
       <View style={styles.headerContainer}>
-        <Text style={styles.headerTitle}>Updated Requests</Text>
+        <Text style={styles.headerTitle}>{t('AgentUpdatedRequestsScreen', 'title')}</Text>
         <Badge 
           value={updatedRequests.length} 
           status="error" 
@@ -107,9 +111,9 @@ const AgentUpdatedRequestsScreen = ({ navigation }) => {
       {updatedRequests.length > 0 && (
         <View style={styles.infoBanner}>
           <Icon name="information-circle-outline" type="ionicon" color="#0066cc" size={20} />
-          <Text style={styles.infoText}>
-            These requests have been updated by clients and need your attention.
-          </Text>
+                      <Text style={styles.infoText}>
+              {t('AgentUpdatedRequestsScreen', 'theseRequestsUpdated')}
+            </Text>
         </View>
       )}
       
@@ -126,7 +130,7 @@ const AgentUpdatedRequestsScreen = ({ navigation }) => {
         {updatedRequests.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Icon name="checkmark-circle-outline" type="ionicon" size={60} color="#28a745" />
-            <Text style={styles.emptyText}>No updated requests at this time</Text>
+            <Text style={styles.emptyText}>{t('AgentUpdatedRequestsScreen', 'noUpdatedRequests')}</Text>
           </View>
         ) : (
           updatedRequests.map((item, index) => (
@@ -138,7 +142,7 @@ const AgentUpdatedRequestsScreen = ({ navigation }) => {
                   {item.request_area_name}, {item.request_country_name}
                   </Text>
                   <Text style={styles.updatedDate}>
-                    Updated: {formatDate(item.updated_at)}
+                    {t('AgentUpdatedRequestsScreen', 'updatedDate')}: {formatDate(item.updated_at)}
                   </Text>
                 </View>
                 <Badge 
@@ -153,35 +157,35 @@ const AgentUpdatedRequestsScreen = ({ navigation }) => {
               {/* Date Range */}
               <View style={styles.detailRow}>
                 <Icon name="calendar-outline" type="ionicon" size={16} color="#0066cc" />
-                <Text style={styles.detailText}>
-                  <Text style={styles.detailLabel}>Travel Dates: </Text>
-                  {formatDate(item.start_date)} - {formatDate(item.end_date)}
-                </Text>
+                                  <Text style={styles.detailText}>
+                    <Text style={styles.detailLabel}>{t('AgentUpdatedRequestsScreen', 'travelDates')}: </Text>
+                    {formatDate(item.start_date)} - {formatDate(item.end_date)}
+                  </Text>
               </View>
               
               {/* Travelers */}
               <View style={styles.detailRow}>
                 <Icon name="people-outline" type="ionicon" size={16} color="#0066cc" />
-                <Text style={styles.detailText}>
-                  <Text style={styles.detailLabel}>Travelers: </Text>
-                  {item.adults} {item.adults === 1 ? 'Adult' : 'Adults'}
-                  {item.children && item.children.length > 0 ? 
-                    `, ${item.children.length} ${item.children.length === 1 ? 'Child' : 'Children'}` : 
-                    ', No children'}
-                </Text>
+                                  <Text style={styles.detailText}>
+                    <Text style={styles.detailLabel}>{t('AgentUpdatedRequestsScreen', 'travelers')}: </Text>
+                    {item.adults} {item.adults === 1 ? t('AgentUpdatedRequestsScreen', 'adult') : t('AgentUpdatedRequestsScreen', 'adults')}
+                    {item.children && item.children.length > 0 ? 
+                      `, ${item.children.length} ${item.children.length === 1 ? t('AgentUpdatedRequestsScreen', 'child') : t('AgentUpdatedRequestsScreen', 'children')}` : 
+                      `, ${t('AgentUpdatedRequestsScreen', 'noChildren')}`}
+                  </Text>
               </View>
               
               {/* Nationality */}
               <View style={styles.detailRow}>
                 <Icon name="flag-outline" type="ionicon" size={16} color="#0066cc" />
-                <Text style={styles.detailText}>
-                  <Text style={styles.detailLabel}>Nationality: </Text>
-                  {item.travelers_nationality_name}
-                </Text>
+                                  <Text style={styles.detailText}>
+                    <Text style={styles.detailLabel}>{t('AgentUpdatedRequestsScreen', 'nationality')}: </Text>
+                    {item.travelers_nationality_name}
+                  </Text>
               </View>
               
-              <Button
-                title="View Details"
+                              <Button
+                  title={t('AgentUpdatedRequestsScreen', 'viewDetails')}
                 icon={
                   <Icon
                     name="arrow-forward-outline"

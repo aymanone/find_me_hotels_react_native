@@ -5,7 +5,11 @@ import supabase from '../config/supabase';
 import { validPasswordSignup } from '../utils/validation';
 import { useAuth } from '../contexts/AuthContext';
 import {showAlert} from "../components/ShowAlert";
+import { useTranslation } from '../config/localization';
+import LanguageSelector from '../components/LanguageSelector';
+
 export default function ResetPasswordScreen({ navigation, route }) {
+  const { t,language } = useTranslation();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -34,7 +38,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
           
           if (error) {
             console.error('Error setting session:', error.message);
-            showAlert('Error', 'Failed to authenticate your reset request. Please try again.');
+            showAlert(t('Alerts', 'error'), t('ResetPasswordScreen', 'resetError'));
             setIsResettingPassword(false); // Reset flag on error
             navigation.navigate('Signin');
             return;
@@ -43,12 +47,12 @@ export default function ResetPasswordScreen({ navigation, route }) {
           setSessionEstablished(true);
         } catch (err) {
           console.error('Session setup error:', err.message);
-          showAlert('Error', 'Authentication failed. Please request a new password reset link.');
+          showAlert(t('Alerts', 'error'), t('ResetPasswordScreen', 'resetError'));
           setIsResettingPassword(false); // Reset flag on error
           navigation.navigate('Signin');
         }
       } else {
-        showAlert('Error', 'Invalid reset link. Please request a new password reset.');
+        showAlert(t('Alerts', 'error'), t('ResetPasswordScreen', 'resetError'));
         navigation.navigate('Signin');
       }
     };
@@ -64,19 +68,19 @@ export default function ResetPasswordScreen({ navigation, route }) {
   const handleUpdatePassword = async () => {
     // Validate password
     if (!validPasswordSignup(password)) {
-      setPasswordError('Password must be at least 8 characters with at least one uppercase letter, one lowercase letter, and one number');
+      setPasswordError(t('ResetPasswordScreen', 'invalidPassword'));
       return;
     }
 
     // Check if passwords match
     if (password !== confirmPassword) {
-      showAlert('Error', 'Passwords do not match');
+      showAlert(t('Alerts', 'error'), t('ResetPasswordScreen', 'passwordMismatch'));
       return;
     }
 
     // Check if session is established
     if (!sessionEstablished) {
-      showAlert('Error', 'Authentication session not established. Please try again.');
+      showAlert(t('Alerts', 'error'), t('ResetPasswordScreen', 'resetError'));
       return;
     }
 
@@ -94,15 +98,15 @@ export default function ResetPasswordScreen({ navigation, route }) {
       setIsResettingPassword(false);
       
       showAlert(
-        'Success', 
-        'Your password has been updated successfully',
+        t('Alerts', 'success'), 
+        t('ResetPasswordScreen', 'resetSuccess'),
         [{ text: 'OK', onPress: () => navigation.navigate('Signin') }]
       );
     } catch (error) {
       console.error('Update password error:', error.message);
       // Reset flag on error
       setIsResettingPassword(false);
-      showAlert('Error', "an error happened please try again.", [
+      showAlert(t('Alerts', 'error'), t('ResetPasswordScreen', 'resetError'), [
         { text: 'OK', onPress: () => navigation.navigate('Signin') }
       ]);
     } finally {
@@ -112,13 +116,16 @@ export default function ResetPasswordScreen({ navigation, route }) {
 
   return (
     <View style={styles.container}>
-      <Text h3 style={styles.title}>Set New Password</Text>
+      <View style={styles.languageSelectorContainer}>
+        <LanguageSelector />
+      </View>
+      <Text h3 style={styles.title}>{t('ResetPasswordScreen', 'title')}</Text>
       <Text style={styles.subtitle}>
-        Please enter your new password below.
+        {t('ResetPasswordScreen', 'enterNewPassword')}
       </Text>
       
       <Input
-        placeholder="New Password"
+        placeholder={t('ResetPasswordScreen', 'newPassword')}
         onChangeText={(text) => {
           setPassword(text);
           setPasswordError('');
@@ -135,7 +142,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
       />
       
       <Input
-        placeholder="Confirm New Password"
+        placeholder={t('ResetPasswordScreen', 'confirmPassword')}
         onChangeText={setConfirmPassword}
         value={confirmPassword}
         secureTextEntry={!showPassword}
@@ -143,7 +150,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
       />
       
       <Button
-        title={sessionEstablished ? "Update Password" : "Authenticating..."}
+        title={sessionEstablished ? t('ResetPasswordScreen', 'resetPassword') : t('Alerts', 'loading')}
         onPress={handleUpdatePassword}
         loading={loading}
         disabled={!sessionEstablished || loading}
@@ -159,6 +166,12 @@ const styles = StyleSheet.create({
     padding: 20,
     justifyContent: 'center',
     backgroundColor: '#fff',
+  },
+  languageSelectorContainer: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    zIndex: 1,
   },
   title: {
     marginBottom: 20,

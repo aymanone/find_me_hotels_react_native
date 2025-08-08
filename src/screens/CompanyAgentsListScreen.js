@@ -15,8 +15,11 @@ import {
 } from 'react-native-elements';
 import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser } from '../utils/auth';
-import {showAlert} from "../components/ShowAlert";
+import { showAlert } from "../components/ShowAlert";
+import { useTranslation } from '../config/localization';
+
 const CompanyAgentsListScreen = ({ navigation }) => {
+  const { t, language } = useTranslation();
   const [agents, setAgents] = useState([]);
   const [filteredAgents, setFilteredAgents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,7 +34,7 @@ const CompanyAgentsListScreen = ({ navigation }) => {
       // Get current user
       const currentUser = await getCurrentUser();
       if (!currentUser) {
-        showAlert('Error', 'User not found. Please log in again.');
+        showAlert(t('CompanyAgentsListScreen', 'error'), t('CompanyAgentsListScreen', 'userNotFound'));
         navigation.navigate('Signin');
         return;
       }
@@ -56,7 +59,7 @@ const CompanyAgentsListScreen = ({ navigation }) => {
       setFilteredAgents(data);
     } catch (error) {
       console.error('Error fetching agents:', error);
-      showAlert('Error', 'Failed to load agents list');
+      showAlert(t('CompanyAgentsListScreen', 'error'), t('CompanyAgentsListScreen', 'failedToLoadAgentsList'));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -69,7 +72,7 @@ const CompanyAgentsListScreen = ({ navigation }) => {
         // Check if user is a company
         const userRole = await checkUserRole('company');
         if (!userRole) {
-          showAlert('Access Denied', 'Only companies can access this page.');
+          showAlert(t('CompanyAgentsListScreen', 'accessDenied'), t('CompanyAgentsListScreen', 'onlyCompaniesAccess'));
           navigation.navigate('Home');
           return;
         }
@@ -77,7 +80,7 @@ const CompanyAgentsListScreen = ({ navigation }) => {
         // Get current user
         const currentUser = await getCurrentUser();
         if (!currentUser) {
-          showAlert('Error', 'User not found. Please log in again.');
+          showAlert(t('CompanyAgentsListScreen', 'error'), t('CompanyAgentsListScreen', 'userNotFound'));
           navigation.navigate('Login');
           return;
         }
@@ -88,7 +91,7 @@ const CompanyAgentsListScreen = ({ navigation }) => {
         await fetchAgents();
       } catch (error) {
         console.error('Error fetching agents:', error);
-        showAlert('Error', 'Failed to load agents list');
+        showAlert(t('CompanyAgentsListScreen', 'error'), t('CompanyAgentsListScreen', 'failedToLoadAgentsList'));
         setLoading(false);
       }
     };
@@ -120,27 +123,27 @@ const CompanyAgentsListScreen = ({ navigation }) => {
     try {
       // Confirm deletion
       showAlert(
-        'Confirm Deletion',
-        `Are you sure you want to delete agent ${agentName}?`,
+        t('CompanyAgentsListScreen', 'confirmDeletion'),
+        t('CompanyAgentsListScreen', 'deleteAgentConfirm', { agentName }),
         [
           {
-            text: 'Cancel',
+            text: t('CompanyAgentsListScreen', 'cancel'),
             style: 'cancel'
           },
           {
-            text: 'Delete',
+            text: t('CompanyAgentsListScreen', 'delete'),
             onPress: async () => {
               // Get current user again to check permissions
               const currentUser = await getCurrentUser();
               
               if (!currentUser) {
-                showAlert('Error', 'User not found. Please log in again.');
+                showAlert(t('CompanyAgentsListScreen', 'error'), t('CompanyAgentsListScreen', 'userNotFound'));
                 return;
               }
               
               // Check if user is permitted to work
               if (currentUser.app_metadata?.permitted_to_work !== true) {
-                showAlert('Permission Denied', 'You do not have permission to delete agents.');
+                showAlert(t('CompanyAgentsListScreen', 'permissionDenied'), t('CompanyAgentsListScreen', 'permissionDenied'));
                 return;
               }
               
@@ -156,7 +159,7 @@ const CompanyAgentsListScreen = ({ navigation }) => {
               setAgents(agents.filter(agent => agent.id !== agentId));
               setFilteredAgents(filteredAgents.filter(agent => agent.id !== agentId));
               
-              showAlert('Success', 'Agent deleted successfully');
+              showAlert(t('CompanyAgentsListScreen', 'success'), t('CompanyAgentsListScreen', 'agentDeleted'));
             },
             style: 'destructive'
           }
@@ -164,7 +167,7 @@ const CompanyAgentsListScreen = ({ navigation }) => {
       );
     } catch (error) {
       console.error('Error deleting agent:', error);
-      showAlert('Error', 'Failed to delete agent');
+      showAlert(t('CompanyAgentsListScreen', 'error'), t('CompanyAgentsListScreen', 'failedToDeleteAgent'));
     }
   };
 
@@ -179,9 +182,9 @@ const CompanyAgentsListScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text h4 style={styles.headerTitle}>Your Agents</Text>
+        <Text h4 style={styles.headerTitle}>{t('CompanyAgentsListScreen', 'yourAgents')}</Text>
         <Button
-         title="Refresh Agents"
+         title={t('CompanyAgentsListScreen', 'refreshAgents')}
           type="clear"
           loading={refreshing}
           onPress={fetchAgents}
@@ -190,7 +193,7 @@ const CompanyAgentsListScreen = ({ navigation }) => {
       </View>
       
       <SearchBar
-        placeholder="Search agents..."
+        placeholder={t('CompanyAgentsListScreen', 'searchAgentsPlaceholder')}
         onChangeText={updateSearch}
         value={search}
         containerStyle={styles.searchBarContainer}
@@ -202,7 +205,7 @@ const CompanyAgentsListScreen = ({ navigation }) => {
       <ScrollView style={styles.scrollView}>
         {filteredAgents.length === 0 ? (
           <Card containerStyle={styles.noAgentsCard}>
-            <Text style={styles.noAgentsText}>No agents found</Text>
+            <Text style={styles.noAgentsText}>{t('CompanyAgentsListScreen', 'noAgents')}</Text>
           </Card>
         ) : (
           filteredAgents.map(agent => (
@@ -216,12 +219,12 @@ const CompanyAgentsListScreen = ({ navigation }) => {
               </View>
               
               <Text style={styles.agentCountry}>
-                Country: {agent.countries?.country_name || 'Not specified'}
+                {t('CompanyAgentsListScreen', 'country')}: {agent.countries?.country_name || t('CompanyAgentsListScreen', 'notSpecified')}
               </Text>
               
               <View style={styles.actionButtons}>
                 <Button
-                  title="View Profile"
+                  title={t('CompanyAgentsListScreen', 'viewProfile')}
                   type="outline"
                   buttonStyle={styles.viewButton}
                   onPress={() => navigation.navigate("Home",{screen: "CompanyAgentProfile",params:

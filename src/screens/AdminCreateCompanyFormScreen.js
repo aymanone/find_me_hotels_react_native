@@ -7,8 +7,10 @@ import { validEmail, validPhoneNumber, validURL } from '../utils/validation';
 import { useNavigation } from '@react-navigation/native';
 import { ActivityIndicator } from 'react-native';
 import {showAlert} from "../components/ShowAlert";
+import { useTranslation } from '../config/localization';
 const AdminCreateCompanyFormScreen = () => {
   const navigation = useNavigation();
+  const { t,language } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [countries, setCountries] = useState([]);
@@ -47,7 +49,7 @@ const AdminCreateCompanyFormScreen = () => {
       setIsAdmin(isUserAdmin);
       
       if (!isUserAdmin) {
-        showAlert('Access Denied', 'You do not have permission to access this page.');
+        showAlert(t('AdminCreateCompanyFormScreen', 'accessDenied'), t('AdminCreateCompanyFormScreen', 'permissionDenied'));
         navigation.goBack();
         return;
       }
@@ -58,7 +60,7 @@ const AdminCreateCompanyFormScreen = () => {
     }
     } catch (error) {
       console.error('Error checking admin status:', error);
-      showAlert('Error', 'Failed to verify your permissions.');
+      showAlert(t('Alerts', 'error'), t('AdminCreateCompanyFormScreen', 'failedVerifyPermissions'));
       navigation.goBack();
     }
   };
@@ -78,7 +80,7 @@ const AdminCreateCompanyFormScreen = () => {
       
     } catch (error) {
       console.error('Error fetching countries:', error);
-      showAlert('Error', 'Failed to load countries list.');
+      showAlert(t('Alerts', 'error'), t('AdminCreateCompanyFormScreen', 'loadCountriesError'));
     } finally {
       setLoading(false);
     }
@@ -97,43 +99,43 @@ const AdminCreateCompanyFormScreen = () => {
     
     // Validate company name
     if (!companyName.trim()) {
-      newErrors.companyName = 'Company name is required';
+      newErrors.companyName = t('AdminCreateCompanyFormScreen', 'companyNameRequired');
       isValid = false;
     }
 
     // Validate country
     if (!companyCountry) {
-      newErrors.companyCountry = 'Please select a country';
+      newErrors.companyCountry = t('AdminCreateCompanyFormScreen', 'companyCountryRequired');
       isValid = false;
     }
 
     // Validate email
     if (!companyEmail.trim()) {
-      newErrors.companyEmail = 'Email is required';
+      newErrors.companyEmail = t('AdminCreateCompanyFormScreen', 'companyEmailRequired');
       isValid = false;
     } else if (!validEmail(companyEmail)) {
-      newErrors.companyEmail = 'Please enter a valid email';
+      newErrors.companyEmail = t('AdminCreateCompanyFormScreen', 'companyEmailInvalid');
       isValid = false;
     }
 
     // Validate address
     if (!address.trim()) {
-      newErrors.address = 'Address is required';
+      newErrors.address = t('AdminCreateCompanyFormScreen', 'companyAddressRequired');
       isValid = false;
     }
    if (licenseNum.trim() && licenseNum.trim().length < 2) {
-  newErrors.licenseNum = 'License number must be at least 2 characters';
+  newErrors.licenseNum = t('AdminCreateCompanyFormScreen', 'licenseNumLength');
   isValid = false;
   }
     // Validate URL if provided
     if (url.trim() && !validURL(url)) {
-      newErrors.url = 'Please enter a valid URL';
+      newErrors.url = t('AdminCreateCompanyFormScreen', 'companyUrlInvalid');
       isValid = false;
     }
 
     // Validate phone if provided
     if (phone.trim() && !validPhoneNumber(phone)) {
-      newErrors.phone = 'Please enter a valid phone number';
+      newErrors.phone = t('AdminCreateCompanyFormScreen', 'companyPhoneInvalid');
       isValid = false;
     }
 
@@ -157,7 +159,7 @@ const AdminCreateCompanyFormScreen = () => {
       .select('id, country_name')
       .order('country_name', { ascending: true });
     
-    if (countriesError) throw new Error('Failed to validate country data. Please try again.');
+    if (countriesError) throw new Error(t('AdminCreateCompanyFormScreen', 'loadCountriesError'));
     
     // Check if the selected country still exists
     const countryStillExists = refreshedCountries.some(country => country.id === companyCountry);
@@ -165,7 +167,7 @@ const AdminCreateCompanyFormScreen = () => {
     if (!countryStillExists) {
       setErrors(prev => ({
         ...prev,
-        companyCountry: 'The selected country is no longer available. Please select another country.'
+        companyCountry: t('AdminCreateCompanyFormScreen', 'countryNotAvailable')
       }));
       
       // Update the countries list with fresh data
@@ -174,7 +176,7 @@ const AdminCreateCompanyFormScreen = () => {
       // Reset the country selection
       setCompanyCountry('');
       
-      throw new Error('The selected country is no longer available. Please select another country.');
+      throw new Error(t('AdminCreateCompanyFormScreen', 'countryNotAvailable'));
     }
     
       // Prepare company data
@@ -202,9 +204,9 @@ const AdminCreateCompanyFormScreen = () => {
       if (error) throw error;
       
       showAlert(
-        'Success',
-        'Company created successfully!',
-        [{ text: 'OK' }]
+        t('Alerts', 'success'),
+        t('AdminCreateCompanyFormScreen', 'createSuccess'),
+        [{ text: t('Alerts', 'ok') }]
       );
       
       // Reset form
@@ -217,7 +219,7 @@ const AdminCreateCompanyFormScreen = () => {
       setLicenseNum('');
     } catch (error) {
       console.error('Error creating company:', error);
-      showAlert('Error', 'Failed to create company. Please try again.');
+      showAlert(t('Alerts', 'error'), t('AdminCreateCompanyFormScreen', 'createError'));
     } finally {
       setLoading(false);
     }
@@ -227,17 +229,16 @@ const AdminCreateCompanyFormScreen = () => {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#0000ff" />
-        <Text>Loading...</Text>
+        <Text>{t('AdminCreateCompanyFormScreen', 'loading')}</Text>
       </View>
     );
   }
   const PermissionWarning = () => (
   <View style={styles.warningContainer}>
     <Text style={styles.warningIcon}>⚠️</Text>
-    <Text style={styles.warningTitle}>Access Restricted</Text>
+    <Text style={styles.warningTitle}>{t('AdminCreateCompanyFormScreen', 'permissionWarning')}</Text>
     <Text style={styles.warningText}>
-      Your account is currently not permitted to create new companies.
-      Please contact the system administrator for assistance.
+      {t('AdminCreateCompanyFormScreen', 'notPermittedToWork')}
     </Text>
   </View>
 );
@@ -248,33 +249,33 @@ const AdminCreateCompanyFormScreen = () => {
       <PermissionWarning />
     ) : (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Create New Company</Text>
+      <Text style={styles.title}>{t('AdminCreateCompanyFormScreen', 'title')}</Text>
       
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Company Name *</Text>
+        <Text style={styles.label}>{t('AdminCreateCompanyFormScreen', 'companyName')} *</Text>
         <TextInput
           style={[styles.input, errors.companyName ? styles.inputError : null]}
           value={companyName}
           onChangeText={setCompanyName}
-          placeholder="Enter company name"
+          placeholder={t('AdminCreateCompanyFormScreen', 'companyNamePlaceholder')}
         />
         {errors.companyName ? <Text style={styles.errorText}>{errors.companyName}</Text> : null}
       </View>
       
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Company Email *</Text>
+        <Text style={styles.label}>{t('AdminCreateCompanyFormScreen', 'companyEmail')} *</Text>
         <TextInput
           style={[styles.input, errors.companyEmail ? styles.inputError : null]}
           value={companyEmail}
           onChangeText={setCompanyEmail}
-          placeholder="Enter company email"
+          placeholder={t('AdminCreateCompanyFormScreen', 'companyEmailPlaceholder')}
           keyboardType="email-address"
         />
         {errors.companyEmail ? <Text style={styles.errorText}>{errors.companyEmail}</Text> : null}
       </View>
       
       <View style={styles.formGroup}>
-  <Text style={styles.label}>Company Headquarter *</Text>
+  <Text style={styles.label}>{t('AdminCreateCompanyFormScreen', 'companyCountry')} *</Text>
   <Dropdown
     style={[styles.dropdown, errors.companyCountry ? styles.inputError : null]}
     placeholderStyle={styles.placeholderStyle}
@@ -289,8 +290,8 @@ const AdminCreateCompanyFormScreen = () => {
     maxHeight={300}
     labelField="label"
     valueField="value"
-    placeholder="Select country"
-    searchPlaceholder="Search..."
+    placeholder={t('AdminCreateCompanyFormScreen', 'selectCountryPlaceholder')}
+    searchPlaceholder={t('AdminCreateCompanyFormScreen', 'searchCountry')}
     value={companyCountry}
     onChange={item => {
       setCompanyCountry(item.value);
@@ -305,45 +306,45 @@ const AdminCreateCompanyFormScreen = () => {
 </View>
       
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Address *</Text>
+        <Text style={styles.label}>{t('AdminCreateCompanyFormScreen', 'companyAddress')} *</Text>
         <TextInput
           style={[styles.input, errors.address ? styles.inputError : null]}
           value={address}
           onChangeText={setAddress}
-          placeholder="Enter company address"
+          placeholder={t('AdminCreateCompanyFormScreen', 'companyAddressPlaceholder')}
           multiline
         />
         {errors.address ? <Text style={styles.errorText}>{errors.address}</Text> : null}
       </View>
       <View style={styles.formGroup}>
-  <Text style={styles.label}>License Number</Text>
+  <Text style={styles.label}>{t('AdminCreateCompanyFormScreen', 'licenseNumber')}</Text>
   <TextInput
     style={[styles.input, errors.licenseNum ? styles.inputError : null]}
     value={licenseNum}
     onChangeText={setLicenseNum}
-    placeholder="Enter company license number"
+    placeholder={t('AdminCreateCompanyFormScreen', 'licenseNumberPlaceholder')}
   />
   {errors.licenseNum ? <Text style={styles.errorText}>{errors.licenseNum}</Text> : null}
 </View>
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Website URL (Optional)</Text>
+        <Text style={styles.label}>{t('AdminCreateCompanyFormScreen', 'companyUrl')} (Optional)</Text>
         <TextInput
           style={[styles.input, errors.url ? styles.inputError : null]}
           value={url}
           onChangeText={setUrl}
-          placeholder="Enter company website URL"
+          placeholder={t('AdminCreateCompanyFormScreen', 'companyUrlPlaceholder')}
           keyboardType="url"
         />
         {errors.url ? <Text style={styles.errorText}>{errors.url}</Text> : null}
       </View>
       
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Phone Number (Optional)</Text>
+        <Text style={styles.label}>{t('AdminCreateCompanyFormScreen', 'companyPhone')} (Optional)</Text>
         <TextInput
           style={[styles.input, errors.phone ? styles.inputError : null]}
           value={phone}
           onChangeText={setPhone}
-          placeholder="Enter company phone number"
+          placeholder={t('AdminCreateCompanyFormScreen', 'companyPhonePlaceholder')}
           keyboardType="phone-pad"
         />
         {errors.phone ? <Text style={styles.errorText}>{errors.phone}</Text> : null}
@@ -357,7 +358,7 @@ const AdminCreateCompanyFormScreen = () => {
         {loading ? (
           <ActivityIndicator size="small" color="#ffffff" />
         ) : (
-          <Text style={styles.buttonText}>Create Company</Text>
+          <Text style={styles.buttonText}>{t('AdminCreateCompanyFormScreen', 'createCompany')}</Text>
         )}
       </TouchableOpacity>
     </ScrollView>

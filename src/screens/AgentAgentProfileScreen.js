@@ -24,7 +24,9 @@ import { validPhoneNumber, validPasswordSignup
 
  } from '../utils/validation';
 import {showAlert} from "../components/ShowAlert";
+import {useTranslation} from "../config/localization";
 export default function AgentAgentProfileScreen({ navigation }) {
+  const { t,language } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [profileData, setProfileData] = useState(null);
   const [editMode, setEditMode] = useState(false);
@@ -48,7 +50,7 @@ const [passwordConfirmVisible, setPasswordConfirmVisible] = useState(false);
     const checkPermission = async () => {
       const isAgent = await checkUserRole('agent');
       if (!isAgent) {
-        showAlert('Access Denied', 'You do not have permission to access this page.');
+        showAlert(t('AgentAgentProfileScreen', 'error'), t('AgentAgentProfileScreen', 'accessDenied'));
         navigation.goBack();
         return;
       }
@@ -66,7 +68,7 @@ const [passwordConfirmVisible, setPasswordConfirmVisible] = useState(false);
       
       const user = await getCurrentUser();
       if (!user) {
-        showAlert('Error', 'User not found. Please log in again.');
+        showAlert(t('AgentAgentProfileScreen', 'error'), t('AgentAgentProfileScreen', 'userNotFound'));
         await signOut(navigation);
         return;
       }
@@ -95,13 +97,13 @@ const [passwordConfirmVisible, setPasswordConfirmVisible] = useState(false);
     } catch (error) {
       console.error('Error fetching agent profile:', error.message);
        showAlert(
-      'Error', 
-      'Failed to load profile data',
+      t('AgentAgentProfileScreen', 'error'), 
+      t('AgentAgentProfileScreen', 'failedToLoadProfile'),
       [
-        { text: 'Try Again', onPress: () => {
+        { text: t('AgentAgentProfileScreen', 'tryAgain'), onPress: () => {
             setTimeout(() => fetchAgentProfile(), 100);
              }  },
-        { text: 'Cancel', style: 'cancel' }
+        { text: t('AgentAgentProfileScreen', 'cancel'), style: 'cancel' }
       ]
     );
      return; 
@@ -146,12 +148,12 @@ const [passwordConfirmVisible, setPasswordConfirmVisible] = useState(false);
 const confirmPasswordChange = () => {
   // Validate passwords
   if (passwordData.password !== passwordData.confirmPassword) {
-    setPasswordError('Passwords do not match');
+    setPasswordError(t('AgentAgentProfileScreen', 'passwordsDoNotMatch'));
     return;
   }
 
   if (!validPasswordSignup(passwordData.password)) {
-    setPasswordError('Password must be at least 8 characters with letters and numbers');
+    setPasswordError(t('AgentAgentProfileScreen', 'passwordRequirements'));
     return;
   }
 
@@ -171,10 +173,10 @@ const updatePassword = async () => {
     setPasswordData({ password: '', confirmPassword: '' });
     setIsChangingPassword(false);
     setPasswordConfirmVisible(false);
-    showAlert('Success', 'Your password has been updated successfully.');
+    showAlert(t('AgentAgentProfileScreen', 'success'), t('AgentAgentProfileScreen', 'passwordUpdatedSuccessfully'));
   } catch (error) {
     console.error('Error updating password:', error.message);
-    showAlert('Error', 'Failed to update your password. Please try again.');
+    showAlert(t('AgentAgentProfileScreen', 'error'), t('AgentAgentProfileScreen', 'failedToUpdatePassword'));
   } finally {
     setPasswordChangeLoading(false);
   }
@@ -183,7 +185,7 @@ const updatePassword = async () => {
     try {
       // Validate phone number
       if (!validPhoneNumber(phoneNumber)) {
-        setPhoneError('Please enter a valid phone number');
+        setPhoneError(t('AgentAgentProfileScreen', 'enterValidPhoneNumber'));
         return;
       }
       
@@ -191,7 +193,7 @@ const updatePassword = async () => {
       
       const user = await getCurrentUser();
       if (!user) {
-        showAlert('Error', 'User not found. Please log in again.');
+        showAlert(t('AgentAgentProfileScreen', 'error'), t('AgentAgentProfileScreen', 'userNotFound'));
         await signOut(navigation);
         return;
       }
@@ -206,12 +208,12 @@ const updatePassword = async () => {
       
       if (error) throw error;
       
-      showAlert('Success', 'Profile updated successfully');
+      showAlert(t('AgentAgentProfileScreen', 'success'), t('AgentAgentProfileScreen', 'profileUpdatedSuccessfully'));
       setEditMode(false);
       fetchAgentProfile();
     } catch (error) {
       console.error('Error updating profile:', error.message);
-      showAlert('Error', 'Failed to update profile');
+      showAlert(t('AgentAgentProfileScreen', 'error'), t('AgentAgentProfileScreen', 'failedToUpdateProfile'));
     }
   };
 
@@ -225,7 +227,7 @@ const updatePassword = async () => {
       
       const user = await getCurrentUser();
       if (!user) {
-        showAlert('Error', 'User not found. Please log in again.');
+        showAlert(t('AgentAgentProfileScreen', 'error'), t('AgentAgentProfileScreen', 'userNotFound'));
         await signOut(navigation);
         return;
       }
@@ -233,8 +235,8 @@ const updatePassword = async () => {
       // Check if agent is permitted to work
       if (profileData && profileData.permitted_to_work === false) {
         showAlert(
-          'Cannot Delete Account',
-          'Your account is currently suspended. You cannot delete your account at this time.'
+          t('AgentAgentProfileScreen', 'cannotDeleteAccount'),
+          t('AgentAgentProfileScreen', 'accountSuspendedDeleteError')
         );
         setDeleteConfirmVisible(false);
         setDeleteLoading(false);
@@ -250,13 +252,13 @@ const updatePassword = async () => {
       if (deleteError) throw deleteError;
       
       showAlert(
-        'Account Deleted',
-        'Your account has been successfully deleted.',
-        [{ text: 'OK', onPress: () => signOut(navigation) }]
+        t('AgentAgentProfileScreen', 'accountDeleted'),
+        t('AgentAgentProfileScreen', 'accountDeletedSuccessfully'),
+        [{ text: t('AgentAgentProfileScreen', 'ok'), onPress: () => signOut(navigation) }]
       );
     } catch (error) {
       console.error('Error deleting account:', error.message);
-      showAlert('Error', 'Failed to delete account. Please try again later.');
+      showAlert(t('AgentAgentProfileScreen', 'error'), t('AgentAgentProfileScreen', 'failedToDeleteAccount'));
     } finally {
       setDeleteLoading(false);
       setDeleteConfirmVisible(false);
@@ -279,7 +281,7 @@ const updatePassword = async () => {
       <ScrollView style={styles.container}>
         <Card containerStyle={styles.card}>
           <View style={styles.headerContainer}>
-            <Text h4 style={styles.headerText}>Agent Profile</Text>
+            <Text h4 style={styles.headerText}>{t('AgentAgentProfileScreen', 'agentProfile')}</Text>
             {!editMode ? (
               <Button
                 type="clear"
@@ -304,25 +306,25 @@ const updatePassword = async () => {
           
           {/* Personal Information */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Personal Information</Text>
+            <Text style={styles.sectionTitle}>{t('AgentAgentProfileScreen', 'personalInformation')}</Text>
             
             <View style={styles.infoRow}>
-              <Text style={styles.label}>First Name:</Text>
+              <Text style={styles.label}>{t('AgentAgentProfileScreen', 'firstName')}:</Text>
               <Text style={styles.value}>{profileData?.first_name}</Text>
             </View>
             
             <View style={styles.infoRow}>
-              <Text style={styles.label}>Last Name:</Text>
+              <Text style={styles.label}>{t('AgentAgentProfileScreen', 'lastName')}:</Text>
               <Text style={styles.value}>{profileData?.second_name}</Text>
             </View>
             
             <View style={styles.infoRow}>
-              <Text style={styles.label}>Location:</Text>
-              <Text style={styles.value}>{profileData?.countries?.country_name || 'Not specified'}</Text>
+              <Text style={styles.label}>{t('AgentAgentProfileScreen', 'location')}:</Text>
+              <Text style={styles.value}>{profileData?.countries?.country_name || t('AgentAgentProfileScreen', 'notSpecified')}</Text>
             </View>
             
             <View style={styles.infoRow}>
-              <Text style={styles.label}>Account Status:</Text>
+              <Text style={styles.label}>{t('AgentAgentProfileScreen', 'accountStatus')}:</Text>
               <View style={styles.statusContainer}>
                 <Icon
                   name={profileData?.permitted_to_work ? 'check-circle' : 'cancel'}
@@ -335,7 +337,7 @@ const updatePassword = async () => {
                   styles.statusText,
                   { color: profileData?.permitted_to_work ? '#28a745' : '#dc3545' }
                 ]}>
-                  {profileData?.permitted_to_work ? 'Active' : 'Suspended'}
+                  {profileData?.permitted_to_work ? t('AgentAgentProfileScreen', 'active') : t('AgentAgentProfileScreen', 'suspended')}
                 </Text>
               </View>
             </View>
@@ -345,24 +347,24 @@ const updatePassword = async () => {
           
           {/* Contact Information */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Contact Information</Text>
+            <Text style={styles.sectionTitle}>{t('AgentAgentProfileScreen', 'contactInformation')}</Text>
             
             {!editMode ? (
               <>
                 <View style={styles.infoRow}>
-                  <Text style={styles.label}>Phone Number:</Text>
+                  <Text style={styles.label}>{t('AgentAgentProfileScreen', 'phoneNumber')}:</Text>
                   <Text style={styles.value}>{profileData?.phone_number}</Text>
                 </View>
                 
                 <View style={styles.infoRow}>
-                  <Text style={styles.label}>Messaging App:</Text>
-                  <Text style={styles.value}>{profileData?.messaging_app || 'Not specified'}</Text>
+                  <Text style={styles.label}>{t('AgentAgentProfileScreen', 'messagingApp')}:</Text>
+                  <Text style={styles.value}>{profileData?.messaging_app || t('AgentAgentProfileScreen', 'notSpecified')}</Text>
                 </View>
               </>
             ) : (
               <>
                 <Input
-                  label="Phone Number"
+                  label={t('AgentAgentProfileScreen', 'phoneNumber')}
                   value={phoneNumber}
                   onChangeText={setPhoneNumber}
                   errorMessage={phoneError}
@@ -370,7 +372,7 @@ const updatePassword = async () => {
                   containerStyle={styles.inputContainer}
                 />
                 
-                <Text style={styles.dropdownLabel}>Messaging App</Text>
+                <Text style={styles.dropdownLabel}>{t('AgentAgentProfileScreen', 'messagingApp')}</Text>
                 <View style={styles.dropdownContainer}>
                   <Dropdown
                     style={styles.dropdown}
@@ -379,12 +381,12 @@ const updatePassword = async () => {
                     valueField="value"
                     value={messagingApp}
                     onChange={item => setMessagingApp(item.value)}
-                    placeholder="Select Messaging App"
+                    placeholder={t('AgentAgentProfileScreen', 'selectMessagingApp')}
                   />
                 </View>
                 
                 <Button
-                  title="Save Changes"
+                  title={t('AgentAgentProfileScreen', 'saveChanges')}
                   onPress={handleSaveChanges}
                   buttonStyle={styles.saveButton}
                   containerStyle={styles.buttonContainer}
@@ -396,11 +398,11 @@ const updatePassword = async () => {
 
 {/* Password Section */}
 <View style={styles.section}>
-  <Text style={styles.sectionTitle}>Security</Text>
+  <Text style={styles.sectionTitle}>{t('AgentAgentProfileScreen', 'security')}</Text>
   
   {!isChangingPassword ? (
     <Button
-      title="Change Password"
+      title={t('AgentAgentProfileScreen', 'changePassword')}
       icon={<Icon name="lock" type="material" color="#007bff" size={20} style={{ marginRight: 10 }} />}
       type="outline"
       buttonStyle={styles.securityButton}
@@ -410,10 +412,10 @@ const updatePassword = async () => {
   ) : (
     <>
       <Input
-        label="New Password"
+        label={t('AgentAgentProfileScreen', 'newPassword')}
         value={passwordData.password}
         onChangeText={(value) => handlePasswordChange('password', value)}
-        placeholder="Enter new password"
+        placeholder={t('AgentAgentProfileScreen', 'enterNewPassword')}
         secureTextEntry={!showPassword}
         rightIcon={
           <Icon
@@ -426,10 +428,10 @@ const updatePassword = async () => {
       />
       
       <Input
-        label="Confirm Password"
+        label={t('AgentAgentProfileScreen', 'confirmPassword')}
         value={passwordData.confirmPassword}
         onChangeText={(value) => handlePasswordChange('confirmPassword', value)}
-        placeholder="Confirm new password"
+        placeholder={t('AgentAgentProfileScreen', 'confirmNewPassword')}
         secureTextEntry={!showPassword}
         errorMessage={passwordError}
         containerStyle={styles.inputContainer}
@@ -437,7 +439,7 @@ const updatePassword = async () => {
       
       <View style={styles.passwordButtonsContainer}>
         <Button
-          title="Cancel"
+          title={t('AgentAgentProfileScreen', 'cancel')}
           type="outline"
           buttonStyle={styles.cancelButton}
           containerStyle={styles.passwordButtonContainer}
@@ -448,7 +450,7 @@ const updatePassword = async () => {
           }}
         />
         <Button
-          title="Update Password"
+          title={t('AgentAgentProfileScreen', 'updatePassword')}
           buttonStyle={styles.saveButton}
           containerStyle={styles.passwordButtonContainer}
           onPress={confirmPasswordChange}
@@ -463,32 +465,32 @@ const updatePassword = async () => {
               
               {/* Offer Statistics */}
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Offer Statistics</Text>
+                <Text style={styles.sectionTitle}>{t('AgentAgentProfileScreen', 'offerStatistics')}</Text>
                 
                 <View style={styles.statsContainer}>
                   <View style={styles.statItem}>
                     <Text style={styles.statValue}>{offerStats.total_offers || 0}</Text>
-                    <Text style={styles.statLabel}>Total Offers</Text>
+                    <Text style={styles.statLabel}>{t('AgentAgentProfileScreen', 'totalOffers')}</Text>
                   </View>
                   
                   <View style={styles.statItem}>
                     <Text style={[styles.statValue, { color: '#28a745' }]}>{offerStats.accepted_offers || 0}</Text>
-                    <Text style={styles.statLabel}>Accepted</Text>
+                    <Text style={styles.statLabel}>{t('AgentAgentProfileScreen', 'accepted')}</Text>
                   </View>
                   
                   <View style={styles.statItem}>
                     <Text style={[styles.statValue, { color: '#dc3545' }]}>{offerStats.rejected_offers || 0}</Text>
-                    <Text style={styles.statLabel}>Rejected</Text>
+                    <Text style={styles.statLabel}>{t('AgentAgentProfileScreen', 'rejected')}</Text>
                   </View>
                   
                   <View style={styles.statItem}>
                     <Text style={[styles.statValue, { color: '#17a2b8' }]}>{offerStats.viewed_offers || 0}</Text>
-                    <Text style={styles.statLabel}>Viewed</Text>
+                    <Text style={styles.statLabel}>{t('AgentAgentProfileScreen', 'viewed')}</Text>
                   </View>
                   
                   <View style={styles.statItem}>
                     <Text style={[styles.statValue, { color: '#ffc107' }]}>{offerStats.not_viewed_offers || 0}</Text>
-                    <Text style={styles.statLabel}>Not Viewed</Text>
+                    <Text style={styles.statLabel}>{t('AgentAgentProfileScreen', 'notViewed')}</Text>
                   </View>
                 </View>
               </View>
@@ -499,10 +501,10 @@ const updatePassword = async () => {
           
           {/* Account Actions */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Account Actions</Text>
+            <Text style={styles.sectionTitle}>{t('AgentAgentProfileScreen', 'accountActions')}</Text>
             
             <Button
-              title="Delete Account"
+              title={t('AgentAgentProfileScreen', 'deleteAccount')}
               type="outline"
               buttonStyle={styles.deleteButton}
               titleStyle={styles.deleteButtonText}
@@ -518,20 +520,20 @@ const updatePassword = async () => {
   onBackdropPress={() => setPasswordConfirmVisible(false)}
   overlayStyle={styles.overlay}
 >
-  <Text style={styles.overlayTitle}>Change Password</Text>
+  <Text style={styles.overlayTitle}>{t('AgentAgentProfileScreen', 'changePasswordConfirmTitle')}</Text>
   <Text style={styles.overlayText}>
-    Are you sure you want to change your password?
+    {t('AgentAgentProfileScreen', 'changePasswordConfirmMessage')}
   </Text>
   <View style={styles.overlayButtons}>
     <Button
-      title="Cancel"
+      title={t('AgentAgentProfileScreen', 'cancel')}
       type="outline"
       buttonStyle={styles.cancelButton}
       containerStyle={styles.overlayButtonContainer}
       onPress={() => setPasswordConfirmVisible(false)}
     />
     <Button
-      title={passwordChangeLoading ? "Updating..." : "Confirm"}
+      title={passwordChangeLoading ? t('AgentAgentProfileScreen', 'updating') : t('AgentAgentProfileScreen', 'confirm')}
       buttonStyle={styles.saveButton}
       containerStyle={styles.overlayButtonContainer}
       onPress={updatePassword}
@@ -546,20 +548,20 @@ const updatePassword = async () => {
         onBackdropPress={() => setDeleteConfirmVisible(false)}
         overlayStyle={styles.overlay}
       >
-        <Text style={styles.overlayTitle}>Delete Account</Text>
+        <Text style={styles.overlayTitle}>{t('AgentAgentProfileScreen', 'deleteAccountConfirmTitle')}</Text>
         <Text style={styles.overlayText}>
-          Are you sure you want to delete your account? This action cannot be undone.
+          {t('AgentAgentProfileScreen', 'deleteAccountConfirmMessage')}
         </Text>
         <View style={styles.overlayButtons}>
           <Button
-            title="Cancel"
+            title={t('AgentAgentProfileScreen', 'cancel')}
             type="outline"
             buttonStyle={styles.cancelButton}
             containerStyle={styles.overlayButtonContainer}
             onPress={() => setDeleteConfirmVisible(false)}
           />
           <Button
-            title={deleteLoading ? "Deleting..." : "Delete"}
+            title={deleteLoading ? t('AgentAgentProfileScreen', 'deleting') : t('AgentAgentProfileScreen', 'delete')}
             buttonStyle={styles.confirmDeleteButton}
             containerStyle={styles.overlayButtonContainer}
             onPress={confirmDeleteAccount}

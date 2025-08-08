@@ -20,7 +20,10 @@ import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser, signOut } from '../utils/auth';
 import { validEmail } from '../utils/validation';
 import {showAlert} from "../components/ShowAlert";
+import { useTranslation } from '../config/localization';
+
 const CompanyAgentProfileScreen = ({ route, navigation }) => {
+  const { t,language } = useTranslation();
   const { agentId } = route.params;
   const [agent, setAgent] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -44,7 +47,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
         // Check if user is a company
         const isCompany = await checkUserRole('company');
         if (!isCompany) {
-          showAlert('Access Denied', 'Only companies can access this page.');
+          showAlert(t('CompanyAgentProfileScreen', 'accessDenied'), t('CompanyAgentProfileScreen', 'onlyCompaniesAccess'));
           navigation.navigate('Home');
           return;
         }
@@ -52,7 +55,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
         // Get current user
         const user = await getCurrentUser();
         if (!user) {
-          showAlert('Error', 'User not found. Please log in again.');
+          showAlert(t('CompanyAgentProfileScreen', 'error'), t('CompanyAgentProfileScreen', 'userNotFound'));
           await signOut(navigation);
           return;
         }
@@ -79,7 +82,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
 
         // Make sure this agent belongs to the current company
         if (agentData.company_id !== user.id) {
-          showAlert('Access Denied', 'You can only view your own agents.');
+          showAlert(t('CompanyAgentProfileScreen', 'accessDenied'), t('CompanyAgentProfileScreen', 'onlyOwnAgents'));
           navigation.navigate('CompanyAgentsList');
           return;
         }
@@ -137,13 +140,13 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
       } catch (error) {
         console.error('Error fetching agent data:', error);
            showAlert(
-      'Error', 
-      'Failed to load profile data',
+      t('CompanyAgentProfileScreen', 'error'), 
+      t('CompanyAgentProfileScreen', 'loadProfileError'),
       [
-        { text: 'Try Again', onPress: () => {
+        { text: t('CompanyAgentProfileScreen', 'tryAgain'), onPress: () => {
             setTimeout(() => fetchAgentData(), 100);
 } },
-        { text: 'Cancel', style: 'cancel' }
+        { text: t('CompanyAgentProfileScreen', 'cancel'), style: 'cancel' }
       ]
     );
     return;
@@ -160,7 +163,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
       // Get current user to check latest permission status
       const user = await getCurrentUser();
       if (!user) {
-        showAlert('Error', 'User not found. Please log in again.');
+        showAlert(t('CompanyAgentProfileScreen', 'error'), t('CompanyAgentProfileScreen', 'userNotFound'));
         await signOut(navigation);
         return;
       }
@@ -169,8 +172,8 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
       if (user?.app_metadata?.permitted_to_work === false) {
         setIsPermittedToWork(false); // Update the state to reflect current permission
         showAlert(
-          'Permission Denied',
-          'Your account is currently inactive. You cannot edit agent profiles.'
+          t('CompanyAgentProfileScreen', 'permissionDenied'),
+          t('CompanyAgentProfileScreen', 'accountInactive')
         );
         return;
       }
@@ -190,7 +193,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
       setIsEditing(!isEditing);
     } catch (error) {
       console.error('Error checking permissions:', error);
-      showAlert('Error', 'Failed to verify permissions. Please try again.');
+      showAlert(t('CompanyAgentProfileScreen', 'error'), t('CompanyAgentProfileScreen', 'permissionCheckError'));
     }
   };
 
@@ -199,8 +202,8 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
       // Check again if user is permitted to work before saving changes
       if (!isPermittedToWork) {
         showAlert(
-          'Permission Denied',
-          'Your account is currently inactive. You cannot update agent profiles.'
+          t('CompanyAgentProfileScreen', 'permissionDenied'),
+          t('CompanyAgentProfileScreen', 'cannotUpdateProfiles')
         );
         return;
       }
@@ -209,7 +212,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
       
       // Validate inputs
       if (!editedAgent.first_name.trim() || !editedAgent.second_name.trim()) {
-        showAlert('Validation Error', 'First name and last name are required');
+        showAlert(t('CompanyAgentProfileScreen', 'validationError'), t('CompanyAgentProfileScreen', 'nameRequired'));
         setSaving(false);
         return;
       }
@@ -217,7 +220,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
       // Validate email if agent hasn't signed up yet
       if (!agent.user_id) {
         if (!editedAgent.agent_email || !validEmail(editedAgent.agent_email)) {
-          showAlert('Validation Error', 'Please enter a valid email address');
+          showAlert(t('CompanyAgentProfileScreen', 'validationError'), t('CompanyAgentProfileScreen', 'validEmailRequired'));
           setSaving(false);
           return;
         }
@@ -226,7 +229,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
       // Get current user again to ensure we have the latest data
       const user = await getCurrentUser();
       if (!user) {
-        showAlert('Error', 'User not found. Please log in again.');
+        showAlert(t('CompanyAgentProfileScreen', 'error'), t('CompanyAgentProfileScreen', 'userNotFound'));
         await signOut(navigation);
         return;
       }
@@ -264,10 +267,10 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
       });
 
       setIsEditing(false);
-      showAlert('Success', 'Agent profile updated successfully');
+      showAlert(t('CompanyAgentProfileScreen', 'success'), t('CompanyAgentProfileScreen', 'agentUpdatedSuccess'));
     } catch (error) {
       console.error('Error updating agent:', error);
-      showAlert('Error', 'Failed to update agent profile');
+      showAlert(t('CompanyAgentProfileScreen', 'error'), t('CompanyAgentProfileScreen', 'updateProfileError'));
     } finally {
       setSaving(false);
     }
@@ -284,9 +287,9 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
   if (!agent) {
     return (
       <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Agent not found</Text>
+        <Text style={styles.errorText}>{t('CompanyAgentProfileScreen', 'agentNotFound')}</Text>
         <Button
-          title="Go Back"
+          title={t('CompanyAgentProfileScreen', 'goBack')}
           onPress={() => navigation.goBack()}
           buttonStyle={styles.backButton}
         />
@@ -301,7 +304,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
           <View style={styles.warningContainer}>
             <Icon name="alert-circle-outline" type="ionicon" color="#856404" size={24} />
             <Text style={styles.warningText}>
-              Your account is currently inactive. You can view agent profiles but cannot make changes.
+              {t('CompanyAgentProfileScreen', 'accountInactiveWarning')}
             </Text>
           </View>
         </Card>
@@ -321,7 +324,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
           
           <Button
             icon={<Icon name={isEditing ? "close" : "edit"} type="material" size={20} color="white" />}
-            title={isEditing ? "Cancel" : "Edit Profile"}
+            title={isEditing ? t('CompanyAgentProfileScreen', 'cancel') : t('CompanyAgentProfileScreen', 'editProfile')}
             onPress={handleEditButtonPress}
             buttonStyle={[
               styles.editButton, 
@@ -339,7 +342,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
           {isEditing ? (
             <>
               <View style={styles.editRow}>
-                <Text style={styles.infoLabel}>First Name:</Text>
+                <Text style={styles.infoLabel}>{t('CompanyAgentProfileScreen', 'firstName')}</Text>
                 <Input
                   value={editedAgent.first_name}
                   onChangeText={(text) => setEditedAgent({...editedAgent, first_name: text})}
@@ -349,7 +352,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
               </View>
 
               <View style={styles.editRow}>
-                <Text style={styles.infoLabel}>Last Name:</Text>
+                <Text style={styles.infoLabel}>{t('CompanyAgentProfileScreen', 'lastName')}</Text>
                 <Input
                   value={editedAgent.second_name}
                   onChangeText={(text) => setEditedAgent({...editedAgent, second_name: text})}
@@ -360,7 +363,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
 
               {!agent.user_id && (
                 <View style={styles.editRow}>
-                  <Text style={styles.infoLabel}>Email:</Text>
+                  <Text style={styles.infoLabel}>{t('CompanyAgentProfileScreen', 'email')}</Text>
                   <Input
                     value={editedAgent.agent_email}
                     onChangeText={(text) => setEditedAgent({...editedAgent, agent_email: text})}
@@ -371,7 +374,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
               )}
 
               <View style={styles.editRow}>
-                <Text style={styles.infoLabel}>Country:</Text>
+                <Text style={styles.infoLabel}>{t('CompanyAgentProfileScreen', 'country')}</Text>
                 <View style={styles.dropdownContainer}>
                   <Dropdown
                     style={styles.dropdown}
@@ -387,8 +390,8 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
                     maxHeight={300}
                     labelField="label"
                     valueField="value"
-                    placeholder="Select country"
-                    searchPlaceholder="Search..."
+                    placeholder={t('CompanyAgentProfileScreen', 'selectCountry')}
+                    searchPlaceholder={t('CompanyAgentProfileScreen', 'searchPlaceholder')}
                     value={editedAgent.country_id}
                     onChange={item => {
                       setEditedAgent({...editedAgent, country_id: item.value});
@@ -403,10 +406,10 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
               </View>
 
               <View style={styles.editRow}>
-                <Text style={styles.infoLabel}>Status:</Text>
+                <Text style={styles.infoLabel}>{t('CompanyAgentProfileScreen', 'status')}</Text>
                 <View style={styles.switchContainer}>
                   <Text style={[styles.switchLabel, !editedAgent.permitted_to_work && styles.inactiveText]}>
-                    {editedAgent.permitted_to_work ? 'Active' : 'Inactive'}
+                    {editedAgent.permitted_to_work ? t('CompanyAgentProfileScreen', 'active') : t('CompanyAgentProfileScreen', 'inactive')}
                   </Text>
                   <Switch
                     value={editedAgent.permitted_to_work}
@@ -418,7 +421,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
               </View>
 
               <Button
-                title="Save Changes"
+                title={t('CompanyAgentProfileScreen', 'saveChanges')}
                 onPress={handleSaveChanges}
                 buttonStyle={styles.saveButton}
                 loading={saving}
@@ -428,27 +431,27 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
           ) : (
             <>
               <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>Email:</Text>
-                <Text style={styles.infoValue}>{agent.agent_email || 'Not provided'}</Text>
+                <Text style={styles.infoLabel}>{t('CompanyAgentProfileScreen', 'email')}</Text>
+                <Text style={styles.infoValue}>{agent.agent_email || t('CompanyAgentProfileScreen', 'notProvided')}</Text>
               </View>
 
               <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>Country:</Text>
-                <Text style={styles.infoValue}>{agent.countries?.country_name || 'Not specified'}</Text>
+                <Text style={styles.infoLabel}>{t('CompanyAgentProfileScreen', 'country')}</Text>
+                <Text style={styles.infoValue}>{agent.countries?.country_name || t('CompanyAgentProfileScreen', 'notSpecified')}</Text>
               </View>
 
               <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>Status:</Text>
+                <Text style={styles.infoLabel}>{t('CompanyAgentProfileScreen', 'status')}</Text>
                 <Text style={[
                   styles.infoValue,
                   { color: agent?.permitted_to_work ? '#28a745' : '#dc3545' }
                 ]}>
-                  {agent?.permitted_to_work ? 'Active' : 'Inactive'}
+                  {agent?.permitted_to_work ? t('CompanyAgentProfileScreen', 'active') : t('CompanyAgentProfileScreen', 'inactive')}
                 </Text>
               </View>
 
               <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>Joined:</Text>
+                <Text style={styles.infoLabel}>{t('CompanyAgentProfileScreen', 'joined')}</Text>
                 <Text style={styles.infoValue}>
                   {new Date(agent.created_at).toLocaleDateString()}
                 </Text>
@@ -459,32 +462,32 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
       </Card>
 
       <Card containerStyle={styles.statsCard}>
-        <Text style={styles.cardTitle}>Performance Statistics</Text>
+        <Text style={styles.cardTitle}>{t('CompanyAgentProfileScreen', 'performanceStatistics')}</Text>
         
         <View style={styles.statsContainer}>
           <View style={styles.statItem}>
             <Text style={styles.statValue}>{stats.totalOffers}</Text>
-            <Text style={styles.statLabel}>Total Offers</Text>
+            <Text style={styles.statLabel}>{t('CompanyAgentProfileScreen', 'totalOffers')}</Text>
           </View>
           
           <View style={styles.statItem}>
             <Text style={[styles.statValue, { color: '#28a745' }]}>{stats.acceptedOffers}</Text>
-            <Text style={styles.statLabel}>Accepted</Text>
+            <Text style={styles.statLabel}>{t('CompanyAgentProfileScreen', 'accepted')}</Text>
           </View>
           
           <View style={styles.statItem}>
             <Text style={[styles.statValue, { color: '#dc3545' }]}>{stats.rejectedOffers}</Text>
-            <Text style={styles.statLabel}>Rejected</Text>
+            <Text style={styles.statLabel}>{t('CompanyAgentProfileScreen', 'rejected')}</Text>
           </View>
           
           <View style={styles.statItem}>
             <Text style={[styles.statValue, { color: '#ffc107' }]}>{stats.viewedOffers}</Text>
-            <Text style={styles.statLabel}>Viewed</Text>
+            <Text style={styles.statLabel}>{t('CompanyAgentProfileScreen', 'viewed')}</Text>
           </View>
 
           <View style={styles.statItem}>
             <Text style={[styles.statValue, { color: '#dc3545' }]}>{stats.notViewedOffers}</Text>
-            <Text style={styles.statLabel}>Not Viewed</Text>
+            <Text style={styles.statLabel}>{t('CompanyAgentProfileScreen', 'notViewed')}</Text>
           </View>
         </View>
       </Card>

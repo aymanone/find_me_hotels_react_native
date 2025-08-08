@@ -6,7 +6,9 @@ import supabase from '../config/supabase';
 import { checkUserRole,getCurrentUser ,signOut} from '../utils/auth';
 import { validEmail } from '../utils/validation';
 import {showAlert} from "../components/ShowAlert";
+import { useTranslation} from '../config/localization';
 const CompanyCreateAgentFormScreen = ({ navigation }) => {
+  const { t,language } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [isCompany, setIsCompany] = useState(false);
   const [countries, setCountries] = useState([]);
@@ -37,7 +39,7 @@ const CompanyCreateAgentFormScreen = ({ navigation }) => {
       setIsCompany(isUserCompany);
       
       if (!isUserCompany) {
-        showAlert('Access Denied', 'You do not have permission to access this page.');
+        showAlert(t('CompanyCreateAgentFormScreen', 'accessDenied'), t('CompanyCreateAgentFormScreen', 'permissionDenied'));
         navigation.goBack();
         return;
       }
@@ -47,7 +49,7 @@ const CompanyCreateAgentFormScreen = ({ navigation }) => {
     }
     } catch (error) {
       console.error('Error checking company status:', error);
-      showAlert('Error', 'Failed to verify your permissions.');
+      showAlert(t('Alerts', 'error'), t('CompanyCreateAgentFormScreen', 'failedVerifyPermissions'));
       navigation.goBack();
     }
   };
@@ -67,7 +69,7 @@ const CompanyCreateAgentFormScreen = ({ navigation }) => {
       
     } catch (error) {
       console.error('Error fetching countries:', error);
-      showAlert('Error', 'Failed to load countries list.');
+      showAlert(t('Alerts', 'error'), t('CompanyCreateAgentFormScreen', 'loadCountriesError'));
     } finally {
       setLoading(false);
     }
@@ -84,28 +86,28 @@ const CompanyCreateAgentFormScreen = ({ navigation }) => {
 
     // Validate first name
     if (!firstName.trim()) {
-      newErrors.firstName = 'First name is required';
+      newErrors.firstName = t('CompanyCreateAgentFormScreen', 'firstNameRequired');
       isValid = false;
     }
 
     // Validate second name
     if (!secondName.trim()) {
-      newErrors.secondName = 'Second name is required';
+      newErrors.secondName = t('CompanyCreateAgentFormScreen', 'secondNameRequired');
       isValid = false;
     }
 
     // Validate email
     if (!agentEmail.trim()) {
-      newErrors.agentEmail = 'Email is required';
+      newErrors.agentEmail = t('CompanyCreateAgentFormScreen', 'agentEmailRequired');
       isValid = false;
     } else if (!validEmail(agentEmail)) {
-      newErrors.agentEmail = 'Please enter a valid email';
+      newErrors.agentEmail = t('CompanyCreateAgentFormScreen', 'agentEmailInvalid');
       isValid = false;
     }
 
     // Validate country
     if (!agentCountry) {
-      newErrors.agentCountry = 'Please select a work Location';
+      newErrors.agentCountry = t('CompanyCreateAgentFormScreen', 'workLocationRequired');
       isValid = false;
     }
 
@@ -122,7 +124,7 @@ const CompanyCreateAgentFormScreen = ({ navigation }) => {
     const  user  = await getCurrentUser();
   
         if(!user) {
-          showAlert('Error', 'User not found. Please log in again.');
+          showAlert(t('Alerts', 'error'), t('CompanyCreateAgentFormScreen', 'userNotFound'));
           await signOut(navigation);
           
           return;
@@ -144,7 +146,7 @@ const CompanyCreateAgentFormScreen = ({ navigation }) => {
     if (!countryStillExists) {
       setErrors(prev => ({
         ...prev,
-        agentCountry: 'The selected country is no longer available. Please select another country.'
+        agentCountry: t('CompanyCreateAgentFormScreen', 'countryNotAvailable')
       }));
       
       // Update the countries list with fresh data
@@ -153,7 +155,7 @@ const CompanyCreateAgentFormScreen = ({ navigation }) => {
       // Reset the country selection
       setAgentCountry('');
       
-      throw new Error('The selected country is no longer available. Please select another country.');
+      throw new Error(t('CompanyCreateAgentFormScreen', 'countryNotAvailable'));
     }
     
    
@@ -174,9 +176,9 @@ const CompanyCreateAgentFormScreen = ({ navigation }) => {
     if (error) throw error;
     
     showAlert(
-      'Success',
-      'Agent created successfully!',
-      [{ text: 'OK' }]
+      t('Alerts', 'success'),
+      t('CompanyCreateAgentFormScreen', 'createSuccess'),
+      [{ text: t('Alerts', 'ok') }]
     );
     
     // Reset form
@@ -187,7 +189,7 @@ const CompanyCreateAgentFormScreen = ({ navigation }) => {
     
   } catch (error) {
     console.error('Error creating agent:', error);
-    showAlert('Error',  'Failed to create agent. Please try again.');
+    showAlert(t('Alerts', 'error'), t('CompanyCreateAgentFormScreen', 'createError'));
   } finally {
     setLoading(false);
   }
@@ -197,7 +199,7 @@ const CompanyCreateAgentFormScreen = ({ navigation }) => {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#0000ff" />
-        <Text>Loading...</Text>
+        <Text>{t('CompanyCreateAgentFormScreen', 'loading')}</Text>
       </View>
     );
   }
@@ -205,10 +207,9 @@ const CompanyCreateAgentFormScreen = ({ navigation }) => {
 const PermissionWarning = () => (
   <View style={styles.warningContainer}>
     <Text style={styles.warningIcon}>⚠️</Text>
-    <Text style={styles.warningTitle}>Access Restricted</Text>
+    <Text style={styles.warningTitle}>{t('CompanyCreateAgentFormScreen', 'accessRestricted')}</Text>
     <Text style={styles.warningText}>
-      Your account is currently not permitted to create new companies.
-      Please contact the system administrator for assistance.
+      {t('CompanyCreateAgentFormScreen', 'permissionDenied')}
     </Text>
   </View>
 );
@@ -219,26 +220,26 @@ const PermissionWarning = () => (
     ) : (
       
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Create New Agent</Text>
+      <Text style={styles.title}>{t('CompanyCreateAgentFormScreen', 'title')}</Text>
       
       <View style={styles.formGroup}>
-        <Text style={styles.label}>First Name *</Text>
+        <Text style={styles.label}>{t('CompanyCreateAgentFormScreen', 'firstName')}</Text>
         <TextInput
           style={[styles.input, errors.firstName ? styles.inputError : null]}
           value={firstName}
           onChangeText={setFirstName}
-          placeholder="Enter first name"
+          placeholder={t('CompanyCreateAgentFormScreen', 'firstNamePlaceholder')}
         />
         {errors.firstName ? <Text style={styles.errorText}>{errors.firstName}</Text> : null}
       </View>
       
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Second Name *</Text>
+        <Text style={styles.label}>{t('CompanyCreateAgentFormScreen', 'secondName')}</Text>
         <TextInput
           style={[styles.input, errors.secondName ? styles.inputError : null]}
           value={secondName}
           onChangeText={setSecondName}
-          placeholder="Enter second name"
+          placeholder={t('CompanyCreateAgentFormScreen', 'secondNamePlaceholder')}
         />
         {errors.secondName ? <Text style={styles.errorText}>{errors.secondName}</Text> : null}
       </View>
@@ -246,7 +247,7 @@ const PermissionWarning = () => (
      
       
       <View style={styles.formGroup}>
-        <Text style={styles.label}>work Location *</Text>
+        <Text style={styles.label}>{t('CompanyCreateAgentFormScreen', 'workLocation')}</Text>
         <Dropdown
           style={[styles.dropdown, errors.agentCountry ? styles.inputError : null]}
           placeholderStyle={styles.placeholderStyle}
@@ -261,8 +262,8 @@ const PermissionWarning = () => (
           maxHeight={300}
           labelField="label"
           valueField="value"
-          placeholder="Select country"
-          searchPlaceholder="Search..."
+          placeholder={t('CompanyCreateAgentFormScreen', 'workLocationPlaceholder')}
+          searchPlaceholder={t('CompanyCreateAgentFormScreen', 'searchCountry')}
           value={agentCountry}
           onChange={item => {
             setAgentCountry(item.value);
@@ -276,12 +277,12 @@ const PermissionWarning = () => (
         {errors.agentCountry ? <Text style={styles.errorText}>{errors.agentCountry}</Text> : null}
       </View>
        <View style={styles.formGroup}>
-        <Text style={styles.label}>Agent Email *</Text>
+        <Text style={styles.label}>{t('CompanyCreateAgentFormScreen', 'agentEmail')}</Text>
         <TextInput
           style={[styles.input, errors.agentEmail ? styles.inputError : null]}
           value={agentEmail}
           onChangeText={setAgentEmail}
-          placeholder="Enter agent email"
+          placeholder={t('CompanyCreateAgentFormScreen', 'agentEmailPlaceholder')}
           keyboardType="email-address"
         />
         {errors.agentEmail ? <Text style={styles.errorText}>{errors.agentEmail}</Text> : null}
@@ -294,7 +295,7 @@ const PermissionWarning = () => (
         {loading ? (
           <ActivityIndicator size="small" color="#ffffff" />
         ) : (
-          <Text style={styles.buttonText}>Create Agent</Text>
+          <Text style={styles.buttonText}>{t('CompanyCreateAgentFormScreen', 'createAgent')}</Text>
         )}
       </TouchableOpacity>
     </ScrollView>

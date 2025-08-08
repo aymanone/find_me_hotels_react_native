@@ -7,9 +7,11 @@ import  supabase  from '../config/supabase';
 import {MAXIMUM_OFFERS} from '../config/CONSTANTS';
 import { useNavigation } from '@react-navigation/native';
 import {showAlert} from "../components/ShowAlert";
+import { useTranslation } from '../config/localization';
 
 const AgentSearchTravelRequestsScreen = () => {
   const navigation = useNavigation();
+  const { t,language } = useTranslation();
   const [agent, setAgent] = useState(null);
   const [countries, setCountries] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState(null);
@@ -24,25 +26,25 @@ const AgentSearchTravelRequestsScreen = () => {
 
   // Options for dropdowns
   const requestOptions = [
-    { label: 'Preferred Requests', value: 'preferred requests' },
-    { label: 'All Requests', value: 'all requests' },
+    { label: t('AgentSearchTravelRequestsScreen', 'preferredRequests'), value: 'preferred requests' },
+    { label: t('AgentSearchTravelRequestsScreen', 'allRequests'), value: 'all requests' },
   ];
    const localRequestOptions = [
-    { label: 'All', value: 'all' },
-     { label: 'Preferred', value: 'preferred' },
+    { label: t('AgentSearchTravelRequestsScreen', 'all'), value: 'all' },
+     { label: t('AgentSearchTravelRequestsScreen', 'preferred'), value: 'preferred' },
   ];
 
   const sortOptions = [
-    { label: 'Smaller First', value: 'smaller first' },
-    { label: 'Bigger First', value: 'bigger first' },
+    { label: t('AgentSearchTravelRequestsScreen', 'smallerFirst'), value: 'smaller first' },
+    { label: t('AgentSearchTravelRequestsScreen', 'biggerFirst'), value: 'bigger first' },
   ];
 
   const sortFieldOptions = [
-    { label: 'Min Budget', value: 'min_budget' },
-    { label: 'Max Budget', value: 'max_budget' },
-    { label: 'Duration', value: 'duration' },
-    { label: 'Country', value: 'request_country_name' },
-    { label: 'Nationality', value: 'travelers_nationality_name' },
+    { label: t('AgentSearchTravelRequestsScreen', 'minBudget'), value: 'min_budget' },
+    { label: t('AgentSearchTravelRequestsScreen', 'maxBudget'), value: 'max_budget' },
+    { label: t('AgentSearchTravelRequestsScreen', 'duration'), value: 'duration' },
+    { label: t('AgentSearchTravelRequestsScreen', 'country'), value: 'request_country_name' },
+    { label: t('AgentSearchTravelRequestsScreen', 'nationality'), value: 'travelers_nationality_name' },
   ];
 
   useEffect(() => {
@@ -53,7 +55,7 @@ const AgentSearchTravelRequestsScreen = () => {
   const checkUserIsAgent = async () => {
     const isAgent = await checkUserRole('agent');
     if (!isAgent) {
-      showAlert('Access Denied', 'You must be an agent to access this screen.');
+      showAlert(t('AgentSearchTravelRequestsScreen', 'accessDenied'), t('AgentSearchTravelRequestsScreen', 'accessDeniedMessage'));
       navigation.goBack();
       return;
     }
@@ -75,7 +77,7 @@ const AgentSearchTravelRequestsScreen = () => {
       setAgent(data);
     } catch (error) {
       console.error('Error fetching agent data:', error);
-      showAlert('Error', 'Failed to fetch agent data');
+      showAlert(t('AgentSearchTravelRequestsScreen', 'error'), t('AgentSearchTravelRequestsScreen', 'failedToFetchAgentData'));
     }
   };
 
@@ -88,7 +90,7 @@ const AgentSearchTravelRequestsScreen = () => {
 
       if (error) throw error;
     setCountries([
-  { label: "Preferred Requests", value: "preferred" },
+  { label: t('AgentSearchTravelRequestsScreen', 'preferredRequests'), value: "preferred" },
   ...data.map(country => ({
     label: country.country_name,
     value: country.id
@@ -96,7 +98,7 @@ const AgentSearchTravelRequestsScreen = () => {
 ]);
     } catch (error) {
       console.error('Error fetching countries:', error);
-      showAlert('Error', 'Failed to fetch countries');
+      showAlert(t('AgentSearchTravelRequestsScreen', 'error'), t('AgentSearchTravelRequestsScreen', 'failedToFetchCountries'));
     }
   };
 
@@ -104,7 +106,7 @@ const AgentSearchTravelRequestsScreen = () => {
     try {
       const user = await getCurrentUser();
       if (!user || !agent?.agent_country) {
-        showAlert('Error', 'Agent country information not available');
+        showAlert(t('AgentSearchTravelRequestsScreen', 'error'), t('AgentSearchTravelRequestsScreen', 'agentCountryNotAvailable'));
         return;
       }
 
@@ -143,13 +145,13 @@ const AgentSearchTravelRequestsScreen = () => {
       
     } catch (error) {
       console.error('Error searching local travelers:', error);
-      showAlert('Error', 'Failed to search travelers from your country');
+      showAlert(t('AgentSearchTravelRequestsScreen', 'error'), t('AgentSearchTravelRequestsScreen', 'failedToSearchTravelers'));
     }
   };
 
   const searchTravelRequests = async () => {
     if (!selectedCountry) {
-      showAlert('Error', 'Please select a country');
+      showAlert(t('AgentSearchTravelRequestsScreen', 'error'), t('AgentSearchTravelRequestsScreen', 'pleaseSelectCountry'));
       return;
     }
 
@@ -157,7 +159,7 @@ const AgentSearchTravelRequestsScreen = () => {
      
       const user = await getCurrentUser();
       if (!user) {
-        showAlert('Error', 'User not authenticated');
+        showAlert(t('AgentSearchTravelRequestsScreen', 'error'), t('AgentSearchTravelRequestsScreen', 'userNotAuthenticated'));
         return;
       }
         // First verify the country exists
@@ -171,7 +173,7 @@ const AgentSearchTravelRequestsScreen = () => {
         console.error('Country validation error:', countryError);
         // Re-fetch countries as they might have changed
         await fetchCountries();
-        showAlert('Error', 'Selected country is no longer available. Please select another country.');
+        showAlert(t('AgentSearchTravelRequestsScreen', 'error'), t('AgentSearchTravelRequestsScreen', 'countryNoLongerAvailable'));
         return;
       }
 }
@@ -220,7 +222,7 @@ const AgentSearchTravelRequestsScreen = () => {
       
     } catch (error) {
       console.error('Error searching travel requests:', error);
-      showAlert('Error', 'Failed to search travel requests');
+      showAlert(t('AgentSearchTravelRequestsScreen', 'error'), t('AgentSearchTravelRequestsScreen', 'failedToSearchTravelRequests'));
     }
     
   };
@@ -275,7 +277,7 @@ const AgentSearchTravelRequestsScreen = () => {
       sortRequests(detailedRequests);
     } catch (error) {
       console.error('Error fetching request details:', error);
-      showAlert('Error', 'Failed to fetch request details');
+      showAlert(t('AgentSearchTravelRequestsScreen', 'error'), t('AgentSearchTravelRequestsScreen', 'failedToFetchRequestDetails'));
     }
   };
 
@@ -336,43 +338,42 @@ const AgentSearchTravelRequestsScreen = () => {
         onPress={() => navigateToRequestDetails(item.id)}
       >
         <View style={styles.row}>
-          <Text style={styles.label}>Destination:</Text>
+          <Text style={styles.label}>{t('AgentSearchTravelRequestsScreen', 'destination')}</Text>
           <Text style={styles.value}>{item.request_country_name}, {item.request_area_name}</Text>
         </View>
         <View style={styles.row}>
-          <Text style={styles.label}>Dates:</Text>
+          <Text style={styles.label}>{t('AgentSearchTravelRequestsScreen', 'dates')}</Text>
           <Text style={styles.value}>
             {new Date(item.start_date).toLocaleDateString()} - {new Date(item.end_date).toLocaleDateString()}
           </Text>
         </View>
         <View style={styles.row}>
-          <Text style={styles.label}>Budget:</Text>
+          <Text style={styles.label}>{t('AgentSearchTravelRequestsScreen', 'budget')}</Text>
           <Text style={styles.value}>${item.min_budget} - ${item.max_budget}</Text>
         </View>
         <View style={styles.row}>
-          <Text style={styles.label}>Travelers:</Text>
+          <Text style={styles.label}>{t('AgentSearchTravelRequestsScreen', 'travelers')}</Text>
           <Text style={styles.value}>
-            {item.adults} Adults, {Array.isArray(item.children) ? item.children.length : 0} Children
+            {t('AgentSearchTravelRequestsScreen', 'adultsLabel', { adults: item.adults })}, {t('AgentSearchTravelRequestsScreen', 'childrenLabel', {children:  Array.isArray(item.children) ? item.children.length : 0 })}
           </Text>
         </View>
          <View style={styles.row}>
-          <Text style={styles.label}>Nationality:</Text>
+          <Text style={styles.label}>{t('AgentSearchTravelRequestsScreen', 'nationality')}</Text>
           <Text style={styles.value}>
            {item.travelers_nationality_name}
           </Text>
         </View>
          <View style={styles.row}>
-          <Text style={styles.label}>Offers:</Text>
+          <Text style={styles.label}>{t('AgentSearchTravelRequestsScreen', 'offers')}</Text>
           <Text style={[styles.value
             , hasMaxOffers && styles.maxOffersCard
-          ]}>{item.offers_number}
-            {' Offers'}
-            {item.offers_number >= MAXIMUM_OFFERS ?  "can't make new offers" : ''}
+          ]}>{t('AgentSearchTravelRequestsScreen', 'offersLabel', { count: item.offers_number })}
+            {item.offers_number >= MAXIMUM_OFFERS ? ' ' + t('AgentSearchTravelRequestsScreen', 'cantMakeNewOffers') : ''}
           </Text>
         </View>
          <View style={styles.detailsButtonContainer}>
         <Button
-          title="View Details"
+          title={t('AgentSearchTravelRequestsScreen', 'viewDetails')}
           type="outline"
           onPress={() => navigateToRequestDetails(item.id)}
           buttonStyle={styles.detailsButton}
@@ -401,7 +402,7 @@ const AgentSearchTravelRequestsScreen = () => {
             data={requestOptions}
             labelField="label"
             valueField="value"
-            placeholder="Request Type"
+            placeholder={t('AgentSearchTravelRequestsScreen', 'requestType')}
             value={requestOption}
             onChange={item => setRequestOption(item.value)}
           />
@@ -411,7 +412,7 @@ const AgentSearchTravelRequestsScreen = () => {
             data={countries}
             labelField="label"
             valueField="value"
-            placeholder="Select Country"
+            placeholder={t('AgentSearchTravelRequestsScreen', 'selectCountry')}
             value={selectedCountry}
             search
             maxHeight={300}
@@ -436,19 +437,19 @@ const AgentSearchTravelRequestsScreen = () => {
       
       </View>
        <View style={styles.localSearchRow}>
-          <Text style={styles.maxOffersInfo}>Max {MAXIMUM_OFFERS} Offers per request</Text>
+          <Text style={styles.maxOffersInfo}>{t('AgentSearchTravelRequestsScreen', 'maxOffersInfo', { maxOffers: MAXIMUM_OFFERS })}</Text>
           <Dropdown
             style={styles.localDropdown}
             data={localRequestOptions}
             labelField="label"
             valueField="value"
-            placeholder="Request Type"
+            placeholder={t('AgentSearchTravelRequestsScreen', 'requestType')}
             value={localRequestOption}
             onChange={item => setLocalRequestOption(item.value)}
           />
 
           <Button
-            title="My Country Travelers"
+            title={t('AgentSearchTravelRequestsScreen', 'myCountryTravelers')}
             onPress={searchLocalTravelers}
             buttonStyle={styles.localSearchButton}
             titleStyle={styles.localSearchButtonText}
@@ -469,7 +470,7 @@ const AgentSearchTravelRequestsScreen = () => {
               data={sortFieldOptions}
               labelField="label"
               valueField="value"
-              placeholder="Sort By"
+              placeholder={t('AgentSearchTravelRequestsScreen', 'sortBy')}
               value={sortField}
               onChange={item => {
                 setSortField(item.value);
@@ -482,7 +483,7 @@ const AgentSearchTravelRequestsScreen = () => {
               data={sortOptions}
               labelField="label"
               valueField="value"
-              placeholder="Sort Order"
+              placeholder={t('AgentSearchTravelRequestsScreen', 'sortOrder')}
               value={sortOption}
               onChange={item => {
                 setSortOption(item.value);
@@ -491,7 +492,7 @@ const AgentSearchTravelRequestsScreen = () => {
             />
             
             <Button
-              title="Sort"
+              title={t('AgentSearchTravelRequestsScreen', 'sort')}
               onPress={handleSort}
               buttonStyle={styles.sortButton}
             />
@@ -505,7 +506,7 @@ const AgentSearchTravelRequestsScreen = () => {
         contentContainerStyle={styles.requestsList}
         ListEmptyComponent={
           <Text style={styles.emptyText}>
-            No travel requests found. Try adjusting your search criteria.
+            {t('AgentSearchTravelRequestsScreen', 'noRequestsFound')}
           </Text>
         }
       />

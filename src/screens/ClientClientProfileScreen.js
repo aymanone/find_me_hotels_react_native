@@ -20,8 +20,11 @@ import { Dropdown } from 'react-native-element-dropdown';
 import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser, signOut } from '../utils/auth';
 import { validPasswordSignup } from '../utils/validation';
-import {showAlert} from "../components/ShowAlert";
+import { showAlert } from "../components/ShowAlert";
+import {  useTranslation } from '../config/localization';
+
 export default function ClientClientProfileScreen({ navigation }) {
+  const { t,language } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const [countries, setCountries] = useState([]);
@@ -50,9 +53,9 @@ export default function ClientClientProfileScreen({ navigation }) {
       const isClient = await checkUserRole('client');
       if (!isClient) {
         showAlert(
-          'Access Denied',
-          'You do not have permission to access this page.',
-          [{ text: 'OK', onPress: () => navigation.goBack() }]
+          t('ClientClientProfileScreen', 'accessDenied'),
+          t('ClientClientProfileScreen', 'permissionDenied'),
+          [{ text: t('ClientClientProfileScreen', 'ok'), onPress: () => navigation.goBack() }]
         );
         return;
       }
@@ -67,7 +70,7 @@ export default function ClientClientProfileScreen({ navigation }) {
       }
     } catch (error) {
       console.error('Error checking user role:', error);
-      showAlert('Error', 'Failed to verify your account. Please try again.');
+      showAlert(t('ClientClientProfileScreen', 'error'), t('ClientClientProfileScreen', 'failedVerifyAccount'));
       navigation.goBack();
     }
   };
@@ -103,13 +106,13 @@ export default function ClientClientProfileScreen({ navigation }) {
     } catch (error) {
       console.error('Error fetching client profile:', error);
       showAlert(
-        'Error',
-        'Failed to load your profile information.',
+        t('ClientClientProfileScreen', 'error'),
+        t('ClientClientProfileScreen', 'failedLoadProfile'),
         [
-          { text: 'Try Again', onPress: () => {
+          { text: t('ClientClientProfileScreen', 'tryAgain'), onPress: () => {
                 setTimeout(() => checkUserAccess(), 100);
                    } },
-          { text: 'Close', style: 'cancel', onPress: () => navigation.goBack() }
+          { text: t('ClientClientProfileScreen', 'close'), style: 'cancel', onPress: () => navigation.goBack() }
         ]
       );
     } finally {
@@ -135,7 +138,7 @@ export default function ClientClientProfileScreen({ navigation }) {
       setCountries(formattedCountries || []);
     } catch (error) {
       console.error('Error fetching countries:', error);
-      showAlert('Error', 'Failed to load countries list.');
+      showAlert(t('ClientClientProfileScreen', 'error'), t('ClientClientProfileScreen', 'failedLoadCountries'));
     }
   };
 
@@ -155,7 +158,7 @@ export default function ClientClientProfileScreen({ navigation }) {
       setLoading(true);
         const user = await getCurrentUser();
         if (!user) {
-          showAlert('Error', 'User not found. Please log in again.');
+          showAlert(t('ClientClientProfileScreen', 'error'), t('ClientClientProfileScreen', 'userNotFound'));
           await signOut(navigation);
           return;
         }
@@ -186,10 +189,10 @@ export default function ClientClientProfileScreen({ navigation }) {
       }));
       
       setIsEditing(false);
-      showAlert('Success', 'Your profile has been updated successfully.');
+      showAlert(t('ClientClientProfileScreen', 'success'), t('ClientClientProfileScreen', 'profileUpdatedSuccessfully'));
     } catch (error) {
       console.error('Error updating profile:', error);
-      showAlert('Error', 'Failed to update your profile. Please try again.');
+      showAlert(t('ClientClientProfileScreen', 'error'), t('ClientClientProfileScreen', 'failedUpdateProfile'));
     } finally {
       setLoading(false);
     }
@@ -199,12 +202,12 @@ export default function ClientClientProfileScreen({ navigation }) {
     try {
       // Validate passwords
       if (passwordData.password !== passwordData.confirmPassword) {
-        setPasswordError('Passwords do not match');
+        setPasswordError(t('ClientClientProfileScreen', 'passwordsDoNotMatch'));
         return;
       }
 
       if (!validPasswordSignup(passwordData.password)) {
-        setPasswordError('Password must be at least 8 characters long and include a number');
+        setPasswordError(t('ClientClientProfileScreen', 'passwordRequirements'));
         return;
       }
 
@@ -218,10 +221,10 @@ export default function ClientClientProfileScreen({ navigation }) {
       
       setPasswordData({ password: '', confirmPassword: '' });
       setIsChangingPassword(false);
-      showAlert('Success', 'Your password has been updated successfully.');
+      showAlert(t('ClientClientProfileScreen', 'success'), t('ClientClientProfileScreen', 'passwordUpdatedSuccessfully'));
     } catch (error) {
       console.error('Error updating password:', error);
-      showAlert('Error', 'Failed to update your password. Please try again.');
+      showAlert(t('ClientClientProfileScreen', 'error'), t('ClientClientProfileScreen', 'failedUpdatePassword'));
     } finally {
       setLoading(false);
     }
@@ -229,11 +232,11 @@ export default function ClientClientProfileScreen({ navigation }) {
 
   const confirmDeleteAccount = () => {
     showAlert(
-      'Delete Account',
-      'Are you sure you want to delete your account? This action cannot be undone.',
+      t('ClientClientProfileScreen', 'deleteAccount'),
+      t('ClientClientProfileScreen', 'deleteAccountConfirm'),
       [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', style: 'destructive', onPress: deleteAccount }
+        { text: t('ClientClientProfileScreen', 'cancel'), style: 'cancel' },
+        { text: t('ClientClientProfileScreen', 'deleteAccount'), style: 'destructive', onPress: deleteAccount }
       ]
     );
   };
@@ -254,13 +257,13 @@ export default function ClientClientProfileScreen({ navigation }) {
       await signOut(navigation);
       
       showAlert(
-        'Account Deleted',
-        'Your account has been successfully deleted.',
-        [{ text: 'OK' }]
+        t('ClientClientProfileScreen', 'accountDeleted'),
+        t('ClientClientProfileScreen', 'accountDeletedSuccessfully'),
+        [{ text: t('ClientClientProfileScreen', 'ok') }]
       );
     } catch (error) {
       console.error('Error deleting account:', error);
-      showAlert('Error', 'Failed to delete your account. Please try again.');
+      showAlert(t('ClientClientProfileScreen', 'error'), t('ClientClientProfileScreen', 'failedDeleteAccount'));
       setLoading(false);
     }
   };
@@ -280,32 +283,32 @@ export default function ClientClientProfileScreen({ navigation }) {
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Card containerStyle={styles.card}>
-          <Card.Title style={styles.cardTitle}>My Profile</Card.Title>
+          <Card.Title style={styles.cardTitle}>{t('ClientClientProfileScreen', 'myProfile')}</Card.Title>
           <Divider style={styles.divider} />
 
           {/* Profile Information Section */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Personal Information</Text>
+            <Text style={styles.sectionTitle}>{t('ClientClientProfileScreen', 'personalInformation')}</Text>
             
             {isEditing ? (
               <>
                 <Input
-                  label="First Name"
+                  label={t('ClientClientProfileScreen', 'firstName')}
                   value={formData.first_name}
                   onChangeText={(value) => handleInputChange('first_name', value)}
-                  placeholder="Enter your first name"
+                  placeholder={t('ClientClientProfileScreen', 'enterFirstName')}
                   containerStyle={styles.inputContainer}
                 />
                 
                 <Input
-                  label="Last Name"
+                  label={t('ClientClientProfileScreen', 'lastName')}
                   value={formData.second_name}
                   onChangeText={(value) => handleInputChange('second_name', value)}
-                  placeholder="Enter your last name"
+                  placeholder={t('ClientClientProfileScreen', 'enterLastName')}
                   containerStyle={styles.inputContainer}
                 />
                 
-                <Text style={styles.pickerLabel}>Country</Text>
+                <Text style={styles.pickerLabel}>{t('ClientClientProfileScreen', 'country')}</Text>
                 <Dropdown
                   style={styles.dropdown}
                   placeholderStyle={styles.placeholderStyle}
@@ -316,13 +319,13 @@ export default function ClientClientProfileScreen({ navigation }) {
                   maxHeight={300}
                   labelField="label"
                   valueField="value"
-                  placeholder="Select country"
+                  placeholder={t('ClientClientProfileScreen', 'selectCountry')}
                   value={formData.client_country}
                   onChange={item => {
                     handleInputChange('client_country', item.value);
                   }}
                   search
-                  searchPlaceholder="Search country..."
+                  searchPlaceholder={t('ClientClientProfileScreen', 'searchCountry')}
                   renderItem={item => (
                     <View style={styles.dropdownItem}>
                       <Text style={styles.textItem}>{item.label}</Text>
@@ -332,7 +335,7 @@ export default function ClientClientProfileScreen({ navigation }) {
                 
                 <View style={styles.buttonRow}>
                   <Button
-                    title="Cancel"
+                    title={t('ClientClientProfileScreen', 'cancel')}
                     type="outline"
                     onPress={() => {
                       setFormData({
@@ -345,7 +348,7 @@ export default function ClientClientProfileScreen({ navigation }) {
                     containerStyle={styles.buttonContainer}
                   />
                   <Button
-                    title="Save"
+                    title={t('ClientClientProfileScreen', 'save')}
                     onPress={saveProfile}
                     containerStyle={styles.buttonContainer}
                   />
@@ -354,29 +357,29 @@ export default function ClientClientProfileScreen({ navigation }) {
             ) : (
               <>
                 <View style={styles.infoRow}>
-                  <Text style={styles.infoLabel}>Email:</Text>
-                  <Text style={styles.infoValue}>{userEmail || 'Not available'}</Text>
+                  <Text style={styles.infoLabel}>{t('ClientClientProfileScreen', 'emailLabel')}</Text>
+                  <Text style={styles.infoValue}>{userEmail || t('ClientClientProfileScreen', 'notAvailable')}</Text>
                 </View>
                 
                 <View style={styles.infoRow}>
-                  <Text style={styles.infoLabel}>First Name:</Text>
-                  <Text style={styles.infoValue}>{profile?.first_name || 'Not set'}</Text>
+                  <Text style={styles.infoLabel}>{t('ClientClientProfileScreen', 'firstNameLabel')}</Text>
+                  <Text style={styles.infoValue}>{profile?.first_name || t('ClientClientProfileScreen', 'notSet')}</Text>
                 </View>
                 
                 <View style={styles.infoRow}>
-                  <Text style={styles.infoLabel}>Last Name:</Text>
-                  <Text style={styles.infoValue}>{profile?.second_name || 'Not set'}</Text>
+                  <Text style={styles.infoLabel}>{t('ClientClientProfileScreen', 'lastNameLabel')}</Text>
+                  <Text style={styles.infoValue}>{profile?.second_name || t('ClientClientProfileScreen', 'notSet')}</Text>
                 </View>
                 
                 <View style={styles.infoRow}>
-                  <Text style={styles.infoLabel}>Country:</Text>
+                  <Text style={styles.infoLabel}>{t('ClientClientProfileScreen', 'countryLabel')}</Text>
                   <Text style={styles.infoValue}>
-                    {profile?.countries?.country_name || 'Not set'}
+                    {profile?.countries?.country_name || t('ClientClientProfileScreen', 'notSet')}
                   </Text>
                 </View>
                 
                 <Button
-                  title="Edit Profile"
+                  title={t('ClientClientProfileScreen', 'editProfile')}
                   icon={<Icon name="edit" type="material" color="white" size={20} style={styles.buttonIcon} />}
                   onPress={() => setIsEditing(true)}
                   containerStyle={styles.fullButtonContainer}
@@ -389,15 +392,15 @@ export default function ClientClientProfileScreen({ navigation }) {
 
           {/* Password Section */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Security</Text>
+            <Text style={styles.sectionTitle}>{t('ClientClientProfileScreen', 'security')}</Text>
             
             {isChangingPassword ? (
               <>
                 <Input
-                  label="New Password"
+                  label={t('ClientClientProfileScreen', 'newPassword')}
                   value={passwordData.password}
                   onChangeText={(value) => handlePasswordChange('password', value)}
-                  placeholder="Enter new password"
+                  placeholder={t('ClientClientProfileScreen', 'enterNewPassword')}
                   secureTextEntry={!showPassword}
                   rightIcon={
                     <Icon
@@ -410,10 +413,10 @@ export default function ClientClientProfileScreen({ navigation }) {
                 />
                 
                 <Input
-                  label="Confirm Password"
+                  label={t('ClientClientProfileScreen', 'confirmPassword')}
                   value={passwordData.confirmPassword}
                   onChangeText={(value) => handlePasswordChange('confirmPassword', value)}
-                  placeholder="Confirm new password"
+                  placeholder={t('ClientClientProfileScreen', 'confirmNewPassword')}
                   secureTextEntry={!showPassword}
                   errorMessage={passwordError}
                   containerStyle={styles.inputContainer}
@@ -421,7 +424,7 @@ export default function ClientClientProfileScreen({ navigation }) {
                 
                 <View style={styles.buttonRow}>
                   <Button
-                    title="Cancel"
+                    title={t('ClientClientProfileScreen', 'cancel')}
                     type="outline"
                     onPress={() => {
                       setPasswordData({ password: '', confirmPassword: '' });
@@ -431,7 +434,7 @@ export default function ClientClientProfileScreen({ navigation }) {
                     containerStyle={styles.buttonContainer}
                   />
                   <Button
-                    title="Update Password"
+                    title={t('ClientClientProfileScreen', 'updatePassword')}
                     onPress={updatePassword}
                     containerStyle={styles.buttonContainer}
                   />
@@ -439,7 +442,7 @@ export default function ClientClientProfileScreen({ navigation }) {
               </>
             ) : (
               <Button
-                title="Change Password"
+                title={t('ClientClientProfileScreen', 'changePassword')}
                 icon={<Icon name="lock" type="material" color="white" size={20} style={styles.buttonIcon} />}
                 onPress={() => setIsChangingPassword(true)}
                 containerStyle={styles.fullButtonContainer}
@@ -451,9 +454,9 @@ export default function ClientClientProfileScreen({ navigation }) {
 
           {/* Delete Account Section */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Danger Zone</Text>
+            <Text style={styles.sectionTitle}>{t('ClientClientProfileScreen', 'dangerZone')}</Text>
             <Button
-              title="Delete Account"
+              title={t('ClientClientProfileScreen', 'deleteAccount')}
               icon={<Icon name="delete" type="material" color="white" size={20} style={styles.buttonIcon} />}
               buttonStyle={styles.deleteButton}
               onPress={confirmDeleteAccount}

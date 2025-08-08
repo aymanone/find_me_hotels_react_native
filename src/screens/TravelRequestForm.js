@@ -9,10 +9,11 @@ import { checkUserRole, getCurrentUser,signOut} from '../utils/auth';
 import { removeFirstOccurrence } from '../utils/arrayUtils';  
 import {showAlert} from "../components/ShowAlert";
 import {unsubscribeChannels} from '../utils/channelUtils.js'; // Import the unsubscribe function
+import {  useTranslation } from '../config/localization';
 
 export default function TravelRequestForm({ navigation, route }) {
   // Check if we're editing an existing request
- 
+   const { t,language } = useTranslation();
 
   // Check if user is client
   useEffect(() => {
@@ -56,18 +57,20 @@ export default function TravelRequestForm({ navigation, route }) {
 
   // Prepare data for dropdowns
   const hotelRatings = Array.from({ length: 8 }, (_, i) => ({
-    label: `${i} stars`,
+    label: t('TravelRequestForm', 'starsLabel', { value: i }),
     value: i
   }));
 
   const allChildrenAges = Array.from({ length: 18 }, (_, i) => ({
-    label: `${i} years`,
+    label: t('TravelRequestForm', 'yearsLabel', { age: i }),
     value: i
   }));
+  
   const resetForm = ()=>{
          setIsEditing(false);
          setRequestId(null);
   }
+  
   // Fetch existing request data when editing
   useEffect(() => {
     const fetchRequestData = async () => {
@@ -77,7 +80,7 @@ export default function TravelRequestForm({ navigation, route }) {
         setInitialLoading(true);
         const user = await getCurrentUser();
         if (!user) {
-          showAlert('Error', 'User not found. Please log in again.');
+          showAlert(t('TravelRequestForm', 'error'), t('TravelRequestForm', 'userNotFound'));
           await signOut(navigation);
           return;
         }
@@ -91,19 +94,19 @@ export default function TravelRequestForm({ navigation, route }) {
 
         if (error) {
           if (error.code === 'PGRST116') {
-            showAlert('Error', 'Request not found or you do not have permission to edit it.');
+            showAlert(t('TravelRequestForm', 'error'), t('TravelRequestForm', 'requestNotFound'));
             navigation.goBack();
           } else {
-                       showAlert(
-      'Error', 
-      'Failed to Request data',
-      [
-        { text: 'Try Again', onPress: () => {
-         setTimeout(() => fetchRequestData(), 100);
-}  },
-        { text: 'Cancel', style: 'cancel' }
-      ]
-    ); 
+            showAlert(
+              t('TravelRequestForm', 'error'), 
+              t('TravelRequestForm', 'failedLoadRequestData'),
+              [
+                { text: t('TravelRequestForm', 'tryAgain'), onPress: () => {
+                 setTimeout(() => fetchRequestData(), 100);
+                }  },
+                { text: t('TravelRequestForm', 'cancel'), style: 'cancel' }
+              ]
+            ); 
           }
          
           return;
@@ -116,12 +119,10 @@ export default function TravelRequestForm({ navigation, route }) {
           .eq('request_id', requestId);
 
         if (offersError) {
-          showAlert('Error', 'Failed to check request status.');
+          showAlert(t('TravelRequestForm', 'error'), t('TravelRequestForm', 'failedToCheckRequestStatus'));
           navigation.goBack();
           return;
         }
-
-       
 
         // Populate form with existing data
         setFormData({
@@ -142,7 +143,7 @@ export default function TravelRequestForm({ navigation, route }) {
         });
 
       } catch (error) {
-        showAlert('Error', error.message);
+        showAlert(t('TravelRequestForm', 'error'), error.message);
         navigation.goBack();
       } finally {
         setInitialLoading(false);
@@ -164,7 +165,7 @@ export default function TravelRequestForm({ navigation, route }) {
         if (error) throw error;
         setAllCountries(data);
       } catch (error) {
-        showAlert('Error', error.message);
+        showAlert(t('TravelRequestForm', 'error'), error.message);
       }
     };
 
@@ -194,7 +195,7 @@ export default function TravelRequestForm({ navigation, route }) {
         if (error) throw error;
         setAreas(data);
       } catch (error) {
-        showAlert('Error', error.message);
+        showAlert(t('TravelRequestForm', 'error'), error.message);
       }
     };
 
@@ -289,56 +290,54 @@ export default function TravelRequestForm({ navigation, route }) {
       // Basic form validation
       const today= new Date().setHours(0,0,0,0);
       if (formData.startDate < new Date(today)) {
-        showAlert('The Dates are not valid');
+        showAlert(t('TravelRequestForm', 'datesNotValid'));
         return;
       }
       if (formData.startDate >= formData.endDate) {
-        showAlert('The Dates are not valid');
+        showAlert(t('TravelRequestForm', 'datesNotValid'));
         return;
       }
       if (!formData.requestCountry) {
-        showAlert('Please select a destination country');
+        showAlert(t('TravelRequestForm', 'pleaseSelectDestinationCountry'));
         return;
       }
       if (!formData.requestArea) {
-            
-           
-        showAlert('Please select a destination area');
+        showAlert(t('TravelRequestForm', 'pleaseSelectDestinationArea'));
         return;
       }
       if (!formData.numOfAdults || parseInt(formData.numOfAdults) < 1) {
-        showAlert('Please enter at least 1 adult');
+        showAlert(t('TravelRequestForm', 'pleaseEnterAtLeastOneAdult'));
         return;
       }
       if (!formData.hotelRating && formData.hotelRating !== 0) {
-        showAlert('Please select a hotel rating');
+        showAlert(t('TravelRequestForm', 'pleaseSelectHotelRating'));
         return;
       }
       if (!formData.numOfRooms || parseInt(formData.numOfRooms) < 1) {
-        showAlert('Please enter at least 1 room');
+        showAlert(t('TravelRequestForm', 'pleaseEnterAtLeastOneRoom'));
         return;
       }
       if (!formData.minBudget || !formData.maxBudget) {
-        showAlert('Please enter both minimum and maximum budget');
+        showAlert(t('TravelRequestForm', 'pleaseEnterBothMinimumAndMaximumBudget'));
         return;
       }
       if (parseInt(formData.minBudget) > parseInt(formData.maxBudget)) {
-        showAlert('Minimum budget cannot be greater than maximum budget');
+        showAlert(t('TravelRequestForm', 'minimumBudgetCannotBeGreaterThanMaximumBudget'));
         return;
       }
       if (!formData.travelersNationality) {
-        showAlert('Please select travelers nationality');
+        showAlert(t('TravelRequestForm', 'pleaseSelectTravelersNationality'));
          return;
       }
       if (formData.preferredAgentsCountries.length === 0) {
-        showAlert('Please choose at least one country where you can pay agents');
+        showAlert(t('TravelRequestForm', 'pleaseChooseAtLeastOneCountryWhereYouCanPayAgents'));
         return;
       }
       
       setLoading(true);
       const user = await getCurrentUser();
       if (!user) {
-        showAlert('Error', 'User not found. Please log in again.');
+        showAlert(t('TravelRequestForm', 'error'), t('TravelRequestForm', 'userNotFound'));
         await signOut(navigation);
         return;
       }
@@ -349,15 +348,13 @@ export default function TravelRequestForm({ navigation, route }) {
         .select('*')
         .order('country_name');
       
-      
-     
       // Update the countries state with fresh data
       setAllCountries(refreshedCountries);
-       if (countriesError){ 
-
-showAlert('Failed to validate countries. Please try again.');
-  return;
-}
+      if (countriesError){ 
+        showAlert(t('TravelRequestForm', 'failedValidateCountries'));
+        return;
+      }
+      
       // Validate destination country
       const destinationCountry = refreshedCountries.find(c => c.id === formData.requestCountry);
       if (!destinationCountry || !destinationCountry.can_visit) {
@@ -376,7 +373,7 @@ showAlert('Failed to validate countries. Please try again.');
           areaDropdownRef.current.reset();
         }
         
-        showAlert('The selected destination country is no longer available for visits. Please select another country.');
+        showAlert(t('TravelRequestForm', 'selectedDestinationCountryNoLongerAvailable'));
         return;
       }
       
@@ -394,7 +391,7 @@ showAlert('Failed to validate countries. Please try again.');
           nationalityDropdownRef.current.reset();
         }
         
-        showAlert('The selected nationality is no longer allowed to travel. Please select another nationality.');
+        showAlert(t('TravelRequestForm', 'selectedNationalityNoLongerAllowedToTravel'));
         return;
       }
       
@@ -416,7 +413,7 @@ showAlert('Failed to validate countries. Please try again.');
             preferredAgentsDropdownRef.current.reset();
           }
           
-          showAlert('Some preferred agent countries are no longer available. They have been removed from your selection.');
+          showAlert(t('TravelRequestForm', 'somePreferredAgentCountriesNoLongerAvailable'));
           return;
         }
       }
@@ -429,14 +426,12 @@ showAlert('Failed to validate countries. Please try again.');
         .eq('can_visit', true)
         .order('area_name');
       
-     
-      
       // Update the areas state with fresh data
       setAreas(refreshedAreas);
-       if (areasError) {
-        showAlert('Failed to validate areas. Please try again.');
+      if (areasError) {
+        showAlert(t('TravelRequestForm', 'failedValidateAreas'));
         return;
-}
+      }
       
       // Validate area
       const selectedArea = refreshedAreas.find(a => a.id === formData.requestArea);
@@ -452,7 +447,7 @@ showAlert('Failed to validate countries. Please try again.');
           areaDropdownRef.current.reset();
         }
         
-        showAlert('The selected area is no longer available for visits. Please select another area.');
+        showAlert(t('TravelRequestForm', 'selectedAreaNoLongerAvailable'));
         return;
       }
 
@@ -479,7 +474,6 @@ showAlert('Failed to validate countries. Please try again.');
       
       if (isEditing) {
         // Update existing request
-
         const updateResult = await supabase
           .from('travel_requests')
           .update(requestData)
@@ -500,17 +494,15 @@ showAlert('Failed to validate countries. Please try again.');
       }
 
       if (error){
- 
- throw error;
-}
+        throw error;
+      }
       
       showAlert(
-        'Success', 
-        isEditing ? 'Travel request updated successfully!' : 'Travel request submitted successfully!'
+        t('TravelRequestForm', 'success'), 
+        isEditing ? t('TravelRequestForm', 'travelRequestUpdatedSuccessfully') : t('TravelRequestForm', 'travelRequestSubmittedSuccessfully')
       );
       
       // Wait for 3 seconds before navigating
-      
       setTimeout(() => {
           navigation.reset({
           index: 0,
@@ -519,7 +511,7 @@ showAlert('Failed to validate countries. Please try again.');
       }, 3000);
       
     } catch (error) {
-      showAlert('Error', "an error happened please try again");
+      showAlert(t('TravelRequestForm', 'error'), t('TravelRequestForm', 'anErrorHappenedPleaseTryAgain'));
     } finally {
       setLoading(false);
     }
@@ -529,7 +521,7 @@ showAlert('Failed to validate countries. Please try again.');
   if (initialLoading) {
     return (
       <View style={[styles.container, styles.loadingContainer]}>
-        <Text>Loading request data...</Text>
+        <Text>{t('TravelRequestForm', 'loadingRequestData')}</Text>
       </View>
     );
   }
@@ -544,95 +536,94 @@ showAlert('Failed to validate countries. Please try again.');
         keyboardShouldPersistTaps="handled"
       >
         <Text h4 style={styles.title}>
-          {isEditing ? 'Edit Travel Request' : 'New Travel Request'}
+          {isEditing ? t('TravelRequestForm', 'editTravelRequest') : t('TravelRequestForm', 'newTravelRequest')}
         </Text>
         
         {/* Dates Row */}
-     {/* Dates Row */}
-<View style={styles.row}>
-  {Platform.OS === 'web' ? (
-    // WEB VERSION - Both dates
-    <>
-      <View style={styles.halfWidth}>
-        <Text style={styles.label}>Start Date</Text>
-        <input
-          type="date"
-          value={format(formData.startDate, 'yyyy-MM-dd')}
-          onChange={(e) => {
-            if (e.target.value) {
-              onStartDateChange(null, new Date(e.target.value));
-            }
-          }}
-          min={format(new Date(), 'yyyy-MM-dd')}
-          style={styles.webDateInput}
-        />
-      </View>
-      
-      <View style={styles.halfWidth}>
-        <Text style={styles.label}>End Date</Text>
-        <input
-          type="date"
-          value={format(formData.endDate, 'yyyy-MM-dd')}
-          onChange={(e) => {
-            if (e.target.value) {
-              onEndDateChange(null, new Date(e.target.value));
-            }
-          }}
-          min={format(new Date(formData.startDate.getTime() + 86400000), 'yyyy-MM-dd')}
-          style={styles.webDateInput}
-        />
-      </View>
-    </>
-  ) : (
-    // MOBILE VERSION - Both dates with pickers
-    <>
-      <View style={styles.halfWidth}>
-        <Text style={styles.label}>Start Date</Text>
-        <Button
-          title={format(formData.startDate, 'yyyy-MM-dd')}
-          onPress={() => setShowStartDatePicker(true)}
-          type="outline"
-          buttonStyle={styles.dateButton}
-        />
-        {showStartDatePicker && (
-          <DateTimePicker
-            value={formData.startDate}
-            mode="date"
-            display="default"
-            onChange={onStartDateChange}
-            minimumDate={new Date()}
-            style={styles.datePickerContainer}
-          />
-        )}
-      </View>
-      
-      <View style={styles.halfWidth}>
-        <Text style={styles.label}>End Date</Text>
-        <Button
-          title={format(formData.endDate, 'yyyy-MM-dd')}
-          onPress={() => setShowEndDatePicker(true)}
-          type="outline"
-          buttonStyle={styles.dateButton}
-        />
-        {showEndDatePicker && (
-          <DateTimePicker
-            value={formData.endDate}
-            mode="date"
-            display="default"
-            onChange={onEndDateChange}
-            minimumDate={new Date(formData.startDate.getTime() + 86400000)}
-            style={styles.datePickerContainer}
-          />
-        )}
-      </View>
-    </>
-  )}
-</View>
+        <View style={styles.row}>
+          {Platform.OS === 'web' ? (
+            // WEB VERSION - Both dates
+            <>
+              <View style={styles.halfWidth}>
+                <Text style={styles.label}>{t('TravelRequestForm', 'startDate')}</Text>
+                <input
+                  type="date"
+                  value={format(formData.startDate, 'yyyy-MM-dd')}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      onStartDateChange(null, new Date(e.target.value));
+                    }
+                  }}
+                  min={format(new Date(), 'yyyy-MM-dd')}
+                  style={styles.webDateInput}
+                />
+              </View>
+              
+              <View style={styles.halfWidth}>
+                <Text style={styles.label}>{t('TravelRequestForm', 'endDate')}</Text>
+                <input
+                  type="date"
+                  value={format(formData.endDate, 'yyyy-MM-dd')}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      onEndDateChange(null, new Date(e.target.value));
+                    }
+                  }}
+                  min={format(new Date(formData.startDate.getTime() + 86400000), 'yyyy-MM-dd')}
+                  style={styles.webDateInput}
+                />
+              </View>
+            </>
+          ) : (
+            // MOBILE VERSION - Both dates with pickers
+            <>
+              <View style={styles.halfWidth}>
+                <Text style={styles.label}>{t('TravelRequestForm', 'startDate')}</Text>
+                <Button
+                  title={format(formData.startDate, 'yyyy-MM-dd')}
+                  onPress={() => setShowStartDatePicker(true)}
+                  type="outline"
+                  buttonStyle={styles.dateButton}
+                />
+                {showStartDatePicker && (
+                  <DateTimePicker
+                    value={formData.startDate}
+                    mode="date"
+                    display="default"
+                    onChange={onStartDateChange}
+                    minimumDate={new Date()}
+                    style={styles.datePickerContainer}
+                  />
+                )}
+              </View>
+              
+              <View style={styles.halfWidth}>
+                <Text style={styles.label}>{t('TravelRequestForm', 'endDate')}</Text>
+                <Button
+                  title={format(formData.endDate, 'yyyy-MM-dd')}
+                  onPress={() => setShowEndDatePicker(true)}
+                  type="outline"
+                  buttonStyle={styles.dateButton}
+                />
+                {showEndDatePicker && (
+                  <DateTimePicker
+                    value={formData.endDate}
+                    mode="date"
+                    display="default"
+                    onChange={onEndDateChange}
+                    minimumDate={new Date(formData.startDate.getTime() + 86400000)}
+                    style={styles.datePickerContainer}
+                  />
+                )}
+              </View>
+            </>
+          )}
+        </View>
         
         {/* Destinations Row */}
         <View style={styles.row}>
           <View style={styles.halfWidth}>
-            <Text style={styles.label}>Destination Country</Text>
+            <Text style={styles.label}>{t('TravelRequestForm', 'destinationCountry')}</Text>
             <Dropdown
               ref={countryDropdownRef}
               data={allCountries
@@ -651,17 +642,17 @@ showAlert('Failed to validate countries. Please try again.');
                   requestArea: null
                 });
               }}
-              placeholder="Select country"
+              placeholder={t('TravelRequestForm', 'selectCountry')}
               style={styles.dropdown}
               placeholderStyle={styles.placeholderStyle}
               selectedTextStyle={styles.selectedTextStyle}
               search
-              searchPlaceholder="Search country..."
+              searchPlaceholder={t('TravelRequestForm', 'searchCountry')}
             />
           </View>
           
           <View style={styles.halfWidth}>
-            <Text style={styles.label}>Destination Area</Text>
+            <Text style={styles.label}>{t('TravelRequestForm', 'destinationArea')}</Text>
             <Dropdown
               ref={areaDropdownRef}
               data={areas.map(area => ({
@@ -677,12 +668,12 @@ showAlert('Failed to validate countries. Please try again.');
                   requestArea: item.value
                 });
               }}
-              placeholder="Select area"
+              placeholder={t('TravelRequestForm', 'selectArea')}
               style={styles.dropdown}
               placeholderStyle={styles.placeholderStyle}
               selectedTextStyle={styles.selectedTextStyle}
               search
-              searchPlaceholder="Search area..."
+              searchPlaceholder={t('TravelRequestForm', 'searchArea')}
               disabled={!formData.requestCountry}
             />
           </View>
@@ -691,7 +682,7 @@ showAlert('Failed to validate countries. Please try again.');
         {/* Travelers Row */}
         <View style={styles.row}>
           <View style={styles.halfWidth}>
-            <Text style={styles.label}>Number of Adults</Text>
+            <Text style={styles.label}>{t('TravelRequestForm', 'numberOfAdults')}</Text>
             <Input
               keyboardType="numeric"
               value={formData.numOfAdults}
@@ -706,13 +697,13 @@ showAlert('Failed to validate countries. Please try again.');
           </View>
           
           <View style={styles.halfWidth}>
-            <Text style={styles.label}>Add Child</Text>
+            <Text style={styles.label}>{t('TravelRequestForm', 'addChild')}</Text>
             <Dropdown
               data={allChildrenAges}
               labelField="label"
               valueField="value"
               onChange={item => addChild(item.value)}
-              placeholder="Select age"
+              placeholder={t('TravelRequestForm', 'selectAge')}
               style={styles.dropdown}
               placeholderStyle={styles.placeholderStyle}
               selectedTextStyle={styles.selectedTextStyle}
@@ -723,11 +714,11 @@ showAlert('Failed to validate countries. Please try again.');
         {/* Children Row (if any) */}
         {formData.requestChildren.length > 0 && (
           <View style={styles.childrenContainer}>
-            <Text style={styles.label}>Children</Text>
+            <Text style={styles.label}>{t('TravelRequestForm', 'children')}</Text>
             <View style={styles.childrenList}>
               {formData.requestChildren.map((age,index )=> (
                 <View key={`${age}-${index}`} style={styles.childTag}>
-                  <Text style={styles.childTagText}>{age} years</Text>
+                  <Text style={styles.childTagText}>{t('TravelRequestForm', 'yearsLabel', { age: age })}</Text>
                   <Button
                     icon={{ name: 'close', size: 15, color: 'white' }}
                     onPress={() => removeChild(age)}
@@ -742,7 +733,7 @@ showAlert('Failed to validate countries. Please try again.');
         {/* Hotels Row */}
         <View style={styles.row}>
           <View style={styles.halfWidth}>
-            <Text style={styles.label}>Hotel Rating</Text>
+            <Text style={styles.label}>{t('TravelRequestForm', 'hotelRating')}</Text>
             <Dropdown
               data={hotelRatings}
               labelField="label"
@@ -754,7 +745,7 @@ showAlert('Failed to validate countries. Please try again.');
                   hotelRating: item.value
                 });
               }}
-              placeholder="Select rating"
+              placeholder={t('TravelRequestForm', 'selectRating')}
               style={styles.dropdown}
               placeholderStyle={styles.placeholderStyle}
               selectedTextStyle={styles.selectedTextStyle}
@@ -762,7 +753,7 @@ showAlert('Failed to validate countries. Please try again.');
           </View>
           
           <View style={styles.halfWidth}>
-            <Text style={styles.label}>Number of Rooms</Text>
+            <Text style={styles.label}>{t('TravelRequestForm', 'numberOfRooms')}</Text>
             <Input
               keyboardType="numeric"
               value={formData.numOfRooms}
@@ -780,14 +771,14 @@ showAlert('Failed to validate countries. Please try again.');
         {/* Meals Row */}
         <View style={styles.row}>
           <View style={styles.fullWidth}>
-            <Text style={styles.label}>Meals</Text>
+            <Text style={styles.label}>{t('TravelRequestForm', 'meals')}</Text>
             <View style={styles.mealsContainer}>
-              {['Breakfast', 'Lunch', 'Dinner'].map(meal => (
+              {['breakfast', 'lunch', 'dinner'].map(meal => (
                 <CheckBox
                   key={meal}
-                  title={meal}
-                  checked={formData.meals.includes(meal.toLowerCase())}
-                  onPress={() => toggleMeal(meal.toLowerCase())}
+                  title={t('TravelRequestForm', meal)}
+                  checked={formData.meals.includes(meal)}
+                  onPress={() => toggleMeal(meal)}
                   containerStyle={styles.checkbox}
                 />
               ))}
@@ -798,7 +789,7 @@ showAlert('Failed to validate countries. Please try again.');
         {/* Budget Row */}
         <View style={styles.row}>
           <View style={styles.halfWidth}>
-            <Text style={styles.label}>Minimum Budget in $</Text>
+            <Text style={styles.label}>{t('TravelRequestForm', 'minimumBudget')}</Text>
             <Input
               keyboardType="numeric"
               value={formData.minBudget}
@@ -813,7 +804,7 @@ showAlert('Failed to validate countries. Please try again.');
           </View>
           
           <View style={styles.halfWidth}>
-            <Text style={styles.label}>Maximum Budget in $</Text>
+            <Text style={styles.label}>{t('TravelRequestForm', 'maximumBudget')}</Text>
             <Input
               keyboardType="numeric"
               value={formData.maxBudget}
@@ -831,7 +822,7 @@ showAlert('Failed to validate countries. Please try again.');
         {/* Travelers Nationality Row */}
         <View style={styles.row}>
           <View style={styles.fullWidth}>
-            <Text style={styles.label}>Travelers Nationality</Text>
+            <Text style={styles.label}>{t('TravelRequestForm', 'travelersNationality')}</Text>
             <Dropdown
               ref={nationalityDropdownRef}
               data={allCountries.
@@ -849,12 +840,12 @@ showAlert('Failed to validate countries. Please try again.');
                   travelersNationality: item.value
                 });
               }}
-              placeholder="Select nationality"
+              placeholder={t('TravelRequestForm', 'selectNationality')}
               style={styles.dropdown}
               placeholderStyle={styles.placeholderStyle}
               selectedTextStyle={styles.selectedTextStyle}
               search
-              searchPlaceholder="Search nationality..."
+              searchPlaceholder={t('TravelRequestForm', 'searchNationality')}
             />
           </View>
         </View>
@@ -862,7 +853,7 @@ showAlert('Failed to validate countries. Please try again.');
         {/* Preferred Agents Countries Row */}
         <View style={styles.row}>
           <View style={styles.fullWidth}>
-            <Text style={styles.label}>Countries where you can pay Agents</Text>
+            <Text style={styles.label}>{t('TravelRequestForm', 'countriesWhereYouCanPayAgents')}</Text>
             <Dropdown
               ref={preferredAgentsDropdownRef}
               data={allCountries.map(country => ({
@@ -875,7 +866,7 @@ showAlert('Failed to validate countries. Please try again.');
                 addPreferredAgentCountry(item.value);
               }}
               showsVerticalScrollIndicator={true}
-              placeholder="Select country"
+              placeholder={t('TravelRequestForm', 'selectCountry')}
               style={[
                 styles.dropdown, 
                 formData.preferredAgentsCountries.length >= 2 ? styles.disabledDropdown : {}
@@ -883,7 +874,7 @@ showAlert('Failed to validate countries. Please try again.');
               placeholderStyle={styles.placeholderStyle}
               selectedTextStyle={styles.selectedTextStyle}
               search
-              searchPlaceholder="Search country..."
+              searchPlaceholder={t('TravelRequestForm', 'searchCountry')}
               disable={formData.preferredAgentsCountries.length >= 2}
               excludeItems={formData.preferredAgentsCountries.map(id => ({ value: id }))}
               excludeSearchItems={formData.preferredAgentsCountries.map(id => ({ value: id }))}
@@ -910,10 +901,9 @@ showAlert('Failed to validate countries. Please try again.');
         {/* Notes Row */}
         <View style={styles.row}>
           <View style={styles.fullWidth}>
-            <Text style={styles.label}
-            numberOflines={2}
->Notes: examples: sea view, honeymoon, smoking, balcony
-             </Text>
+            <Text style={styles.label} numberOflines={2}>
+              {t('TravelRequestForm', 'notesExamples')}
+            </Text>
             <Input
               multiline
               numberOfLines={10}
@@ -930,7 +920,7 @@ showAlert('Failed to validate countries. Please try again.');
         {/* Submit Button */}
         <View style={styles.submitButtonContainer}>
           <Button
-            title={isEditing ? "Update Request" : "Submit Request"}
+            title={isEditing ? t('TravelRequestForm', 'updateRequest') : t('TravelRequestForm', 'submitRequest')}
             onPress={handleSubmit}
             loading={loading}
             disabled={loading}
@@ -940,6 +930,7 @@ showAlert('Failed to validate countries. Please try again.');
     </KeyboardAvoidingView>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     padding: 16,
@@ -971,9 +962,6 @@ const styles = StyleSheet.create({
   },
   input: {
     marginBottom: 16,
-   
-  
-     
   },
   dropdown: {
     height: 50,
@@ -1030,19 +1018,19 @@ const styles = StyleSheet.create({
     marginTop: 8,
     paddingBottom: 80,
   },
-notesInputContainer: {
-  borderWidth: 1,
-  borderColor: '#ccc',
-  borderRadius: 8,
-  paddingHorizontal: 1,
-  minHeight: 120,
-},
-notesInput: {
-  minHeight: 100,
-  textAlignVertical: 'top',
-  paddingTop: 8,
-  fontSize: 16,
-},
+  notesInputContainer: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    paddingHorizontal: 1,
+    minHeight: 120,
+  },
+  notesInput: {
+    minHeight: 100,
+    textAlignVertical: 'top',
+    paddingTop: 8,
+    fontSize: 16,
+  },
   disabledDropdown: {
     backgroundColor: '#f0f0f0',
     borderColor: '#d0d0d0',
@@ -1108,19 +1096,18 @@ notesInput: {
     fontWeight: 'bold',
     marginBottom: 8,
   },
-webDateInput: {
-  height: 50,             
-  width: '100%',
-  borderColor: '#2196F3', 
-  borderWidth: 1,
-  borderRadius: 8,
-  paddingHorizontal: 12,
-  fontSize: 16,
-  backgroundColor: 'transparent',
-  color: '#2196F3',
-  fontWeight: '500',
-  cursor: 'pointer',
-  outline: 'none',
-},
-
+  webDateInput: {
+    height: 50,             
+    width: '100%',
+    borderColor: '#2196F3', 
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    fontSize: 16,
+    backgroundColor: 'transparent',
+    color: '#2196F3',
+    fontWeight: '500',
+    cursor: 'pointer',
+    outline: 'none',
+  },
 });

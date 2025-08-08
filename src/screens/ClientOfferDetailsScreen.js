@@ -18,7 +18,10 @@ import supabase from '../config/supabase';
 import {MESSAGING_APPS} from '../config/CONSTANTS';
 import { checkUserRole } from '../utils/auth';
 import {showAlert} from "../components/ShowAlert";
+import { useTranslation } from '../config/localization';
+
 const ClientOfferDetailsScreen = ({ route, navigation }) => {
+  const { t,language } = useTranslation();
   const { offerId } = route.params;
   const [loading, setLoading] = useState(true);
   const [offer, setOffer] = useState(null);
@@ -33,7 +36,10 @@ const ClientOfferDetailsScreen = ({ route, navigation }) => {
         const isValidClient = await checkUserRole('client');
 
         if (!isValidClient) {
-          showAlert('Access Denied', 'You do not have permission to view this page.');
+          showAlert(
+            t('ClientOfferDetailsScreen', 'accessDenied'), 
+            t('ClientOfferDetailsScreen', 'accessDeniedMessage')
+          );
           navigation.goBack();
           return;
         }
@@ -58,16 +64,16 @@ const ClientOfferDetailsScreen = ({ route, navigation }) => {
 
         if (error) {
           console.error('Error fetching offer:', error);
-             showAlert(
-      'Error', 
-      'Failed to load profile data',
-      [
-        { text: 'Try Again', onPress: () => {
-           setTimeout(() => fetchOfferDetails(), 100);
-}  },
-        { text: 'Cancel', style: 'cancel' }
-      ]
-    );
+          showAlert(
+            t('ClientOfferDetailsScreen', 'error'), 
+            t('ClientOfferDetailsScreen', 'loadError'),
+            [
+              { text: t('ClientOfferDetailsScreen', 'tryAgain'), onPress: () => {
+                setTimeout(() => fetchOfferDetails(), 100);
+              } },
+              { text: t('ClientOfferDetailsScreen', 'cancel'), style: 'cancel' }
+            ]
+          );
           return;
         }
         
@@ -80,7 +86,10 @@ const ClientOfferDetailsScreen = ({ route, navigation }) => {
         }
       } catch (error) {
         console.error('Error in fetchOfferDetails:', error);
-        showAlert('Error', 'An unexpected error occurred');
+        showAlert(
+          t('ClientOfferDetailsScreen', 'error'), 
+          t('ClientOfferDetailsScreen', 'unexpectedError')
+        );
       } finally {
         setLoading(false);
       }
@@ -96,6 +105,7 @@ const ClientOfferDetailsScreen = ({ route, navigation }) => {
   const toggleAgentSection = () => {
     setAgentSectionCollapsed(!agentSectionCollapsed);
   };
+
 const appHasLink =(messagingApp) =>{
   if(!messagingApp) return false;
 
@@ -103,6 +113,7 @@ const appHasLink =(messagingApp) =>{
   return MESSAGING_APPS.map(app=> app.toUpperCase())
   .includes(messagingApp.toUpperCase());
 };
+
   const openUrl = (url) => {
     if (!url) return;
     
@@ -117,14 +128,21 @@ const appHasLink =(messagingApp) =>{
         if (supported) {
           return Linking.openURL(fullUrl);
         } else {
-          showAlert('Error', `Cannot open URL: ${fullUrl}`);
+          showAlert(
+            t('ClientOfferDetailsScreen', 'error'), 
+            `${t('ClientOfferDetailsScreen', 'couldNotOpen')} URL: ${fullUrl}`
+          );
         }
       })
       .catch(err => console.error('Error opening URL:', err));
   };
+
   const openMessagingApp = (phoneNumber, app) => {
   if (!phoneNumber) {
-    showAlert('Error', 'No phone number available');
+    showAlert(
+      t('ClientOfferDetailsScreen', 'error'), 
+      t('ClientOfferDetailsScreen', 'noPhoneNumber')
+    );
     return;
   }
   
@@ -161,13 +179,19 @@ const appHasLink =(messagingApp) =>{
           // Fallback to web WhatsApp
           return Linking.openURL(`https://wa.me/${formattedPhone}`);
         } else {
-          showAlert('Error', `${app} is not installed on your device`);
+          showAlert(
+            t('ClientOfferDetailsScreen', 'error'), 
+            `${app} ${t('ClientOfferDetailsScreen', 'appNotInstalled')}`
+          );
         }
       }
     })
     .catch(err => {
       console.error(`Error opening ${app}:`, err);
-      showAlert('Error', `Could not open ${app}`);
+      showAlert(
+        t('ClientOfferDetailsScreen', 'error'), 
+        `${t('ClientOfferDetailsScreen', 'couldNotOpen')} ${app}`
+      );
     });
 };
 
@@ -182,7 +206,7 @@ const appHasLink =(messagingApp) =>{
   if (!offer) {
     return (
       <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Offer not found or you don't have permission to view it.</Text>
+        <Text style={styles.errorText}>{t('ClientOfferDetailsScreen', 'offerNotFound')}</Text>
       </View>
     );
   }
@@ -193,17 +217,17 @@ const appHasLink =(messagingApp) =>{
     <ScrollView style={styles.container}>
       {/* Offer Info Section */}
       <Card containerStyle={styles.card}>
-        <Text style={styles.sectionTitle}>Offer Information</Text>
+        <Text style={styles.sectionTitle}>{t('ClientOfferDetailsScreen', 'offerInformation')}</Text>
         <Divider style={styles.divider} />
         
         {/* Cost Row */}
         <View style={styles.infoRow}>
           <View style={styles.infoColumn}>
-            <Text style={styles.label}>Min Cost:</Text>
+            <Text style={styles.label}>{t('ClientOfferDetailsScreen', 'minCost')}</Text>
             <Text style={styles.value}>${offer.min_cost}</Text>
           </View>
           <View style={styles.infoColumn}>
-            <Text style={styles.label}>Max Cost:</Text>
+            <Text style={styles.label}>{t('ClientOfferDetailsScreen', 'maxCost')}</Text>
             <Text style={styles.value}>${offer.max_cost}</Text>
           </View>
         </View>
@@ -211,19 +235,19 @@ const appHasLink =(messagingApp) =>{
         {/* Rating Row */}
         <View style={styles.infoRow}>
           <View style={styles.infoColumn}>
-            <Text style={styles.label}>Min Rating:</Text>
-            <Text style={styles.value}>{offer.min_rating} stars</Text>
+            <Text style={styles.label}>{t('ClientOfferDetailsScreen', 'minRating')}</Text>
+            <Text style={styles.value}>{offer.min_rating} {t('ClientOfferDetailsScreen', 'stars')}</Text>
           </View>
           <View style={styles.infoColumn}>
-            <Text style={styles.label}>Max Rating:</Text>
-            <Text style={styles.value}>{offer.max_rating} stars</Text>
+            <Text style={styles.label}>{t('ClientOfferDetailsScreen', 'maxRating')}</Text>
+            <Text style={styles.value}>{offer.max_rating} {t('ClientOfferDetailsScreen', 'stars')}</Text>
           </View>
         </View>
         
         {/* Number of Hotels */}
         <View style={styles.infoRow}>
           <View style={styles.fullWidth}>
-            <Text style={styles.label}>Number of Hotels:</Text>
+            <Text style={styles.label}>{t('ClientOfferDetailsScreen', 'numberHotels')}</Text>
             <Text style={styles.value}>{offer.num_of_hotels}</Text>
           </View>
         </View>
@@ -235,7 +259,7 @@ const appHasLink =(messagingApp) =>{
           style={styles.sectionHeader} 
           onPress={toggleHotelsSection}
         >
-          <Text style={styles.sectionTitle}>Hotels</Text>
+          <Text style={styles.sectionTitle}>{t('ClientOfferDetailsScreen', 'hotels')}</Text>
           <Icon 
             name={hotelsSectionCollapsed ? 'chevron-down' : 'chevron-up'} 
             type="ionicon" 
@@ -250,7 +274,7 @@ const appHasLink =(messagingApp) =>{
                 <View style={styles.hotelDetailRow}>
                   <Icon name="business-outline" type="ionicon" size={16} color="#007bff" />
                   <Text style={styles.hotelDetailText}>
-                    <Text style={styles.hotelDetailLabel}>Name: </Text>
+                    <Text style={styles.hotelDetailLabel}>{t('ClientOfferDetailsScreen', 'name')} </Text>
                     {hotel.name}
                   </Text>
                 </View>
@@ -259,7 +283,7 @@ const appHasLink =(messagingApp) =>{
                 <View style={styles.hotelDetailRow}>
                   <Icon name="location-outline" type="ionicon" size={16} color="#007bff" />
                   <Text style={styles.hotelDetailText}>
-                    <Text style={styles.hotelDetailLabel}>Address: </Text>
+                    <Text style={styles.hotelDetailLabel}>{t('ClientOfferDetailsScreen', 'address')} </Text>
                     {hotel.address}
                   </Text>
                 </View>
@@ -268,8 +292,8 @@ const appHasLink =(messagingApp) =>{
                 <View style={styles.hotelDetailRow}>
                   <Icon name="bed-outline" type="ionicon" size={16} color="#007bff" />
                   <Text style={styles.hotelDetailText}>
-                    <Text style={styles.hotelDetailLabel}>Rooms: </Text>
-                    {hotel.rooms} {hotel.rooms === 1 ? 'room' : 'rooms'}, {hotel.room_size} meters²
+                    <Text style={styles.hotelDetailLabel}>{t('ClientOfferDetailsScreen', 'rooms')} </Text>
+                    {hotel.rooms} {hotel.rooms === 1 ? t('ClientOfferDetailsScreen', 'room') : t('ClientOfferDetailsScreen', 'rooms')}, {hotel.room_size} {t('ClientOfferDetailsScreen', 'squareMeters')}
                   </Text>
                 </View>
                 
@@ -277,15 +301,15 @@ const appHasLink =(messagingApp) =>{
                 <View style={styles.hotelDetailRow}>
                   <Icon name="star" type="ionicon" size={16} color="#FFD700" />
                   <Text style={styles.hotelDetailText}>
-                    <Text style={styles.hotelDetailLabel}>Rating: </Text>
-                    {hotel.rating} stars
+                    <Text style={styles.hotelDetailLabel}>{t('ClientOfferDetailsScreen', 'rating')} </Text>
+                    {hotel.rating} {t('ClientOfferDetailsScreen', 'stars')}
                   </Text>
                 </View>
                 
                 <View style={styles.hotelDetailRow}>
                   <Icon name="cash-outline" type="ionicon" size={16} color="#28a745" />
                   <Text style={styles.hotelDetailText}>
-                    <Text style={styles.hotelDetailLabel}>Cost: </Text>
+                    <Text style={styles.hotelDetailLabel}>{t('ClientOfferDetailsScreen', 'cost')} </Text>
                     ${hotel.cost}
                   </Text>
                 </View>
@@ -294,8 +318,8 @@ const appHasLink =(messagingApp) =>{
                 <View style={styles.hotelDetailRow}>
                   <Icon name="restaurant-outline" type="ionicon" size={16} color="#007bff" />
                   <Text style={styles.hotelDetailText}>
-                    <Text style={styles.hotelDetailLabel}>Meals: </Text>
-                    {hotel.meals && hotel.meals.length > 0 ? hotel.meals.join(', ') : 'None'}
+                    <Text style={styles.hotelDetailLabel}>{t('ClientOfferDetailsScreen', 'meals')} </Text>
+                    {hotel.meals && hotel.meals.length > 0 ? hotel.meals.join(', ') : t('ClientOfferDetailsScreen', 'none')}
                   </Text>
                 </View>
                 
@@ -304,7 +328,7 @@ const appHasLink =(messagingApp) =>{
                   <View style={styles.hotelDetailRow}>
                     <Icon name="document-text-outline" type="ionicon" size={16} color="#007bff" />
                     <Text style={styles.hotelDetailText}>
-                      <Text style={styles.hotelDetailLabel}>Notes: </Text>
+                      <Text style={styles.hotelDetailLabel}>{t('ClientOfferDetailsScreen', 'notes')} </Text>
                       {hotel.notes}
                     </Text>
                   </View>
@@ -321,7 +345,7 @@ const appHasLink =(messagingApp) =>{
           style={styles.sectionHeader} 
           onPress={toggleAgentSection}
         >
-          <Text style={styles.sectionTitle}>Agent Information</Text>
+          <Text style={styles.sectionTitle}>{t('ClientOfferDetailsScreen', 'agentInformation')}</Text>
           <Icon 
             name={agentSectionCollapsed ? 'chevron-down' : 'chevron-up'} 
             type="ionicon" 
@@ -333,7 +357,7 @@ const appHasLink =(messagingApp) =>{
             {/* Agent Name */}
             <View style={styles.infoRow}>
               <View style={styles.fullWidth}>
-                <Text style={styles.label}>Agent Name:</Text>
+                <Text style={styles.label}>{t('ClientOfferDetailsScreen', 'agentName')}:</Text>
                 <Text style={styles.value}>{agent.first_name} {agent.second_name}</Text>
               </View>
             </View>
@@ -341,16 +365,16 @@ const appHasLink =(messagingApp) =>{
             {/* Agent Contact */}
             <View style={styles.infoRow}>
               <View style={styles.fullWidth}>
-                <Text style={styles.label}>Contact:</Text>
+                <Text style={styles.label}>{t('ClientOfferDetailsScreen', 'contact')}:</Text>
                   
                  <TouchableOpacity 
                  onPress={() => openMessagingApp(agent.phone_number, agent.messaging_app)}>
                    <View style={styles.contactButtonContent}>
-                <Text style={styles.value}>Phone: {agent.phone_number}</Text>
-                <Text style={styles.value}>Messaging App: {agent.messaging_app}</Text>
+                <Text style={styles.value}>{t('ClientOfferDetailsScreen', 'phone')} {agent.phone_number}</Text>
+                <Text style={styles.value}>{t('ClientOfferDetailsScreen', 'messagingApp')} {agent.messaging_app}</Text>
              { appHasLink(agent.messaging_app) &&  (<View style={styles.contactHint}>
           <Icon name="chatbubble-outline" type="ionicon" size={14} color="#007bff" />
-          <Text style={styles.contactHintText}>Tap to contact via {agent.messaging_app}</Text>
+          <Text style={styles.contactHintText}>{t('ClientOfferDetailsScreen', 'tapToContactVia')} {agent.messaging_app}</Text>
            </View>)}
            </View>
                 </TouchableOpacity>
@@ -360,37 +384,37 @@ const appHasLink =(messagingApp) =>{
             {/* Agent Country */}
             <View style={styles.infoRow}>
               <View style={styles.fullWidth}>
-                <Text style={styles.label}>Agent Location:</Text>
-                <Text style={styles.value}>{agent.countries.country_name || 'Not specified'}</Text>
+                <Text style={styles.label}>{t('ClientOfferDetailsScreen', 'agentLocation')}:</Text>
+                <Text style={styles.value}>{agent.countries.country_name || t('ClientOfferDetailsScreen', 'notSpecified')}</Text>
               </View>
             </View>
             
             {/* Company Name */}
             <View style={styles.infoRow}>
               <View style={styles.fullWidth}>
-                <Text style={styles.label}>Company:</Text>
-                <Text style={styles.value}>{agent.companies?.company_name || 'Not specified'}</Text>
+                <Text style={styles.label}>{t('ClientOfferDetailsScreen', 'company')}:</Text>
+                <Text style={styles.value}>{agent.companies?.company_name || t('ClientOfferDetailsScreen', 'notSpecified')}</Text>
               </View>
             </View>
              {/* Company headquarter*/}
             <View style={styles.infoRow}>
               <View style={styles.fullWidth}>
-                <Text style={styles.label}>Company Headquarter:</Text>
-                <Text style={styles.value}>{agent.companies?.company_country?.country_name || 'Not specified'}</Text>
+                <Text style={styles.label}>{t('ClientOfferDetailsScreen', 'companyHeadquarter')}:</Text>
+                <Text style={styles.value}>{agent.companies?.company_country?.country_name || t('ClientOfferDetailsScreen', 'notSpecified')}</Text>
               </View>
             </View>
               {/* Company license */}
             <View style={styles.infoRow}>
               <View style={styles.fullWidth}>
-                <Text style={styles.label}>Company license:</Text>
-                <Text style={styles.value}>{agent.companies?.license_num || 'Not specified'}</Text>
+                <Text style={styles.label}>{t('ClientOfferDetailsScreen', 'companyLicense')}:</Text>
+                <Text style={styles.value}>{agent.companies?.license_num || t('ClientOfferDetailsScreen', 'notSpecified')}</Text>
               </View>
             </View>
             {/* Company Address */}
             <View style={styles.infoRow}>
               <View style={styles.fullWidth}>
-                <Text style={styles.label}>Company Address:</Text>
-                <Text style={styles.value}>{agent.companies?.address || 'Not specified'}</Text>
+                <Text style={styles.label}>{t('ClientOfferDetailsScreen', 'companyAddress')}:</Text>
+                <Text style={styles.value}>{agent.companies?.address || t('ClientOfferDetailsScreen', 'notSpecified')}</Text>
               </View>
             </View>
             
@@ -398,7 +422,7 @@ const appHasLink =(messagingApp) =>{
             {agent.companies?.url && (
               <View style={styles.infoRow}>
                 <View style={styles.fullWidth}>
-                  <Text style={styles.label}>Company Website:</Text>
+                  <Text style={styles.label}>{t('ClientOfferDetailsScreen', 'companyWebsite')}:</Text>
                   <TouchableOpacity onPress={() => openUrl(agent.companies.url)}>
                     <Text style={styles.linkText}>{agent.companies.url}</Text>
                   </TouchableOpacity>

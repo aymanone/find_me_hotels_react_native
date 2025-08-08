@@ -13,7 +13,10 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser, signOut } from '../utils/auth';
 import {showAlert} from "../components/ShowAlert";
+import { useTranslation} from '../config/localization';
+
 export default function AgentAgentOffersScreen() {
+  const { t,language } = useTranslation();
   const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -27,7 +30,7 @@ export default function AgentAgentOffersScreen() {
       // Check if user is an agent
       const isAgent = await checkUserRole('agent');
       if (!isAgent) {
-        showAlert('Access Denied', 'Only agents can access this page.');
+        showAlert(t('AgentAgentOffersScreen', 'accessDenied'), t('AgentAgentOffersScreen', 'onlyAgentsAccess'));
         navigation.navigate('Home');
         return;
       }
@@ -35,7 +38,7 @@ export default function AgentAgentOffersScreen() {
       // Get current user
       const user = await getCurrentUser();
       if (!user) {
-        showAlert('Error', 'User not found. Please log in again.');
+        showAlert(t('AgentAgentOffersScreen', 'error'), t('AgentAgentOffersScreen', 'userNotFound'));
         await signOut(navigation);
         return;
       }
@@ -93,7 +96,7 @@ export default function AgentAgentOffersScreen() {
   );
 
   const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return t('AgentAgentOffersScreen', 'na');
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
@@ -111,8 +114,8 @@ export default function AgentAgentOffersScreen() {
  const activeOfferState=(reqUpdated , offerUpdated)=>{
          const reqDate=new Date(reqUpdated);
          const offerDate=new Date(offerUpdated);
-        if(reqDate > offerDate){return "needs updating";}
-        return "view Offer";
+        if(reqDate > offerDate){return t('AgentAgentOffersScreen', 'needsUpdating');}
+        return t('AgentAgentOffersScreen', 'viewOffer');
 };
   const viewTravelRequestDetails = (requestId, offerId) => {
     navigation.navigate('AgentTravelRequestDetails', {
@@ -122,7 +125,7 @@ export default function AgentAgentOffersScreen() {
   };
 
   const renderChildrenAges = (children) => {
-    if (!children || children.length === 0) return 'No children';
+    if (!children || children.length === 0) return t('AgentAgentOffersScreen', 'noChildren');
     return children.map(age => age).join(', ');
   };
 
@@ -141,6 +144,10 @@ export default function AgentAgentOffersScreen() {
     }
   };
 
+  const getStatusText = (status) => {
+    return t('AgentAgentOffersScreen', status.replace(' ', ''));
+  };
+
   return (
     <ScrollView 
       style={styles.container}
@@ -151,12 +158,12 @@ export default function AgentAgentOffersScreen() {
         />
       }
     >
-      <Text h4 style={styles.screenTitle}>My Offers</Text>
+      <Text h4 style={styles.screenTitle}>{t('AgentAgentOffersScreen', 'title')}</Text>
       
       {!isPermittedToWork && (
         <Card containerStyle={styles.warningCard}>
           <Text style={styles.warningText}>
-            Your account is currently inactive. You can view your existing offers but cannot create new ones.
+            {t('AgentAgentOffersScreen', 'accountInactiveWarning')}
           </Text>
         </Card>
       )}
@@ -165,7 +172,7 @@ export default function AgentAgentOffersScreen() {
         <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />
       ) : offers.length === 0 ? (
         <Card containerStyle={styles.noOffersCard}>
-          <Text style={styles.noOffersText}>You haven't created any offers yet.</Text>
+          <Text style={styles.noOffersText}>{t('AgentAgentOffersScreen', 'noOffersYet')}</Text>
         </Card>
       ) : (
         offers.map((offer) => {
@@ -180,11 +187,11 @@ export default function AgentAgentOffersScreen() {
             >
               <View style={styles.offerHeader}>
                 <View style={[styles.statusBadge, { backgroundColor: getStatusColor(offer.status) }]}>
-                  <Text style={styles.statusText}>{offer.status}</Text>
+                  <Text style={styles.statusText}>{getStatusText(offer.status)}</Text>
                 </View>
                 {outdated && (
                   <View style={styles.outdatedBadge}>
-                    <Text style={styles.outdatedText}>Outdated</Text>
+                    <Text style={styles.statusText}>{t('AgentAgentOffersScreen', 'outdated')}</Text>
                   </View>
                 )}
               </View>
@@ -196,16 +203,16 @@ export default function AgentAgentOffersScreen() {
                   <View style={styles.detailRow}>
                     <Icon name="map-marker" type="font-awesome" size={16} color={outdated ? "#999" : "#007bff"} />
                     <Text style={[styles.detailText, outdated && styles.outdatedText]}>
-                      <Text style={[styles.detailLabel, outdated && styles.outdatedLabel]}>Destination: </Text>
-                      {offer.travel_requests.countries?.country_name || 'N/A'}, 
-                      {offer.travel_requests.areas?.area_name || 'N/A'}
+                      <Text style={[styles.detailLabel, outdated && styles.outdatedLabel]}>{t('AgentAgentOffersScreen', 'destination')}</Text>
+                      {offer.travel_requests.countries?.country_name || t('AgentAgentOffersScreen', 'na')}, 
+                      {offer.travel_requests.areas?.area_name || t('AgentAgentOffersScreen', 'na')}
                     </Text>
                   </View>
                   
                   <View style={styles.detailRow}>
                     <Icon name="calendar" type="font-awesome" size={16} color={outdated ? "#999" : "#007bff"} />
                     <Text style={[styles.detailText, outdated && styles.outdatedText]}>
-                      <Text style={[styles.detailLabel, outdated && styles.outdatedLabel]}>Dates: </Text>
+                      <Text style={[styles.detailLabel, outdated && styles.outdatedLabel]}>{t('AgentAgentOffersScreen', 'dates')}</Text>
                       {formatDate(offer.travel_requests.start_date)} to {formatDate(offer.travel_requests.end_date)}
                     </Text>
                   </View>
@@ -213,16 +220,16 @@ export default function AgentAgentOffersScreen() {
                   <View style={styles.detailRow}>
                     <Icon name="users" type="font-awesome" size={16} color={outdated ? "#999" : "#007bff"} />
                     <Text style={[styles.detailText, outdated && styles.outdatedText]}>
-                      <Text style={[styles.detailLabel, outdated && styles.outdatedLabel]}>People: </Text>
-                      {offer.travel_requests.adults} adults,{' '}
-                      {offer.travel_requests.children.length} Children
+                      <Text style={[styles.detailLabel, outdated && styles.outdatedLabel]}>{t('AgentAgentOffersScreen', 'people')}</Text>
+                      {offer.travel_requests.adults} {t('AgentAgentOffersScreen', 'adults')},{' '}
+                      {offer.travel_requests.children.length} {t('AgentAgentOffersScreen', 'children')}
                     </Text>
                   </View>
                   
                   <View style={styles.detailRow}>
                     <Icon name="clock-o" type="font-awesome" size={16} color={outdated ? "#999" : "#007bff"} />
                     <Text style={[styles.detailText, outdated && styles.outdatedText]}>
-                      <Text style={[styles.detailLabel, outdated && styles.outdatedLabel]}>Created: </Text>
+                      <Text style={[styles.detailLabel, outdated && styles.outdatedLabel]}>{t('AgentAgentOffersScreen', 'created')}</Text>
                       {formatDate(offer.created_at)}
                     </Text>
                   </View>
@@ -237,7 +244,7 @@ export default function AgentAgentOffersScreen() {
                 onPress={() => viewTravelRequestDetails(offer.travel_requests.id, offer.id)}
               >
                 <Text style={styles.viewButtonText}>
-                  {outdated ? "View Outdated Offer" : activeOfferState(offer.travel_requests.updated_at, offer.updated_at)}
+                  {outdated ? t('AgentAgentOffersScreen', 'viewOutdatedOffer') : activeOfferState(offer.travel_requests.updated_at, offer.updated_at)}
                 </Text>
                 <Icon name="arrow-right" type="font-awesome" size={16} color="#fff" />
               </TouchableOpacity>

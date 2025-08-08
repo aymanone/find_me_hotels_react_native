@@ -6,7 +6,11 @@ import Constants from 'expo-constants';
 import {validEmail} from '../utils/validation';
 import {signOut,notAllowedAuthenticatedUser} from '../utils/auth';
 import {showAlert} from "../components/ShowAlert";
+import { useTranslation } from '../config/localization';
+import LanguageSelector from '../components/LanguageSelector';
+
 export default function ForgotPasswordScreen({ navigation }) {
+  const { t,language } = useTranslation();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
 useEffect(() => {
@@ -27,7 +31,7 @@ useEffect(() => {
 }, [navigation]);
   const handleResetPassword = async () => {
     if (!email) {
-      showAlert('Error', 'Please enter your email address');
+      showAlert(t('Alerts', 'error'), t('ForgotPasswordScreen', 'enterEmail'));
       return;
     }
     
@@ -77,13 +81,13 @@ useEffect(() => {
       if (error) throw error;
       
      showAlert (
-        'Success', 
-        'Password reset instructions have been sent to your email',
+        t('Alerts', 'success'), 
+        t('ForgotPasswordScreen', 'resetSuccess'),
         [{ text: 'OK', onPress: () => navigation.navigate('Signin') }]
       );
     } catch (error) {
       console.error('Reset password error:', error.message);
-     showAlert ('Error', "an error happened please try again.");
+     showAlert (t('Alerts', 'error'), t('ForgotPasswordScreen', 'resetError'));
     } finally {
       setLoading(false);
     }
@@ -91,13 +95,16 @@ useEffect(() => {
 
   return (
     <View style={styles.container}>
-      <Text h3 style={styles.title}>Reset Password</Text>
+      <View style={styles.languageSelectorContainer}>
+        <LanguageSelector />
+      </View>
+      <Text h3 style={styles.title}>{t('ForgotPasswordScreen', 'title')}</Text>
       <Text style={styles.subtitle}>
-        Enter your email address and we'll send you instructions to reset your password.
+        {t('ForgotPasswordScreen', 'enterEmail')}
       </Text>
       
       <Input
-        placeholder="Email"
+        placeholder={t('ForgotPasswordScreen', 'email')}
         onChangeText={setEmail}
         value={email}
         autoCapitalize="none"
@@ -106,14 +113,14 @@ useEffect(() => {
       />
       
       <Button
-        title="Send Reset Instructions"
+        title={t('ForgotPasswordScreen', 'resetPassword')}
         onPress={handleResetPassword}
         loading={loading}
         buttonStyle={styles.button}
       />
       
       <Button
-        title="Back to Login"
+        title={t('ForgotPasswordScreen', 'backToLogin')}
         type="clear"
         onPress={() => navigation.navigate('Signin')}
       />
@@ -127,6 +134,12 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#fff',
     justifyContent: 'center',
+  },
+  languageSelectorContainer: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    zIndex: 1,
   },
   title: {
     textAlign: 'center',

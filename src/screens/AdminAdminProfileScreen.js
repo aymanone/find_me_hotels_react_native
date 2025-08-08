@@ -13,7 +13,10 @@ import supabase from '../config/supabase';
 import { checkUserRole , getCurrentUser,signOut} from '../utils/auth';
 import { validPasswordSignup } from '../utils/validation';
 import {showAlert} from "../components/ShowAlert";
+import { useTranslation} from '../config/localization';
+
 export default function AdminAdminProfileScreen({ navigation }) {
+  const { t,language } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [admin, setAdmin] = useState(null);
   const [newPassword, setNewPassword] = useState('');
@@ -35,7 +38,7 @@ export default function AdminAdminProfileScreen({ navigation }) {
       const isAdmin = await checkUserRole("admin");
       
       if (!isAdmin) {
-        setError('You do not have permission to access this page.');
+        setError(t('AdminAdminProfileScreen', 'accessDenied'));
         setLoading(false);
         return;
       }
@@ -43,7 +46,7 @@ export default function AdminAdminProfileScreen({ navigation }) {
       // Fetch admin details
        const user = await getCurrentUser();
       if (!user) {
-        showAlert('Error', 'User not found. Please log in again.');
+        showAlert(t('AdminAdminProfileScreen', 'error'), t('AdminAdminProfileScreen', 'userNotFound'));
         await signOut(navigation);
         return;
       }
@@ -58,11 +61,11 @@ export default function AdminAdminProfileScreen({ navigation }) {
       if (data) {
         setAdmin(data);
       } else {
-        setError('Admin profile not found.');
+        setError(t('AdminAdminProfileScreen', 'profileNotFound'));
       }
     } catch (err) {
       console.error('Error loading admin profile:', err);
-      setError('Failed to load admin profile. Please try again.');
+      setError(t('AdminAdminProfileScreen', 'loadError'));
     } finally {
       setLoading(false);
     }
@@ -71,17 +74,17 @@ export default function AdminAdminProfileScreen({ navigation }) {
   const handlePasswordChange = async () => {
     // Validate passwords
     if (!newPassword || !confirmPassword) {
-      showAlert('Error', 'Please enter both password fields.');
+      showAlert(t('AdminAdminProfileScreen', 'error'), t('AdminAdminProfileScreen', 'passwordFieldsRequired'));
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      showAlert('Error', 'Passwords do not match.');
+      showAlert(t('AdminAdminProfileScreen', 'error'), t('AdminAdminProfileScreen', 'passwordsDoNotMatch'));
       return;
     }
 
     if (!validPasswordSignup(newPassword)) {
-      showAlert('Error', 'Password must be at least 8 characters long and contain at least one number, one uppercase letter, and one special character.');
+      showAlert(t('AdminAdminProfileScreen', 'error'), t('AdminAdminProfileScreen', 'passwordRequirements'));
       return;
     }
 
@@ -90,7 +93,7 @@ export default function AdminAdminProfileScreen({ navigation }) {
     try {
          const user = await getCurrentUser();
         if (!user) {
-          showAlert('Error', 'User not found. Please log in again.');
+          showAlert(t('AdminAdminProfileScreen', 'error'), t('AdminAdminProfileScreen', 'userNotFound'));
           await signOut(navigation);
           return;
         }
@@ -100,12 +103,12 @@ export default function AdminAdminProfileScreen({ navigation }) {
       
       if (error) throw error;
       
-      showAlert('Success', 'Password updated successfully.');
+      showAlert(t('AdminAdminProfileScreen', 'success'), t('AdminAdminProfileScreen', 'passwordUpdateSuccess'));
       setNewPassword('');
       setConfirmPassword('');
     } catch (err) {
       console.error('Error updating password:', err);
-      showAlert('Error', 'Failed to update password. Please try again.');
+      showAlert(t('AdminAdminProfileScreen', 'error'), t('AdminAdminProfileScreen', 'passwordUpdateError'));
     } finally {
       setUpdating(false);
     }
@@ -124,12 +127,12 @@ export default function AdminAdminProfileScreen({ navigation }) {
       <View style={styles.errorContainer}>
         <Text style={styles.errorText}>{error}</Text>
         <Button 
-          title="Reload" 
+          title={t('AdminAdminProfileScreen', 'reload')} 
           onPress={loadAdminProfile} 
           containerStyle={styles.buttonContainer}
         />
         <Button 
-          title="Go Back" 
+          title={t('AdminAdminProfileScreen', 'goBack')} 
           onPress={() => navigation.goBack()} 
           type="outline"
           containerStyle={styles.buttonContainer}
@@ -145,42 +148,42 @@ export default function AdminAdminProfileScreen({ navigation }) {
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.profileSection}>
-          <Text h4 style={styles.sectionTitle}>Admin Profile</Text>
+          <Text h4 style={styles.sectionTitle}>{t('AdminAdminProfileScreen', 'adminProfile')}</Text>
           
           <View style={styles.infoRow}>
-            <Text style={styles.label}>First Name:</Text>
+            <Text style={styles.label}>{t('AdminAdminProfileScreen', 'firstName')}</Text>
             <Text style={styles.value}>{admin.first_name}</Text>
           </View>
           
           <View style={styles.infoRow}>
-            <Text style={styles.label}>Last Name:</Text>
+            <Text style={styles.label}>{t('AdminAdminProfileScreen', 'lastName')}</Text>
             <Text style={styles.value}>{admin.second_name}</Text>
           </View>
           
           <View style={styles.infoRow}>
-            <Text style={styles.label}>Email:</Text>
+            <Text style={styles.label}>{t('AdminAdminProfileScreen', 'email')}</Text>
             <Text style={styles.value}>{admin.admin_email}</Text>
           </View>
           
           <View style={styles.infoRow}>
-            <Text style={styles.label}>Permission Status:</Text>
+            <Text style={styles.label}>{t('AdminAdminProfileScreen', 'permissionStatus')}</Text>
             <View style={styles.statusContainer}>
               <View style={[
                 styles.statusIndicator, 
                 admin.permitted_to_work ? styles.statusActive : styles.statusInactive
               ]} />
               <Text style={styles.value}>
-                {admin.permitted_to_work ? 'Permitted to work' : 'Not permitted to work'}
+                {admin.permitted_to_work ? t('AdminAdminProfileScreen', 'permittedToWork') : t('AdminAdminProfileScreen', 'notPermittedToWork')}
               </Text>
             </View>
           </View>
         </View>
 
         <View style={styles.passwordSection}>
-          <Text h4 style={styles.sectionTitle}>Change Password</Text>
+          <Text h4 style={styles.sectionTitle}>{t('AdminAdminProfileScreen', 'changePassword')}</Text>
           
           <Input
-            placeholder="New Password"
+            placeholder={t('AdminAdminProfileScreen', 'newPassword')}
             value={newPassword}
             onChangeText={setNewPassword}
             secureTextEntry={!showPassword}
@@ -196,7 +199,7 @@ export default function AdminAdminProfileScreen({ navigation }) {
           />
           
           <Input
-            placeholder="Confirm Password"
+            placeholder={t('AdminAdminProfileScreen', 'confirmPassword')}
             value={confirmPassword}
             onChangeText={setConfirmPassword}
             secureTextEntry={!showPassword}
@@ -204,7 +207,7 @@ export default function AdminAdminProfileScreen({ navigation }) {
           />
           
           <Button
-            title="Update Password"
+            title={t('AdminAdminProfileScreen', 'updatePassword')}
             onPress={handlePasswordChange}
             loading={updating}
             containerStyle={styles.buttonContainer}

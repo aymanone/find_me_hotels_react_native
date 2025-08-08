@@ -4,7 +4,11 @@ import { Button, Input, Text } from 'react-native-elements';
 import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser,notAllowedAuthenticatedUser } from '../utils/auth';
 import {showAlert} from "../components/ShowAlert";
+import { useTranslation } from '../config/localization';
+import LanguageSelector from '../components/LanguageSelector';
+
 export default function LoginScreen({ navigation }) {
+  const { t,language } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,7 +28,7 @@ export default function LoginScreen({ navigation }) {
    
       // The navigation will be handled automatically by our AppNavigator
     } catch (error) {
-      showAlert(error.message);
+      showAlert(t('SigninScreen', 'loginError'));
     } finally {
       setLoading(false);
     }
@@ -48,15 +52,18 @@ useEffect(() => {
 }, [navigation]);
   return (
     <View style={styles.container}>
-      <Text h3 style={styles.title}>Find Me Hotels</Text>
+      <View style={styles.languageSelectorContainer}>
+        <LanguageSelector />
+      </View>
+      <Text h3 style={styles.title}>{t('SigninScreen', 'title')}</Text>
       <Input
-        placeholder="Email"
+        placeholder={t('SigninScreen', 'email')}
         onChangeText={setEmail}
         value={email}
         autoCapitalize="none"
       />
       <Input
-        placeholder="Password"
+        placeholder={t('SigninScreen', 'password')}
         onChangeText={setPassword}
         value={password}
         secureTextEntry={!showPassword}
@@ -67,17 +74,17 @@ useEffect(() => {
         }}
       />
       <Button
-        title="Login"
+        title={t('SigninScreen', 'login')}
         onPress={handleLogin}
         loading={loading}
       />
       <Button
-        title="Sign up"
+        title={t('SigninScreen', 'signup')}
         type="clear"
         onPress={() => navigation.navigate('Signup')}
       />
      <Button
-        title="forgot password"
+        title={t('SigninScreen', 'forgotPassword')}
         type="clear"
         onPress={() => navigation.navigate('ForgotPassword')}
      />
@@ -91,6 +98,12 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     justifyContent: 'center',
+  },
+  languageSelectorContainer: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    zIndex: 1,
   },
   title: {
     textAlign: 'center',

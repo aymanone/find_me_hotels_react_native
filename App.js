@@ -8,6 +8,7 @@ import { Linking } from 'react-native'; // Changed from expo-linking to react-na
 import { registerForPushNotificationsAsync } from './src/utils/notificationUtils';
 import { createNavigationContainerRef } from '@react-navigation/native';
 import { AuthProvider } from './src/contexts/AuthContext';
+import {LanguageProvider} from './src/config/localization';
 export default function App() {
   // Create a navigation ref using the official API
   const navigationRef = createNavigationContainerRef();
@@ -103,12 +104,14 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
+  <LanguageProvider>
    <AuthProvider>
       <AppNavigator 
         navigationRef={navigationRef} 
         initialUrl={initialUrl}
       />
     </AuthProvider>
+   </LanguageProvider>
     </SafeAreaProvider>
   );
 }
