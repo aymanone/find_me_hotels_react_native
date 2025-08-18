@@ -45,6 +45,8 @@ const AgentSearchTravelRequestsScreen = () => {
     { label: t('AgentSearchTravelRequestsScreen', 'duration'), value: 'duration' },
     { label: t('AgentSearchTravelRequestsScreen', 'country'), value: 'request_country_name' },
     { label: t('AgentSearchTravelRequestsScreen', 'nationality'), value: 'travelers_nationality_name' },
+    { label: t('AgentSearchTravelRequestsScreen', 'startDate'), value: 'start_date' },
+  { label: t('AgentSearchTravelRequestsScreen', 'createdAt'), value: 'created_at' },
   ];
 
   useEffect(() => {
@@ -290,7 +292,18 @@ const AgentSearchTravelRequestsScreen = () => {
       if (sortField === 'duration') {
         valueA = a.duration;
         valueB = b.duration;
-      } else if (sortField === 'request_country_name' || sortField === 'travelers_nationality_name') {
+      }  else if (sortField === 'start_date' || sortField === 'created_at') {
+      // ADD THIS BLOCK FOR DATE SORTING:
+      valueA = new Date(a[sortField] || 0);
+      valueB = new Date(b[sortField] || 0);
+      
+      if (sortOption === 'smaller first') {
+        return valueA - valueB;  // Earlier dates first
+      } else {
+        return valueB - valueA;  // Later dates first
+      }
+    }
+      else if (sortField === 'request_country_name' || sortField === 'travelers_nationality_name') {
         // Handle string fields (country and nationality)
         valueA = a[sortField] || '';
         valueB = b[sortField] || '';

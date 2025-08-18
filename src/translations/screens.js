@@ -2411,6 +2411,8 @@ export const ScreenTranslations = {
     myCountryTravelers: 'My Country Travelers',
     // Empty state
     noRequestsFound: 'No travel requests found. Try adjusting your search criteria.',
+    startDate:"start Date",
+    createdAt:"created at",
   },
   ar: {
     title: 'البحث في طلبات السفر',
@@ -2461,6 +2463,8 @@ export const ScreenTranslations = {
     myCountryTravelers: 'مسافرو بلدي',
     // Empty state
     noRequestsFound: 'لم يتم العثور على طلبات سفر. جرب تعديل معايير البحث.',
+    'startDate': 'تاريخ البداية',
+    'createdAt': 'تاريخ الإنشاء',
   }
 } , 
 CompanyCompanyProfileScreen: {
