@@ -11,7 +11,7 @@ const DeepLinkText = ({ children, path, style, onPress, fallbackRoute }) => {
     
     try {
       // Construct the deep link URL
-      const url = `findmehotels://${path}`;
+      const url = `alghorfa://${path}`;
       console.log('Attempting to open deep link:', url);
       
       // Use the openUrl function from linkingUtils

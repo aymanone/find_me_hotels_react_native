@@ -20,7 +20,7 @@ export function navigate(name, params) {
  */
 export const openAppLink = async (path) => {
   try {
-    const url = `findmehotels://${path}`;
+    const url = `alghorfa://${path}`;
     console.log('Opening deep link:', url);
     
     // Check if the URL can be opened
@@ -48,7 +48,7 @@ export const openAppLink = async (path) => {
 export const createShareableLink = (path, useWebFallback = false) => {
   if (useWebFallback) {
     // For sharing with users who might not have the app installed
-    return `https://findmehotels.com/${path}`;
+    return `https://www.alghorfa.net/${path}`;
   }
-  return `findmehotels://${path}`;
+  return `alghorfa://${path}`;
 };

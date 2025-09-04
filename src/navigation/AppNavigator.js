@@ -13,6 +13,7 @@ import SignupScreen from '../screens/SignupScreen';
 import SigninScreen from '../screens/SigninScreen';
 import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
 import ResetPasswordScreen from '../screens/ResetPasswordScreen';
+import ContactUsScreen from '../screens/ContactUsScreen';
 import ClientTravelRequestList from '../screens/ClientTravelRequestListScreen';
 import ClientTravelRequestDetailsScreen from '../screens/ClientTravelRequestDetailsScreen';
 import TravelRequestForm from '../screens/TravelRequestForm';
@@ -281,6 +282,16 @@ const ClientDrawer = React.memo(function ClientDrawer() {
         }}
       />
       <Drawer.Screen 
+  name="ContactUs" 
+  component={ContactUsScreen}
+  options={{
+    title: translate("ClientDrawer", "ContactUs"),
+    drawerIcon: ({ color }) => (
+      <Icon name="mail-outline" type="ionicon" size={22} color={color} />
+    ),
+  }}
+/>
+      <Drawer.Screen 
         name="SignOut" 
         component={MemoizedSignOutScreen}
         options={{
@@ -430,6 +441,16 @@ const AgentDrawer = React.memo(function AgentDrawer() {
         }}
       />
       <Drawer.Screen 
+  name="ContactUs" 
+  component={ContactUsScreen}
+  options={{
+    title: translate("AgentDrawer", "ContactUs"),
+    drawerIcon: ({ color }) => (
+      <Icon name="mail-outline" type="ionicon" size={22} color={color} />
+    ),
+  }}
+/>
+      <Drawer.Screen 
         name="SignOut" 
         component={MemoizedSignOutScreen}
         options={{
@@ -551,6 +572,16 @@ const CompanyDrawer = React.memo(function CompanyDrawer() {
         }}
       />
       <Drawer.Screen 
+  name="ContactUs" 
+  component={ContactUsScreen}
+  options={{
+    title: translate("CompanyDrawer", "ContactUs"),
+    drawerIcon: ({ color }) => (
+      <Icon name="mail-outline" type="ionicon" size={22} color={color} />
+    ),
+  }}
+/>
+      <Drawer.Screen 
         name="SignOut" 
         component={MemoizedSignOutScreen}
         options={{
@@ -670,6 +701,16 @@ const AdminDrawer = React.memo(function AdminDrawer() {
         }}
       />
       <Drawer.Screen 
+  name="ContactUs" 
+  component={ContactUsScreen}
+  options={{
+    title: translate("AdminDrawer", "ContactUs"),
+    drawerIcon: ({ color }) => (
+      <Icon name="mail-outline" type="ionicon" size={22} color={color} />
+    ),
+  }}
+/>
+      <Drawer.Screen 
         name="SignOut" 
         component={MemoizedSignOutScreen}
         options={{
@@ -704,8 +745,8 @@ export default function AppNavigator({navigationRef}) {
     }
   }, []);
   const linking = {
-  prefixes: ['findmehotels://', 'https://findmehotels.com', 'http://findmehotels.com','exp://192.168.1.109:8081/--/', 'exp://','http://localhost:8081',
-'http://localhost:8081/','https://tiny-crepe-b758ab.netlify.app'] ,
+  prefixes: ['alghorfa://','exp://192.168.1.109:8081/--/', 'exp://','http://localhost:8081',
+'http://localhost:8081/','https://tiny-crepe-b758ab.netlify.app','https://alghorfa.net','https://www.alghorfa.net','http://alghorfa.net','http://www.alghorfa.net'] ,
   config: {
     screens: {
       // Auth screens
@@ -713,7 +754,7 @@ export default function AppNavigator({navigationRef}) {
       Signup: 'signup',
       ForgotPassword: 'forgot-password',
       ResetPassword: 'reset-password',
-      
+       ContactUs: 'contact-us', 
       // Client routes
       ClientApp: {
         screens: {
@@ -730,7 +771,8 @@ export default function AppNavigator({navigationRef}) {
               ClientUpdatedRequests: 'client/updated-requests'
             }
           },
-          Profile: 'client/profile'
+          Profile: 'client/profile',
+          //ContactUs: 'client/contact-us',
         }
       },
       
@@ -749,7 +791,8 @@ export default function AppNavigator({navigationRef}) {
               AgentUpdatedRequests: 'agent/updated-requests'
             }
           },
-          Profile: 'agent/profile'
+          Profile: 'agent/profile',
+          //ContactUs: 'agent/contact-us',
         }
       },
       
@@ -767,6 +810,7 @@ export default function AppNavigator({navigationRef}) {
      CompanyAgentProfile: 'company/agent/:agentId?'
         }},
           Profile: 'company/profile',
+         // ContactUs: 'company/contact-us',
          
         }
       },
@@ -779,12 +823,13 @@ export default function AppNavigator({navigationRef}) {
            AdminTabs:{
             screens: {
               'Create Company': 'admin/create-company',
-              'My Companies': 'admin/companies'
+             // 'My Companies': 'admin/companies'
             } 
            },
          AdminCompanyProfile: 'admin/company/:companyId?'
           }},
           Profile: 'admin/profile',
+          //ContactUs: 'admin/contact-us',
          
         }
       }
@@ -905,6 +950,11 @@ export default function AppNavigator({navigationRef}) {
    <Stack.Screen 
         name="ResetPassword" 
         component={ResetPasswordScreen}
+        options={{ headerShown: false }}
+    />
+     <Stack.Screen 
+        name="ContactUs" 
+        component={ContactUsScreen}
         options={{ headerShown: false }}
     />
     </>

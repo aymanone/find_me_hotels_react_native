@@ -22,6 +22,7 @@ export const ScreenTranslations = {
       Profile:'Profile',
       Language:"Language Settings",
       SignOut:"sign out",
+      ContactUs:"contact us",
 
     }  ,
     ar:{
@@ -30,6 +31,7 @@ export const ScreenTranslations = {
       Profile:'ملفى الشخصى',
       Language:'اعدادات اللغة',
       SignOut:"تسجيل الخروج",
+       ContactUs:"اتصل بنا",
 
     }
 
@@ -41,6 +43,7 @@ export const ScreenTranslations = {
       Profile:'Profile',
       Language:"Language Settings",
      SignOut:"sign out",
+      ContactUs:"contact us",
     }  ,
     ar:{
       Home:'الصفحة الرئيسية',
@@ -48,6 +51,8 @@ export const ScreenTranslations = {
       Profile:'ملفى الشخصى',
       Language:'اعدادات اللغة',
       SignOut:"تسجيل الخروج",
+       ContactUs:"اتصل بنا",
+
     }
 
   }  ,
@@ -58,6 +63,7 @@ export const ScreenTranslations = {
       Profile:'Profile',
       Language:"Language Settings",
       SignOut:"sign out",
+       ContactUs:"contact us",
 
     }  ,
     ar:{
@@ -66,6 +72,7 @@ export const ScreenTranslations = {
       Profile:'ملفى الشخصى',
       Language:'اعدادات اللغة',
       SignOut:"تسجيل الخروج",
+      ContactUs:"اتصل بنا",
 
     }
 
@@ -77,7 +84,7 @@ export const ScreenTranslations = {
       Profile:'Profile',
       Language:"Language Settings",
       SignOut:"sign out",
-
+      ContactUs:"contact us",
     }  ,
     ar:{
       Home:'الصفحة الرئيسية',
@@ -85,6 +92,7 @@ export const ScreenTranslations = {
       Profile:'ملفى الشخصى',
       Language:'اعدادات اللغة',
       SignOut:"تسجيل الخروج",
+      ContactUs:"اتصل بنا",
 
     }
 
@@ -139,22 +147,24 @@ export const ScreenTranslations = {
   }   ,
   SigninScreen: {
     en: {
-      title: 'Find Me Hotels',
+      title: 'alghorfa',
       email: 'Email',
       password: 'Password',
       login: 'Login',
       signup: 'Sign up',
       forgotPassword: 'Forgot password',
       loginError: 'Login failed. Please check your credentials.',
+      "contactUs":"contact us",
     },
     ar: {
-      title: 'ابحث عن فنادق',
+      title: 'الغرفة',
       email: 'البريد الإلكتروني',
       password: 'كلمة المرور',
       login: 'تسجيل الدخول',
       signup: 'إنشاء حساب',
       forgotPassword: 'نسيت كلمة المرور',
       loginError: 'فشل تسجيل الدخول. يرجى التحقق من بياناتك.',
+      "contactUs":"اتصل بنا",
     }
   },
   SignupScreen: {
@@ -185,6 +195,7 @@ export const ScreenTranslations = {
       invalidEmail: 'Please enter a valid email address.',
       invalidPassword: 'Password must be at least 8 characters long small and capital characters and special characters.',
       countriesError: 'Unable to load countries. Please try again later.',
+      "contactUs":"contact us",
     },
     ar: {
       title: 'إنشاء حساب',
@@ -213,6 +224,7 @@ export const ScreenTranslations = {
       invalidEmail: 'يرجى إدخال عنوان بريد إلكتروني صحيح.',
       invalidPassword: 'Password must be at least 8 characters long small and capital characters and special characters.',
       countriesError: 'تعذر تحميل البلدان. يرجى المحاولة مرة أخرى لاحقاً.',
+      "contactUs":"اتصل بنا",
     }
   },
   ForgotPasswordScreen: {
@@ -2226,6 +2238,44 @@ export const ScreenTranslations = {
   }
 }
   ,
+  ContactUsScreen: {
+  en: {
+    title: "Contact Us",
+    subtitle: "We'd love to hear from you!",
+    namePlaceholder: "Your Name",
+    emailPlaceholder: "Your Email",
+    messagePlaceholder: "Your Message",
+    sendMessage: "Send Message",
+    blogText: "Need help with errors or have suggestions?",
+    visitBlog: "Visit Our Help Center",
+    nameRequired: "Name is required",
+    emailRequired: "Email is required",
+    invalidEmail: "Please enter a valid email address",
+    messageRequired: "Message is required",
+    messageSent: "Thank you! Your message has been prepared. Please send it from your email client.",
+    emailClientError: "Could not open email client. Please contact us directly at ayman@mail.com",
+    submitError: "Failed to send message. Please try again.",
+    linkError: "Could not open link"
+  },
+  ar: {
+    title: "اتصل بنا",
+    subtitle: "نحن نحب أن نسمع منك!",
+    namePlaceholder: "اسمك",
+    emailPlaceholder: "بريدك الإلكتروني",
+    messagePlaceholder: "رسالتك",
+    sendMessage: "إرسال الرسالة",
+    blogText: "تحتاج مساعدة مع الأخطاء أو لديك اقتراحات؟",
+    visitBlog: "زر مركز المساعدة",
+    nameRequired: "الاسم مطلوب",
+    emailRequired: "البريد الإلكتروني مطلوب",
+    invalidEmail: "يرجى إدخال عنوان بريد إلكتروني صحيح",
+    messageRequired: "الرسالة مطلوبة",
+    messageSent: "شكراً! تم تحضير رسالتك. يرجى إرسالها من عميل البريد الإلكتروني الخاص بك.",
+    emailClientError: "لا يمكن فتح عميل البريد الإلكتروني. يرجى التواصل معنا مباشرة على ayman@mail.com",
+    submitError: "فشل في إرسال الرسالة. يرجى المحاولة مرة أخرى.",
+    linkError: "لا يمكن فتح الرابط"
+  }
+},
  AdminCompanyProfileScreen: {
   en: {
     title: 'Company Profile',

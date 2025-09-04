@@ -88,6 +88,12 @@ useEffect(() => {
         type="clear"
         onPress={() => navigation.navigate('ForgotPassword')}
      />
+      <Button
+        title={t('SigninScreen', 'contactUs')}
+        type="clear"
+        onPress={() => navigation.navigate('ContactUs')}
+     />
+   
    
     </View>
   );

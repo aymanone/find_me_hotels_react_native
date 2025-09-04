@@ -1,4 +1,4 @@
-# Find Me Hotels - React Native App
+# Alghorfa - React Native App
 
 A mobile application to help travelers book hotels through travel agents.
 

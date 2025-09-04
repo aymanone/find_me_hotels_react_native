@@ -21,7 +21,7 @@ const DeepLinkButton = ({
     
     try {
       // Construct the deep link URL
-      const url = `findmehotels://${path}`;
+      const url = `alghorfa://${path}`;
       console.log('Attempting to open deep link from button:', url);
       
       // Use the openUrl function from linkingUtils

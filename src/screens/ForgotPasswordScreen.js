@@ -62,17 +62,17 @@ useEffect(() => {
           screen=redirectTo;
         } else {
           // Fallback to your app's custom URL scheme
-          redirectTo = 'findmehotels://reset-password';
+          redirectTo = 'alghorfa://reset-password';
           screen=redirectTo;
         }
       } else {
         // For production, use your app's custom URL scheme
-        redirectTo = 'findmehotels://reset-password';
+        redirectTo = 'alghorfa://reset-password';
         screen=redirectTo;
       }
         
       }
-      redirectTo="https://687cc7aca90e378ee9f06618--bucolic-banoffee-2f9450.netlify.app/supabase_redirect.html";
+      redirectTo="https://bucolic-banoffee-2f9450.netlify.app/supabase_redirect.html";
       // Send password reset email
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: redirectTo,

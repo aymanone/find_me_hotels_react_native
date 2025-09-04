@@ -22,7 +22,7 @@ export const openUrl = async (url) => {
     console.log('Attempting to open URL:', fullUrl);
     
     // On Android, we need to handle deep links differently
-    if (Platform.OS === 'android' && fullUrl.startsWith('findmehotels://')) {
+    if (Platform.OS === 'android' && fullUrl.startsWith('alghorfa://')) {
       // For Android deep links, we might need to use Intent
       await Linking.openURL(fullUrl);
       return true;
@@ -37,7 +37,7 @@ export const openUrl = async (url) => {
         console.log(`Cannot open URL: ${fullUrl}`);
         
         // Special handling for deep links that fail
-        if (fullUrl.startsWith('findmehotels://')) {
+        if (fullUrl.startsWith('alghorfa://')) {
           console.log('Deep link not supported, this is expected in development');
           // In development, deep links might not work, so we return true to allow fallback navigation
           return false;
@@ -121,7 +121,7 @@ export const openMessagingApp = async (phoneNumber, app) => {
 export const createDeepLink = (path) => {
   // Remove leading slash if present
   const cleanPath = path.startsWith('/') ? path.substring(1) : path;
-  return `findmehotels://${cleanPath}`;
+  return `alghorfa://${cleanPath}`;
 };
 
 /**

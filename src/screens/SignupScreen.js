@@ -424,6 +424,11 @@ export default function SignupScreen({ navigation }) {
           type="clear"
           onPress={() => navigation.navigate("Signin")}
         />
+         <Button
+          title={t('SignupScreen', 'contactUs')}
+          type="clear"
+          onPress={() => navigation.navigate("ContactUs")}
+        />
       </View>
       </ScrollView>
        </KeyboardAvoidingView>

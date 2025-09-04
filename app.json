@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "find_me_hotels",
-    "slug": "find_me_hotels",
+    "name": "alghorfa",
+    "slug": "alghorfa",
     "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.ayman-ayman.findmehotels"
+      "bundleIdentifier": "com.ayman-ayman.alghorfa"
     },
     "android": {
       "adaptiveIcon": {
@@ -27,7 +27,7 @@
           "action": "VIEW",
           "data": [
             {
-              "scheme": "findmehotels"
+              "scheme": "alghorfa"
             }
           ],
           "category": [
@@ -36,18 +36,14 @@
           ]
         }
       ],
-      "package": "com.ayman_ayman.findmehotels"
+      "package": "com.ayman_ayman.alghorfa"
     },
     "web": {
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
-    "scheme": "findmehotels",
-    "extra": {
-      "eas": {
-        "projectId": "f471f78a-b912-4c2b-bc8c-7ae0a22f5a20"
-      }
-    },
+    "scheme": "alghorfa",
+   
     "plugins": [
       "expo-build-properties"
     ]
