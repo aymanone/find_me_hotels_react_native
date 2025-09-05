@@ -1412,6 +1412,7 @@ export const ScreenTranslations = {
   AgentTravelRequestDetailsScreen: {
   en: {
     // Access and Authentication
+
     accessDenied: 'Access Denied',
     accessDeniedMessage: 'You must be an agent to access this screen.',
     userNotFound: 'User not found. Please log in again.',
@@ -1424,6 +1425,7 @@ export const ScreenTranslations = {
     cancel: 'Cancel',
     
     // Request Details Section
+    destination:"Destination",
     requestDetails: 'Request Details',
     startDate: 'Start Date:',
     endDate: 'End Date:',
@@ -1522,6 +1524,7 @@ export const ScreenTranslations = {
     cancel: 'إلغاء',
     
     // Request Details Section
+    destination:"الوجهة",
     requestDetails: 'تفاصيل الطلب',
     startDate: 'تاريخ البداية:',
     endDate: 'تاريخ النهاية:',

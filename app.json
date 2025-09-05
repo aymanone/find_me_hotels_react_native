@@ -43,9 +43,13 @@
       "bundler": "metro"
     },
     "scheme": "alghorfa",
-   
     "plugins": [
       "expo-build-properties"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "e87e1f88-e071-49c6-817b-b080c08d7ad7"
+      }
+    }
   }
 }

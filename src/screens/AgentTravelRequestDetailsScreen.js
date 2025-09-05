@@ -488,8 +488,8 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
               {/* Dates */}
               <View style={styles.infoRow}>
                 <View style={styles.infoColumn}>
-                  <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'area')}</Text>
-                  <Text>{request.area_name}</Text>
+                  <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'destination')}</Text>
+                  <Text>{request.country_name} , {request.area_name}</Text>
                 </View>
               </View>
              
