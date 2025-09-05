@@ -16,7 +16,7 @@ const AgentSearchTravelRequestsScreen = () => {
   const [countries, setCountries] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState(null);
   const [requestOption, setRequestOption] = useState('preferred requests');
-   const [localRequestOption, setLocalRequestOption] = useState('all');
+ const [searchType, setSearchType] = useState('destination');
   const [travelRequests, setTravelRequests] = useState([]);
   const [sortOption, setSortOption] = useState('smaller first');
   const [sortField, setSortField] = useState('min_budget');
@@ -29,11 +29,11 @@ const AgentSearchTravelRequestsScreen = () => {
     { label: t('AgentSearchTravelRequestsScreen', 'preferredRequests'), value: 'preferred requests' },
     { label: t('AgentSearchTravelRequestsScreen', 'allRequests'), value: 'all requests' },
   ];
-   const localRequestOptions = [
-    { label: t('AgentSearchTravelRequestsScreen', 'all'), value: 'all' },
-     { label: t('AgentSearchTravelRequestsScreen', 'preferred'), value: 'preferred' },
-  ];
-
+ 
+ const searchTypeOptions = [
+  { label: t('AgentSearchTravelRequestsScreen', 'searchByDestination'), value: 'destination' },
+  { label: t('AgentSearchTravelRequestsScreen', 'searchByNationality'), value: 'nationality' },
+];
   const sortOptions = [
     { label: t('AgentSearchTravelRequestsScreen', 'smallerFirst'), value: 'smaller first' },
     { label: t('AgentSearchTravelRequestsScreen', 'biggerFirst'), value: 'bigger first' },
@@ -103,33 +103,50 @@ const AgentSearchTravelRequestsScreen = () => {
       showAlert(t('AgentSearchTravelRequestsScreen', 'error'), t('AgentSearchTravelRequestsScreen', 'failedToFetchCountries'));
     }
   };
+ // Modify the search button onPress to call different functions
+const handleSearch = () => {
+  if (searchType === 'destination') {
+    searchTravelRequests();
+  } else {
+    searchByNationality();
+  }
+};
+ // Add new function for nationality search
+const searchByNationality = async () => {
+  if (!selectedCountry) {
+    showAlert(t('AgentSearchTravelRequestsScreen', 'error'), t('AgentSearchTravelRequestsScreen', 'pleaseSelectNationality'));
+    return;
+  }
 
-  const searchLocalTravelers = async () => {
-    try {
-      const user = await getCurrentUser();
-      if (!user || !agent?.agent_country) {
-        showAlert(t('AgentSearchTravelRequestsScreen', 'error'), t('AgentSearchTravelRequestsScreen', 'agentCountryNotAvailable'));
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      showAlert(t('AgentSearchTravelRequestsScreen', 'error'), t('AgentSearchTravelRequestsScreen', 'userNotAuthenticated'));
+      return;
+    }
+
+    // First verify the country exists (unless it's "preferred")
+    if(selectedCountry !== "preferred"){
+      const { data: countryCheck, error: countryError } = await supabase
+        .from('countries')
+        .select('id')
+        .eq('id', selectedCountry)
+        .single();
+      if (!countryCheck) {
+        console.error('Country validation error:', countryError);
+        await fetchCountries();
+        showAlert(t('AgentSearchTravelRequestsScreen', 'error'), t('AgentSearchTravelRequestsScreen', 'nationalityNoLongerAvailable'));
         return;
       }
+    }
 
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const formattedDate = today.toISOString();
-     let response;
-     if(localRequestOption == "all"){
+    let response;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const formattedDate = today.toISOString();
 
-       response = await supabase.rpc('agent_available_travel_requests_by_nationality', {
-         p_agent_id: user.id,
-        p_travelers_nationality: agent.agent_country,
-       
-        // Only difference!
-         p_max_offers: MAXIMUM_OFFERS,
-        p_start_date: formattedDate
-       
-      });
-   }
-     else{
-          response = await supabase.rpc('agent_preferred_travel_requests_by_nationality', {
+    if (selectedCountry === "preferred") {
+       response = await supabase.rpc('agent_preferred_travel_requests', {
          p_agent_id: user.id,
         p_agent_country: agent.agent_country,
        
@@ -138,18 +155,32 @@ const AgentSearchTravelRequestsScreen = () => {
         p_start_date: formattedDate
        
       });
-  }
-
-      // Rest is identical to main search
-      if (response.error) throw response.error;
-      setRequestsWithDetails(response.data || []);
-      setShowSortOptions((response.data || []).length > 0);
-      
-    } catch (error) {
-      console.error('Error searching local travelers:', error);
-      showAlert(t('AgentSearchTravelRequestsScreen', 'error'), t('AgentSearchTravelRequestsScreen', 'failedToSearchTravelers'));
+    } else if (requestOption === 'preferred requests') {
+      response = await supabase.rpc('agent_preferred_travel_requests_by_nationality', {
+        p_agent_id: user.id,
+        p_travelers_nationality: selectedCountry,
+        p_agent_country: agent?.agent_country || null,
+        p_max_offers: MAXIMUM_OFFERS,
+        p_start_date: formattedDate
+      });
+    } else {
+      response = await supabase.rpc('agent_available_travel_requests_by_nationality', {
+        p_agent_id: user.id,
+        p_travelers_nationality: selectedCountry,
+        p_max_offers: MAXIMUM_OFFERS,
+        p_start_date: formattedDate
+      });
     }
-  };
+
+    if (response.error) throw response.error;
+    setRequestsWithDetails(response.data || []);
+    setShowSortOptions((response.data || []).length > 0);
+
+  } catch (error) {
+    console.error('Error searching by nationality:', error);
+    showAlert(t('AgentSearchTravelRequestsScreen', 'error'), t('AgentSearchTravelRequestsScreen', 'failedToSearchByNationality'));
+  }
+};
 
   const searchTravelRequests = async () => {
     if (!selectedCountry) {
@@ -425,7 +456,7 @@ const AgentSearchTravelRequestsScreen = () => {
             data={countries}
             labelField="label"
             valueField="value"
-            placeholder={t('AgentSearchTravelRequestsScreen', 'selectCountry')}
+            placeholder={searchType === 'destination' ? t('AgentSearchTravelRequestsScreen', 'selectCountry') : t('AgentSearchTravelRequestsScreen', 'selectNationality')}
             value={selectedCountry}
             search
             maxHeight={300}
@@ -433,7 +464,7 @@ const AgentSearchTravelRequestsScreen = () => {
           />
           
           <Button
-            onPress={searchTravelRequests}
+            onPress={handleSearch}
             buttonStyle={styles.searchButton}
             icon={{
               name: 'search',
@@ -451,29 +482,16 @@ const AgentSearchTravelRequestsScreen = () => {
       </View>
        <View style={styles.localSearchRow}>
           <Text style={styles.maxOffersInfo}>{t('AgentSearchTravelRequestsScreen', 'maxOffersInfo', { maxOffers: MAXIMUM_OFFERS })}</Text>
-          <Dropdown
-            style={styles.localDropdown}
-            data={localRequestOptions}
-            labelField="label"
-            valueField="value"
-            placeholder={t('AgentSearchTravelRequestsScreen', 'requestType')}
-            value={localRequestOption}
-            onChange={item => setLocalRequestOption(item.value)}
-          />
-
-          <Button
-            title={t('AgentSearchTravelRequestsScreen', 'myCountryTravelers')}
-            onPress={searchLocalTravelers}
-            buttonStyle={styles.localSearchButton}
-            titleStyle={styles.localSearchButtonText}
-            icon={{
-              name: 'users',
-              type: 'font-awesome',
-              size: 14,
-              color: '#28a745'
-            }}
-            iconLeft
-          />
+         <Text style={styles.searchTypeLabel}>{t('AgentSearchTravelRequestsScreen', 'searchBy')}</Text>
+  <Dropdown
+    style={styles.searchTypeDropdown}
+    data={searchTypeOptions}
+    labelField="label"
+    valueField="value"
+    placeholder={t('AgentSearchTravelRequestsScreen', 'selectSearchType')}
+    value={searchType}
+    onChange={item => setSearchType(item.value)}
+  />
         </View>
        {/* Sort Options Row - Only shown when there are results */}
         {showSortOptions && (
@@ -653,6 +671,35 @@ const styles = StyleSheet.create({
   maxOffersButtonText: {
     color: '#dc3545',
   },
+  searchTypeRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginBottom: 12,
+  paddingTop: 8,
+  borderTopWidth: 1,
+  borderTopColor: '#e0e0e0',
+},
+searchTypeLabel: {
+  fontSize: 14,
+  fontWeight: '500',
+  marginRight: 12,
+  minWidth: 70,
+},
+searchTypeDropdown: {
+  height: 40,
+  borderColor: 'gray',
+  borderWidth: 0.5,
+  borderRadius: 8,
+  paddingHorizontal: 8,
+  flex: 1,
+  marginRight: 12,
+},
+maxOffersInfo: {
+  fontSize: 12,
+  color: '#666',
+  fontWeight: '500',
+  flex: 1,
+},
 });
 
 export default AgentSearchTravelRequestsScreen;
