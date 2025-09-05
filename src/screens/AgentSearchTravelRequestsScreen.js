@@ -120,7 +120,7 @@ const AgentSearchTravelRequestsScreen = () => {
 
        response = await supabase.rpc('agent_available_travel_requests_by_nationality', {
          p_agent_id: user.id,
-        p_agent_country: agent.agent_country,
+        p_travelers_nationality: agent.agent_country,
        
         // Only difference!
          p_max_offers: MAXIMUM_OFFERS,
