@@ -7,7 +7,8 @@ import {
   TouchableOpacity, 
   TextInput,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  Share,
 } from 'react-native';
 import { 
   Text, 
@@ -187,7 +188,47 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
   const toggleHotelsSection = () => {
     setHotelsSectionCollapsed(!hotelsSectionCollapsed);
   };
+  const shareRequest = async () => {
+  if (!request) return;
+  
+  try {
+     const requestUrl = `https://alghorfa.net/agent/request/${requestId}`;
+     const simpleText = `${t('AgentTravelRequestDetailsScreen', 'travelRequestLabel')} ${request.country_name}, ${request.area_name}
+${t('AgentTravelRequestDetailsScreen', 'travelers')}: ${request.adults} ${t('AgentTravelRequestDetailsScreen', 'adults')}${request.children?.length > 0 ? `, ${request.children.length} ${t('AgentTravelRequestDetailsScreen', 'children')}` : ''}
+${t('AgentTravelRequestDetailsScreen', 'budgetLabel')} $${request.min_budget} - $${request.max_budget}
 
+${requestUrl}`;
+
+
+    if (Platform.OS === 'ios' || Platform.OS === 'android') {
+      await Share.share({
+        message: simpleText,
+        title: t('AgentTravelRequestDetailsScreen', 'travelRequestTitle'),
+        url: requestUrl,
+      });
+    } else if (Platform.OS === 'web' && navigator.share) {
+      await navigator.share({
+        title: t('AgentTravelRequestDetailsScreen', 'travelRequestTitle'),
+        text: simpleText,
+        url: requestUrl,
+      });
+    } else if (navigator.clipboard) {
+      await navigator.clipboard.writeText(simpleText);
+      showAlert(
+        t('AgentTravelRequestDetailsScreen', 'success'), 
+        t('AgentTravelRequestDetailsScreen', 'requestCopiedToClipboard')
+      );
+    }
+  } catch (error) {
+    if (error.name !== 'AbortError') {
+      console.error('Error sharing:', error);
+      showAlert(
+        t('AgentTravelRequestDetailsScreen', 'error'), 
+        t('AgentTravelRequestDetailsScreen', 'failedToShareRequest')
+      );
+    }
+  }
+};
   const startEditingHotel = (index) => {
     const hotel = offerHotels[index];
     setHotelName(hotel.name);
@@ -472,8 +513,9 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
       >
         {/* Request Section */}
         <Card containerStyle={styles.card}>
+          <View style={styles.sectionHeader}>
           <TouchableOpacity 
-            style={styles.sectionHeader} 
+            style={[styles.sectionHeader, styles.headerTitleContainer]} 
             onPress={toggleRequestSection}
           >
             <Text style={styles.sectionTitle}>{t('AgentTravelRequestDetailsScreen', 'requestDetails')}</Text>
@@ -482,7 +524,20 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
               type="ionicon" 
             />
           </TouchableOpacity>
-          
+          {(Platform.OS !== 'web' || true) && (
+    <TouchableOpacity 
+      style={styles.shareIconContainer}
+      onPress={shareRequest}
+    >
+     <Icon 
+  name="share-social-outline" 
+  type="ionicon" 
+  color="#007bff" 
+  size={24}
+/>
+        </TouchableOpacity>
+  )}
+          </View>
           {!requestSectionCollapsed && request && (
             <View style={styles.sectionContent}>
               {/* Dates */}
@@ -868,6 +923,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 10,
+
   },
   sectionTitle: {
     fontSize: 18,
@@ -1043,5 +1099,14 @@ const styles = StyleSheet.create({
     color: '#333',
     flex: 1,
   },
+  headerTitleContainer: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  flex: 1,
+},
+shareIconContainer: {
+  padding: 8,
+  marginLeft: 10,
+},
 });
 export default AgentTravelRequestDetailsScreen; 

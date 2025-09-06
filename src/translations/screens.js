@@ -1463,7 +1463,16 @@ export const ScreenTranslations = {
     numberOfHotels: 'Number of Hotels:',
     updateOffer: 'Update Offer',
     makeOffer: 'Make Offer',
-    
+    // share request
+    "shareRequest": "Share Request",
+  "travelRequestTitle": "Travel Request",
+  "travelRequestLabel": "Travel Request:",
+ 
+  "budgetLabel": "Budget:",
+  
+  "requestCopiedToClipboard": "Request copied to clipboard",
+  
+  "failedToShareRequest": "Failed to share request",
     // Hotel Form
     addHotelToOffer: 'Add Hotel to Offer',
     editHotel: 'Edit Hotel',
@@ -1562,7 +1571,16 @@ export const ScreenTranslations = {
     numberOfHotels: 'عدد الفنادق:',
     updateOffer: 'تحديث العرض',
     makeOffer: 'تقديم عرض',
-    
+    // share request
+    "shareRequest": "مشاركة الطلب",
+  "travelRequestTitle": "طلب سفر", 
+  "travelRequestLabel": "طلب سفر:",
+ 
+  "budgetLabel": "الميزانية:",
+ 
+  "requestCopiedToClipboard": "تم نسخ الطلب إلى الحافظة",
+  
+  "failedToShareRequest": "فشل في مشاركة الطلب",
     // Hotel Form
     addHotelToOffer: 'إضافة فندق للعرض',
     editHotel: 'تعديل الفندق',
