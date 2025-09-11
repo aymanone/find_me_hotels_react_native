@@ -551,6 +551,13 @@ export const ScreenTranslations = {
     haveBeenUpdated: 'have been updated',
     found: 'found',
     and: 'and',
+    // share section 
+    "shareRequest": "Share Request",
+"travelRequestTitle": "Travel Request",
+"travelRequestLabel": "Travel Request:",
+"budgetLabel": "Budget:",
+"requestCopiedToClipboard": "Request copied to clipboard",
+"failedToShareRequest": "Failed to share request",
   },
   ar: {
     title: 'تفاصيل طلب السفر',
@@ -638,6 +645,14 @@ export const ScreenTranslations = {
     haveBeenUpdated: 'تم تحديثها',
     found: 'تم العثور عليها',
     and: 'و',
+    //share section 
+    "shareRequest": "مشاركة الطلب",
+"travelRequestTitle": "طلب سفر", 
+"travelRequestLabel": "طلب سفر:",
+"budgetLabel": "الميزانية:",
+"requestCopiedToClipboard": "تم نسخ الطلب إلى الحافظة",
+"failedToShareRequest": "فشل في مشاركة الطلب",
+
   }
 }
   ,

@@ -35,6 +35,7 @@ import ClientClientProfileScreen from '../screens/ClientClientProfileScreen';
 import AdminAdminProfileScreen from '../screens/AdminAdminProfileScreen';
 import ClientUpdatedRequestsScreen from '../screens/ClientUpdatedRequestsScreen';
 import LanguageSettingsScreen from '../screens/LanguageSettingsScreen';
+import TravelRequestRedirectScreen from '../screens/TravelRequestRedirectScreen';
 import { signOut } from '../utils/auth';
 import { 
   setupClientChannels, 
@@ -754,7 +755,9 @@ export default function AppNavigator({navigationRef}) {
       Signup: 'signup',
       ForgotPassword: 'forgot-password',
       ResetPassword: 'reset-password',
-       ContactUs: 'contact-us', 
+      ContactUs: 'contact-us', 
+      TravelRequestRedirect: 'travel-request/:id',
+
       // Client routes
       ClientApp: {
         screens: {
@@ -956,6 +959,11 @@ export default function AppNavigator({navigationRef}) {
         name="ContactUs" 
         component={ContactUsScreen}
         options={{ headerShown: false }}
+    />
+     <Stack.Screen 
+      name="TravelRequestRedirect" 
+      component={TravelRequestRedirectScreen}
+      options={{ headerShown: false }}
     />
     </>
   ), []);

@@ -192,7 +192,7 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
   if (!request) return;
   
   try {
-     const requestUrl = `https://alghorfa.net/agent/request/${requestId}`;
+     const requestUrl = `https://alghorfa.net/travel-request/${requestId}`;
      const simpleText = `${t('AgentTravelRequestDetailsScreen', 'travelRequestLabel')} ${request.country_name}, ${request.area_name}
 ${t('AgentTravelRequestDetailsScreen', 'travelers')}: ${request.adults} ${t('AgentTravelRequestDetailsScreen', 'adults')}${request.children?.length > 0 ? `, ${request.children.length} ${t('AgentTravelRequestDetailsScreen', 'children')}` : ''}
 ${t('AgentTravelRequestDetailsScreen', 'budgetLabel')} $${request.min_budget} - $${request.max_budget}

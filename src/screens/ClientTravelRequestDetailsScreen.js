@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity,  } from 'react-native';
+import { View, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Share, Platform } from 'react-native';
 import { Text, Card, Button, Divider, Icon } from 'react-native-elements';
 import { format } from 'date-fns';
 import supabase from '../config/supabase';
@@ -319,6 +319,45 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
       ]
     );
   };
+  const shareRequest = async () => {
+  if (!request) return;
+  
+  try {
+    const requestUrl = `https://alghorfa.net/travel-request/${id}`;
+    const simpleText = `${t('ClientTravelRequestDetailsScreen', 'travelRequestLabel')} ${request.country_name}${request.area_name ? `, ${request.area_name}` : ''}
+${t('ClientTravelRequestDetailsScreen', 'travelers')}: ${request.adults} ${t('ClientTravelRequestDetailsScreen', 'adults')}${request.children?.length > 0 ? `, ${request.children.length} ${t('ClientTravelRequestDetailsScreen', 'children')}` : ''}
+${t('ClientTravelRequestDetailsScreen', 'budgetLabel')} $${request.min_budget} - $${request.max_budget}
+${requestUrl}`;
+    
+    if (Platform.OS === 'ios' || Platform.OS === 'android') {
+      await Share.share({
+        message: simpleText,
+        title: t('ClientTravelRequestDetailsScreen', 'travelRequestTitle'),
+        url: requestUrl,
+      });
+    } else if (Platform.OS === 'web' && navigator.share) {
+      await navigator.share({
+        title: t('ClientTravelRequestDetailsScreen', 'travelRequestTitle'),
+        text: simpleText,
+        url: requestUrl,
+      });
+    } else if (navigator.clipboard) {
+      await navigator.clipboard.writeText(simpleText);
+      showAlert(
+        t('ClientTravelRequestDetailsScreen', 'success'), 
+        t('ClientTravelRequestDetailsScreen', 'requestCopiedToClipboard')
+      );
+    }
+  } catch (error) {
+    if (error.name !== 'AbortError') {
+      console.error('Error sharing:', error);
+      showAlert(
+        t('ClientTravelRequestDetailsScreen', 'error'), 
+        t('ClientTravelRequestDetailsScreen', 'failedToShareRequest')
+      );
+    }
+  }
+};
 
   return (
     <ScrollView style={styles.container}>
@@ -351,18 +390,32 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
       </View>
 
       <Card containerStyle={styles.card}>
-        <TouchableOpacity
-          style={styles.sectionHeader}
-          onPress={() => setRequestSectionExpanded(!requestSectionExpanded)}
-        >
-          <Text h4 style={styles.sectionTitle}>{t('ClientTravelRequestDetailsScreen', 'requestDetails')}</Text>
-          <Icon
-            name={requestSectionExpanded ? 'chevron-up' : 'chevron-down'}
-            type="font-awesome"
-            size={18}
-            color="#007bff"
-          />
-        </TouchableOpacity>
+       <View style={styles.sectionHeaderWithShare}>
+  <TouchableOpacity
+    style={styles.sectionHeaderTouch}
+    onPress={() => setRequestSectionExpanded(!requestSectionExpanded)}
+  >
+    <Text h4 style={styles.sectionTitle}>{t('ClientTravelRequestDetailsScreen', 'requestDetails')}</Text>
+    <Icon
+      name={requestSectionExpanded ? 'chevron-up' : 'chevron-down'}
+      type="font-awesome"
+      size={18}
+      color="#007bff"
+    />
+  </TouchableOpacity>
+  
+  <TouchableOpacity
+    style={styles.shareButton}
+    onPress={shareRequest}
+  >
+      <Icon 
+  name="share-social-outline" 
+  type="ionicon" 
+  color="#007bff" 
+  size={24}
+  />
+  </TouchableOpacity>
+</View>
         {requestSectionExpanded && (
           <View style={styles.sectionContent}>
             {/* Dates Row */}
@@ -611,7 +664,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
-    marginBottom: 40,
+    marginBottom: 15,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -829,4 +882,21 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
   },
+  sectionHeaderWithShare: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  padding: 16,
+  backgroundColor: '#f9f9f9',
+},
+sectionHeaderTouch: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  flex: 1,
+},
+shareButton: {
+  padding: 8,
+  marginLeft: 10,
+},
 });
