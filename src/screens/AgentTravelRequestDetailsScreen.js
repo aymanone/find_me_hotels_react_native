@@ -553,18 +553,17 @@ ${requestUrl}`;
                 <View style={styles.fullWidth}>
                   <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'travelers')}</Text>
                   <Text>{t('AgentTravelRequestDetailsScreen', 'adults')} {request.adults}</Text>
-                  {request.children && request.children > 0 ? (
-                    <View>
-                      <Text>{t('AgentTravelRequestDetailsScreen', 'children')} {request.children.length}</Text>
-                      {request.children && (
-                        <View style={styles.childrenAges}>
-                        <Text>{t('AgentTravelRequestDetailsScreen', 'ages')} {request.children.join(', ')} {t('AgentTravelRequestDetailsScreen', 'years')}</Text>
-                        </View>
-                      )}
-                    </View>
-                  ) : (
-                    <Text>{t('AgentTravelRequestDetailsScreen', 'noChildren')}</Text>
-                  )}
+                {request.children && request.children.length > 0 ? (
+              <View>
+                    <Text>{t('AgentTravelRequestDetailsScreen', 'children')} {request.children.length}</Text>
+                 <View style={styles.childrenAges}>
+                <Text>{t('AgentTravelRequestDetailsScreen', 'ages')} {request.children.join(', ')} {t('AgentTravelRequestDetailsScreen', 'years')}</Text>
+              </View>
+          </View>
+        ) : (
+            <Text>{t('AgentTravelRequestDetailsScreen', 'noChildren')}</Text>
+            )
+             }
                 </View>
                 {/* travelers nationality */}
               </View>

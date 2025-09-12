@@ -48,8 +48,8 @@ export default function TravelRequestForm({ navigation, route }) {
     hotelRating: null,
     numOfRooms: '1',
     meals: [],
-    minBudget: '',
-    maxBudget: '',
+    minBudget: '0',
+    maxBudget: '10',
     travelersNationality: null,
     preferredAgentsCountries: [],
     notes: ''
@@ -792,7 +792,7 @@ export default function TravelRequestForm({ navigation, route }) {
             <Text style={styles.label}>{t('TravelRequestForm', 'minimumBudget')}</Text>
             <Input
               keyboardType="numeric"
-              value={formData.minBudget}
+              value={formData.minBudget || ''}
               onChangeText={(text) => {
                 const value = text.replace(/[^0-9]/g, '');
                 if (value === '' || (parseInt(value) >= 0 && parseInt(value) <= 1000000)) {
@@ -807,7 +807,7 @@ export default function TravelRequestForm({ navigation, route }) {
             <Text style={styles.label}>{t('TravelRequestForm', 'maximumBudget')}</Text>
             <Input
               keyboardType="numeric"
-              value={formData.maxBudget}
+              value={formData.maxBudget || ''}
               onChangeText={(text) => {
                 const value = text.replace(/[^0-9]/g, '');
                 if (value === '' || (parseInt(value) >= 0 && parseInt(value) <= 1000000)) {

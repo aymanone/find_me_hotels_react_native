@@ -7,7 +7,7 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Icon, Button } from 'react-native-elements';
 import { CommonActions } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
-import { translate } from '../config/localization';
+import { translate, useLanguage } from '../config/localization';
 // Import screens
 import SignupScreen from '../screens/SignupScreen';
 import SigninScreen from '../screens/SigninScreen';
@@ -190,11 +190,12 @@ const ClientTabs = React.memo(function ClientTabs() {
 
 const ClientDrawer = React.memo(function ClientDrawer() {
   const screenOptions = useMemo(() => createDrawerScreenOptions(), []);
-  
+  const { language } = useLanguage();
   return (
     <Drawer.Navigator
       initialRouteName="Home"
       screenOptions={({ navigation }) => screenOptions(navigation)}
+      key={language}
     >
       <Drawer.Screen 
         name="Home" 
@@ -345,11 +346,12 @@ const AgentTabs = React.memo(function AgentTabs() {
 
 const AgentDrawer = React.memo(function AgentDrawer() {
   const screenOptions = useMemo(() => createDrawerScreenOptions(), []);
-  
+  const { language } = useLanguage();
   return (
     <Drawer.Navigator
       initialRouteName="Home"
       screenOptions={({ navigation }) => screenOptions(navigation)}
+      key={language}
     >
       <Drawer.Screen 
         name="Home" 
@@ -500,11 +502,12 @@ const CompanyTabs = React.memo(function CompanyTabs() {
 
 const CompanyDrawer = React.memo(function CompanyDrawer() {
   const screenOptions = useMemo(() => createDrawerScreenOptions(), []);
-  
+  const { language } = useLanguage();
   return (
     <Drawer.Navigator
       initialRouteName="Home"
       screenOptions={({ navigation }) => screenOptions(navigation)}
+      key={language}
     >
       <Drawer.Screen 
         name="Home" 
@@ -630,11 +633,12 @@ const AdminTabs = React.memo(function AdminTabs() {
 
 const AdminDrawer = React.memo(function AdminDrawer() {
   const screenOptions = useMemo(() => createDrawerScreenOptions(), []);
-  
+  const { language } = useLanguage();
   return (
     <Drawer.Navigator
       initialRouteName="Home"
       screenOptions={({ navigation }) => screenOptions(navigation)}
+      key={language}
     >
       <Drawer.Screen 
         name="Home" 

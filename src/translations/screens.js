@@ -809,7 +809,7 @@ export const ScreenTranslations = {
     travelersNationality: 'جنسية المسافرين',
     selectNationality: 'اختر الجنسية',
     searchNationality: 'البحث عن الجنسية...',
-    countriesWhereYouCanPayAgents: 'البلدان التي يمكنك فيها دفع الوسطاء',
+    countriesWhereYouCanPayAgents: 'البلدان التى يمكنك فيها الدفع للوكلاء',
     selectCountry: 'اختر البلد',
     searchCountry: 'البحث عن البلد...',
     selectArea: 'اختر المنطقة',
