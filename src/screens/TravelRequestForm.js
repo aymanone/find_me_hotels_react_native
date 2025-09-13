@@ -693,6 +693,8 @@ export default function TravelRequestForm({ navigation, route }) {
                 }
               }}
               containerStyle={styles.input}
+              inputContainerStyle={styles.inputContainerWeb}
+              inputStyle={styles.inputStyle}
             />
           </View>
           
@@ -764,6 +766,8 @@ export default function TravelRequestForm({ navigation, route }) {
                 }
               }}
               containerStyle={styles.input}
+              inputContainerStyle={styles.inputContainerWeb}
+              inputStyle={styles.inputStyle}
             />
           </View>
         </View>
@@ -800,6 +804,8 @@ export default function TravelRequestForm({ navigation, route }) {
                 }
               }}
               containerStyle={styles.input}
+              inputContainerStyle={styles.inputContainerWeb}
+              inputStyle={styles.inputStyle}
             />
           </View>
           
@@ -815,6 +821,8 @@ export default function TravelRequestForm({ navigation, route }) {
                 }
               }}
               containerStyle={styles.input}
+              inputContainerStyle={styles.inputContainerWeb}
+              inputStyle={styles.inputStyle}
             />
           </View>
         </View>
@@ -1110,4 +1118,17 @@ const styles = StyleSheet.create({
     cursor: 'pointer',
     outline: 'none',
   },
+  inputStyle: {
+  fontSize: 16,
+  ...(Platform.OS === 'web' && {
+    outlineWidth: 0, // Remove web focus outline
+    outline: 'none', // Additional web focus removal
+  }),
+},
+
+inputContainerWeb: Platform.OS === 'web' ? {
+  borderWidth: 1,
+  borderColor: '#ccc',
+  borderRadius: 8,
+} : {},
 });

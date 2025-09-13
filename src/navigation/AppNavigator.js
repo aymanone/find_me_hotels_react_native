@@ -196,7 +196,7 @@ const ClientDrawer = React.memo(function ClientDrawer() {
     <Drawer.Navigator
       initialRouteName="Home"
       screenOptions={({ navigation }) => screenOptions(navigation)}
-      key={language}
+     
     >
       <Drawer.Screen 
         name="Home" 
@@ -353,7 +353,7 @@ const AgentDrawer = React.memo(function AgentDrawer() {
     <Drawer.Navigator
       initialRouteName="Home"
       screenOptions={({ navigation }) => screenOptions(navigation)}
-      key={language}
+   
     >
       <Drawer.Screen 
         name="Home" 
@@ -510,7 +510,7 @@ const CompanyDrawer = React.memo(function CompanyDrawer() {
     <Drawer.Navigator
       initialRouteName="Home"
       screenOptions={({ navigation }) => screenOptions(navigation)}
-      key={language}
+     
     >
       <Drawer.Screen 
         name="Home" 
@@ -642,7 +642,7 @@ const AdminDrawer = React.memo(function AdminDrawer() {
     <Drawer.Navigator
       initialRouteName="Home"
       screenOptions={({ navigation }) => screenOptions(navigation)}
-      key={language}
+     
     >
       <Drawer.Screen 
         name="Home" 
