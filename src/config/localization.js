@@ -4,12 +4,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // Language Context
 const LanguageContext = createContext();
 
-// Global language state that can be accessed outside React components
-let globalLanguage = 'ar';
+// REMOVED: Global language state that was causing the issues
+// let globalLanguage = 'ar'; // This line has been deleted
 
 // Language Provider
 export const LanguageProvider = ({ children }) => {
-  const [language, setLanguage] = useState('ar');
+  const [language, setLanguage] = useState('en');
 
   useEffect(() => {
     loadLanguage();
@@ -20,7 +20,7 @@ export const LanguageProvider = ({ children }) => {
       const savedLanguage = await AsyncStorage.getItem('selectedLanguage');
       if (savedLanguage) {
         setLanguage(savedLanguage);
-        globalLanguage = savedLanguage; // Update global state
+        // REMOVED: globalLanguage = savedLanguage;
       }
     } catch (error) {
       console.error('Error loading language:', error);
@@ -31,14 +31,28 @@ export const LanguageProvider = ({ children }) => {
     try {
       await AsyncStorage.setItem('selectedLanguage', newLanguage);
       setLanguage(newLanguage);
-      globalLanguage = newLanguage; // Update global state
+      // REMOVED: globalLanguage = newLanguage;
     } catch (error) {
       console.error('Error saving language:', error);
     }
   };
 
+  // NEW: Translation function that uses React state instead of global variable
+  const t = (screenName, key, params = {}) => {
+    const { ScreenTranslations } = require('../translations/screens');
+    const screenTranslations = ScreenTranslations[screenName];
+    let text = screenTranslations?.[language]?.[key] || screenTranslations?.en?.[key] || key;
+    
+    // Add interpolation support using updated formatMixedContent
+    if (params && Object.keys(params).length > 0) {
+      text = formatMixedContent(text, params, language);
+    }
+    
+    return text;
+  };
+
   return (
-    <LanguageContext.Provider value={{ language, changeLanguage }}>
+    <LanguageContext.Provider value={{ language, changeLanguage, t }}>
       {children}
     </LanguageContext.Provider>
   );
@@ -53,38 +67,28 @@ export const useLanguage = () => {
   return context;
 };
 
-// Hook-safe translation function with interpolation support
+// UPDATED: Hook-safe translation function that now uses context t
 export const useTranslation = () => {
-  const { language } = useLanguage();
-  
-  const t = (screenName, key, params = {}) => {
-    const { ScreenTranslations } = require('../translations/screens');
-    const screenTranslations = ScreenTranslations[screenName];
-    let text = screenTranslations?.[language]?.[key] || screenTranslations?.en?.[key] || key;
-    
-    // Add interpolation support using existing formatMixedContent
-    if (params && Object.keys(params).length > 0) {
-      text = formatMixedContent(text, params);
-    }
-    
-    return text;
-  };
-  
-  return { t, language };
+  const context = useContext(LanguageContext);
+  if (!context) {
+    throw new Error('useTranslation must be used within a LanguageProvider');
+  }
+  return { t: context.t, language: context.language };
 };
 
-// Alternative: Pure function that doesn't use hooks at all (for use outside components)
+// KEPT: Pure function for backward compatibility (use sparingly)
 export const translate = (screenName, key, languageOverride = null) => {
-  const currentLanguage = languageOverride || globalLanguage;
+  // This should only be used outside React components
+  console.warn('Using translate() outside React component. Consider using useTranslation() instead.');
+  
+  const currentLanguage = languageOverride || 'en'; // Use your app's default language
   const { ScreenTranslations } = require('../translations/screens');
   const screenTranslations = ScreenTranslations[screenName];
   return screenTranslations?.[currentLanguage]?.[key] || screenTranslations?.en?.[key] || key;
 };
 
-// Helper function for mixed language content (English names/emails with Arabic text)
-export const formatMixedContent = (template, data) => {
-  const currentLanguage = globalLanguage;
-  
+// UPDATED: Helper function now accepts language parameter
+export const formatMixedContent = (template, data, currentLanguage) => {
   // For Arabic, we need to handle RTL text with English content
   if (currentLanguage === 'ar') {
     // Replace placeholders with actual data while preserving English content
@@ -99,9 +103,8 @@ export const formatMixedContent = (template, data) => {
   });
 };
 
-// Helper function to get dropdown options with translations
-export const getDropdownOptions = (optionsKey) => {
-  const currentLanguage = globalLanguage;
+// UPDATED: Helper function for dropdown options now uses passed language
+export const getDropdownOptions = (optionsKey, currentLanguage = 'en') => {
   const { ScreenTranslations } = require('../translations/screens');
   const dropdownOptions = ScreenTranslations.DropdownOptions;
   

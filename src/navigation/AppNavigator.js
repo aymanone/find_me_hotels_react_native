@@ -7,7 +7,7 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Icon, Button } from 'react-native-elements';
 import { CommonActions } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
-import { translate, useLanguage } from '../config/localization';
+import {  useTranslation } from '../config/localization';
 // Import screens
 import SignupScreen from '../screens/SignupScreen';
 import SigninScreen from '../screens/SigninScreen';
@@ -166,6 +166,7 @@ const ClientStack = React.memo(function ClientStack() {
 });
 
 const ClientTabs = React.memo(function ClientTabs() {
+  const { t,language } = useTranslation();
   const screenOptions = useMemo(() => createTabScreenOptions(), []);
   const screenListeners = useMemo(() => createTabListeners(), []);
   
@@ -177,12 +178,12 @@ const ClientTabs = React.memo(function ClientTabs() {
       <Tab.Screen 
         name="NewRequest" 
         component={MemoizedTravelRequestForm}
-        options={{ title: translate("ClientTabs","NewRequest") }}
+        options={{ title: t("ClientTabs","NewRequest") }}
       />
       <Tab.Screen 
         name="Requests" 
         component={MemoizedClientTravelRequestList}
-        options={{ title: translate("ClientTabs","Requests") }}
+        options={{ title: t("ClientTabs","Requests") }}
       />
     </Tab.Navigator>
   );
@@ -190,7 +191,7 @@ const ClientTabs = React.memo(function ClientTabs() {
 
 const ClientDrawer = React.memo(function ClientDrawer() {
   const screenOptions = useMemo(() => createDrawerScreenOptions(), []);
-  const { language } = useLanguage();
+  const { t,language } = useTranslation();
   return (
     <Drawer.Navigator
       initialRouteName="Home"
@@ -201,7 +202,7 @@ const ClientDrawer = React.memo(function ClientDrawer() {
         name="Home" 
         component={ClientStack} 
         options={{
-          title: translate("ClientDrawer","Home"),
+          title: t("ClientDrawer","Home"),
           drawerIcon: ({ color }) => (
             <Icon name="home-outline" type="ionicon" size={22} color={color} />
           ),
@@ -242,7 +243,7 @@ const ClientDrawer = React.memo(function ClientDrawer() {
   name="ClientUpdatedRequestsDrawer" // Different name to avoid conflicts
   component={ClientUpdatedRequestsScreen}
   options={{
-    title: translate("ClientDrawer","UpdatedRequests"),
+    title: t("ClientDrawer","UpdatedRequests"),
     drawerIcon: ({ color }) => (
      // <Icon name="refresh-outline" type="ionicon" size={22} color={color} />
       <View style={{ position: 'relative' }}>
@@ -267,7 +268,7 @@ const ClientDrawer = React.memo(function ClientDrawer() {
         name="Profile" 
         component={ClientClientProfileScreen}
         options={{
-          title: translate("ClientDrawer","Profile"),
+          title: t("ClientDrawer","Profile"),
           drawerIcon: ({ color }) => (
             <Icon name="person-outline" type="ionicon" size={22} color={color} />
           ),
@@ -277,7 +278,7 @@ const ClientDrawer = React.memo(function ClientDrawer() {
         name="Language" 
         component={LanguageSettingsScreen}
         options={{
-          title:translate("ClientDrawer","Language") ,
+          title:t("ClientDrawer","Language") ,
           drawerIcon: ({ color }) => (
             <Icon name="language-outline" type="ionicon" size={22} color={color} />
           ),
@@ -287,7 +288,7 @@ const ClientDrawer = React.memo(function ClientDrawer() {
   name="ContactUs" 
   component={ContactUsScreen}
   options={{
-    title: translate("ClientDrawer", "ContactUs"),
+    title: t("ClientDrawer", "ContactUs"),
     drawerIcon: ({ color }) => (
       <Icon name="mail-outline" type="ionicon" size={22} color={color} />
     ),
@@ -297,7 +298,7 @@ const ClientDrawer = React.memo(function ClientDrawer() {
         name="SignOut" 
         component={MemoizedSignOutScreen}
         options={{
-          title: translate("ClientDrawer","SignOut"),
+          title: t("ClientDrawer","SignOut"),
           drawerIcon: ({ color }) => (
             <Icon name="exit-outline" type="ionicon" size={22} color="#FF3B30" />
           ),
@@ -322,6 +323,7 @@ const AgentStack = React.memo(function AgentStack() {
 });
 
 const AgentTabs = React.memo(function AgentTabs() {
+  const { t,language } = useTranslation();
   const screenOptions = useMemo(() => createTabScreenOptions(), []);
   const screenListeners = useMemo(() => createTabListeners(), []);
   
@@ -333,12 +335,12 @@ const AgentTabs = React.memo(function AgentTabs() {
       <Tab.Screen 
         name="SearchRequests" 
         component={MemoizedAgentSearchTravelRequests}
-        options={{ title: translate("AgentTabs","SearchRequests") }}
+        options={{ title: t("AgentTabs","SearchRequests") }}
       />
       <Tab.Screen 
         name="MyOffers" 
         component={MemoizedAgentAgentOffers}
-        options={{ title: translate("AgentTabs","MyOffers") }}
+        options={{ title: t("AgentTabs","MyOffers") }}
       />
     </Tab.Navigator>
   );
@@ -346,7 +348,7 @@ const AgentTabs = React.memo(function AgentTabs() {
 
 const AgentDrawer = React.memo(function AgentDrawer() {
   const screenOptions = useMemo(() => createDrawerScreenOptions(), []);
-  const { language } = useLanguage();
+  const { t,language } = useTranslation();
   return (
     <Drawer.Navigator
       initialRouteName="Home"
@@ -357,7 +359,7 @@ const AgentDrawer = React.memo(function AgentDrawer() {
         name="Home" 
         component={AgentStack} 
         options={{
-          title: translate("AgentDrawer","Home"),
+          title: t("AgentDrawer","Home"),
           drawerIcon: ({ color }) => (
             <Icon name="home-outline" type="ionicon" size={22} color={color} />
           ),
@@ -401,7 +403,7 @@ const AgentDrawer = React.memo(function AgentDrawer() {
   name="AgentUpdatedRequestsDrawer" // Different name to avoid conflicts
   component={AgentUpdatedRequestsScreen}
   options={{
-    title: translate("AgentDrawer","UpdatedRequests"),
+    title: t("AgentDrawer","UpdatedRequests"),
     drawerIcon: ({ color }) => (
      // <Icon name="refresh-outline" type="ionicon" size={22} color={color} />
       <View style={{ position: 'relative' }}>
@@ -427,7 +429,7 @@ const AgentDrawer = React.memo(function AgentDrawer() {
         name="Profile" 
         component={AgentAgentProfileScreen}
         options={{
-          title:translate("AgentDrawer","Profile") ,
+          title:t("AgentDrawer","Profile") ,
           drawerIcon: ({ color }) => (
             <Icon name="person-outline" type="ionicon" size={22} color={color} />
           ),
@@ -437,7 +439,7 @@ const AgentDrawer = React.memo(function AgentDrawer() {
         name="Language" 
         component={LanguageSettingsScreen}
         options={{
-          title: translate("AgentDrawer","Language"),
+          title: t("AgentDrawer","Language"),
           drawerIcon: ({ color }) => (
             <Icon name="language-outline" type="ionicon" size={22} color={color} />
           ),
@@ -447,7 +449,7 @@ const AgentDrawer = React.memo(function AgentDrawer() {
   name="ContactUs" 
   component={ContactUsScreen}
   options={{
-    title: translate("AgentDrawer", "ContactUs"),
+    title: t("AgentDrawer", "ContactUs"),
     drawerIcon: ({ color }) => (
       <Icon name="mail-outline" type="ionicon" size={22} color={color} />
     ),
@@ -457,7 +459,7 @@ const AgentDrawer = React.memo(function AgentDrawer() {
         name="SignOut" 
         component={MemoizedSignOutScreen}
         options={{
-          title: translate("AgentDrawer","SignOut"),
+          title: t("AgentDrawer","SignOut"),
           drawerIcon: ({ color }) => (
             <Icon name="exit-outline" type="ionicon" size={22} color="#FF3B30" />
           ),
@@ -481,6 +483,7 @@ const CompanyStack = React.memo(function AgentStack() {
   );
 });
 const CompanyTabs = React.memo(function CompanyTabs() {
+  const { t,language } = useTranslation();
   const screenOptions = useMemo(() => createTabScreenOptions(), []);
   
   return (
@@ -488,12 +491,12 @@ const CompanyTabs = React.memo(function CompanyTabs() {
       <Tab.Screen 
         name="Create Agent"
         component={MemoizedCompanyCreateAgentForm}
-        options={{ title:translate("CompanyTabs","CreateAgent") , headerShown: false }}
+        options={{ title:t("CompanyTabs","CreateAgent") , headerShown: false }}
       />
       <Tab.Screen 
         name="Agents" 
         component={MemoizedCompanyAgentsList}
-        options={{ title: translate("CompanyTabs","Agents"), headerShown: false }}
+        options={{ title: t("CompanyTabs","Agents"), headerShown: false }}
       />
     
     </Tab.Navigator>
@@ -502,7 +505,7 @@ const CompanyTabs = React.memo(function CompanyTabs() {
 
 const CompanyDrawer = React.memo(function CompanyDrawer() {
   const screenOptions = useMemo(() => createDrawerScreenOptions(), []);
-  const { language } = useLanguage();
+  const { t,language } = useTranslation();
   return (
     <Drawer.Navigator
       initialRouteName="Home"
@@ -513,7 +516,7 @@ const CompanyDrawer = React.memo(function CompanyDrawer() {
         name="Home" 
         component={CompanyStack} 
         options={{
-          title:translate("CompanyDrawer","Home") ,
+          title:t("CompanyDrawer","Home") ,
           drawerIcon: ({ color }) => (
             <Icon name="home-outline" type="ionicon" size={22} color={color} />
           ),
@@ -559,7 +562,7 @@ const CompanyDrawer = React.memo(function CompanyDrawer() {
         name="Profile" 
         component={CompanyCompanyProfileScreen}
         options={{
-          title: translate("CompanyDrawer","Profile"),
+          title: t("CompanyDrawer","Profile"),
           drawerIcon: ({ color }) => (
             <Icon name="person-outline" type="ionicon" size={22} color={color} />
           ),
@@ -569,7 +572,7 @@ const CompanyDrawer = React.memo(function CompanyDrawer() {
         name="Language" 
         component={LanguageSettingsScreen}
         options={{
-          title:translate("CompanyDrawer","Language") ,
+          title:t("CompanyDrawer","Language") ,
           drawerIcon: ({ color }) => (
             <Icon name="language-outline" type="ionicon" size={22} color={color} />
           ),
@@ -579,7 +582,7 @@ const CompanyDrawer = React.memo(function CompanyDrawer() {
   name="ContactUs" 
   component={ContactUsScreen}
   options={{
-    title: translate("CompanyDrawer", "ContactUs"),
+    title: t("CompanyDrawer", "ContactUs"),
     drawerIcon: ({ color }) => (
       <Icon name="mail-outline" type="ionicon" size={22} color={color} />
     ),
@@ -589,7 +592,7 @@ const CompanyDrawer = React.memo(function CompanyDrawer() {
         name="SignOut" 
         component={MemoizedSignOutScreen}
         options={{
-          title:translate("CompanyDrawer","SignOut") ,
+          title:t("CompanyDrawer","SignOut") ,
           drawerIcon: ({ color }) => (
             <Icon name="exit-outline" type="ionicon" size={22} color="#FF3B30" />
           ),
@@ -613,6 +616,7 @@ const AdminStack = React.memo(function AgentStack() {
   );
 });
 const AdminTabs = React.memo(function AdminTabs() {
+  const { t,language } = useTranslation();
   const screenOptions = useMemo(() => createTabScreenOptions(), []);
   
   return (
@@ -620,12 +624,12 @@ const AdminTabs = React.memo(function AdminTabs() {
       <Tab.Screen 
         name="Create Company"
         component={MemoizedAdminCreateCompanyForm} 
-        options={{ title: translate("AdminTabs","CreateCompany"), headerShown: false }}
+        options={{ title: t("AdminTabs","CreateCompany"), headerShown: false }}
       />
       <Tab.Screen 
         name="My Companies" 
         component={MemoizedAdminCompaniesList}
-        options={{ title:translate("AdminTabs","Companies") , headerShown: false }}
+        options={{ title:t("AdminTabs","Companies") , headerShown: false }}
       />
     </Tab.Navigator>
   );
@@ -633,7 +637,7 @@ const AdminTabs = React.memo(function AdminTabs() {
 
 const AdminDrawer = React.memo(function AdminDrawer() {
   const screenOptions = useMemo(() => createDrawerScreenOptions(), []);
-  const { language } = useLanguage();
+  const { t,language } = useTranslation();
   return (
     <Drawer.Navigator
       initialRouteName="Home"
@@ -644,7 +648,7 @@ const AdminDrawer = React.memo(function AdminDrawer() {
         name="Home" 
         component={AdminStack} 
         options={{
-          title: translate("AdminDrawer","Home"),
+          title: t("AdminDrawer","Home"),
           drawerIcon: ({ color }) => (
             <Icon name="home-outline" type="ionicon" size={22} color={color} />
           ),
@@ -689,7 +693,7 @@ const AdminDrawer = React.memo(function AdminDrawer() {
         name="Profile" 
         component={AdminAdminProfileScreen}
         options={{
-          title:translate("AdminDrawer","Profile") ,
+          title:t("AdminDrawer","Profile") ,
           drawerIcon: ({ color }) => (
             <Icon name="person-outline" type="ionicon" size={22} color={color} />
           ),
@@ -699,7 +703,7 @@ const AdminDrawer = React.memo(function AdminDrawer() {
         name="Language" 
         component={LanguageSettingsScreen}
         options={{
-          title: translate("AdminDrawer","Language"),
+          title: t("AdminDrawer","Language"),
           drawerIcon: ({ color }) => (
             <Icon name="language-outline" type="ionicon" size={22} color={color} />
           ),
@@ -709,7 +713,7 @@ const AdminDrawer = React.memo(function AdminDrawer() {
   name="ContactUs" 
   component={ContactUsScreen}
   options={{
-    title: translate("AdminDrawer", "ContactUs"),
+    title: t("AdminDrawer", "ContactUs"),
     drawerIcon: ({ color }) => (
       <Icon name="mail-outline" type="ionicon" size={22} color={color} />
     ),
@@ -719,7 +723,7 @@ const AdminDrawer = React.memo(function AdminDrawer() {
         name="SignOut" 
         component={MemoizedSignOutScreen}
         options={{
-          title: translate("AdminDrawer","SignOut"),
+          title: t("AdminDrawer","SignOut"),
           drawerIcon: ({ color }) => (
             <Icon name="exit-outline" type="ionicon" size={22} color="#FF3B30" />
           ),
