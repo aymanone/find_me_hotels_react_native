@@ -113,8 +113,8 @@ const fetchCount = async () => {
       fetchCount();
       
       const msPerHour = 60 * 60 * 1000; // 1 hour in milliseconds
-      // Set up interval to fetch every 4 hours
-      intervalRef.current = setInterval(fetchCount, 4 * msPerHour);
+      // Set up interval to fetch every 1 hour
+      intervalRef.current = setInterval(fetchCount, 1 * msPerHour);
     };
     
     // Get initial session and set up listener

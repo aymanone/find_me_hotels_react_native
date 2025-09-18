@@ -3,6 +3,7 @@
     "name": "alghorfa",
     "slug": "alghorfa",
     "version": "1.0.2",
+    "sdkVersion": "53.0.20",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
