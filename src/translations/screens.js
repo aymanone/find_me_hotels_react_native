@@ -1464,7 +1464,7 @@ export const ScreenTranslations = {
     maxBudget: 'Max Budget:',
     notes: 'Notes:',
     noNotesProvided: 'No notes provided',
-    
+    "notAvailable": "Not Available",
     // Warning Messages
     maximumOffersReached: 'This request already has the maximum number of offers ({maxOffers}). You cannot make additional offers.',
     notPermittedToWork: 'You are not permitted to work on this request.',
@@ -1572,7 +1572,7 @@ export const ScreenTranslations = {
     maxBudget: 'الحد الأقصى للميزانية:',
     notes: 'الملاحظات:',
     noNotesProvided: 'لم يتم تقديم ملاحظات',
-    
+     "notAvailable": "غير متوفر",
     // Warning Messages
     maximumOffersReached: 'هذا الطلب يحتوي بالفعل على الحد الأقصى من العروض ({maxOffers}). لا يمكنك تقديم عروض إضافية.',
     notPermittedToWork: 'غير مسموح لك بالعمل على هذا الطلب.',

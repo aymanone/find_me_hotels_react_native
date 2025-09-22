@@ -56,6 +56,7 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
   });
   const [addHotelSectionCollapsed, setAddHotelSectionCollapsed] = useState(true);
   const [hotelsSectionCollapsed,setHotelsSectionCollapsed]= useState(false);
+  const [offerSummaryCollapsed, setOfferSummaryCollapsed] = useState(false);
   const [editingHotelIndex, setEditingHotelIndex] = useState(-1); // Track which hotel is being edited
   
   // Rating dropdown data
@@ -188,6 +189,13 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
   const toggleHotelsSection = () => {
     setHotelsSectionCollapsed(!hotelsSectionCollapsed);
   };
+  const toggleOfferSummarySection = () => {
+  setOfferSummaryCollapsed(!offerSummaryCollapsed);
+};
+  const formatDate = (timestamptz) => {
+  if (!timestamptz) return t('AgentTravelRequestDetailsScreen', 'notAvailable');
+  return new Date(timestamptz).toLocaleDateString();
+};
   const shareRequest = async () => {
   if (!request) return;
   
@@ -433,7 +441,9 @@ ${requestUrl}`;
             num_of_hotels: offerHotels.length,
             hotels: offerHotels,
             new_update:true,
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
+            start_date: request.start_date ? new Date(request.start_date).toISOString() : null,
+            end_date: request.end_date ? new Date(request.end_date).toISOString() : null,
           })
           .eq('id', existingOffer.id);
         
@@ -457,7 +467,9 @@ ${requestUrl}`;
             hotels: offerHotels,
             agent_id: user.id,
             request_id: requestId,
-            request_creator: request.creator_id
+            request_creator: request.creator_id,
+            start_date: request.start_date ? new Date(request.start_date).toISOString() : null,
+            end_date: request.end_date ? new Date(request.end_date).toISOString() : null,
   
           });
         
@@ -540,14 +552,24 @@ ${requestUrl}`;
           </View>
           {!requestSectionCollapsed && request && (
             <View style={styles.sectionContent}>
-              {/* Dates */}
+              {/* Destination */}
               <View style={styles.infoRow}>
                 <View style={styles.infoColumn}>
                   <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'destination')}</Text>
                   <Text>{request.country_name} , {request.area_name}</Text>
                 </View>
               </View>
-             
+             {/* Travel Dates */}
+          <View style={styles.infoRow}>
+         <View style={styles.infoColumn}>
+         <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'startDate')}</Text>
+             <Text>{formatDate(request.start_date)}</Text>
+            </View>
+         <View style={styles.infoColumn}>
+        <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'endDate')}</Text>
+         <Text>{formatDate(request.end_date)}</Text>
+          </View>
+         </View>
               {/* Travelers */}
               <View style={styles.infoRow}>
                 <View style={styles.fullWidth}>
@@ -626,50 +648,77 @@ ${requestUrl}`;
           </Card>
         )}
         
-        {/* Offers Info Section */}
-        {offerHotels.length > 0 && (
-          <Card containerStyle={styles.card}>
-            <Text style={styles.sectionTitle}>{t('AgentTravelRequestDetailsScreen', 'offerSummary')}</Text>
-            
-            <View style={styles.infoRow}>
-              <View style={styles.infoColumn}>
-                <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'minCost')}</Text>
-                <Text>${minCost}</Text>
-              </View>
-              <View style={styles.infoColumn}>
-                <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'maxCost')}</Text>
-                <Text>${maxCost}</Text>
-              </View>
+       {/* Offers Info Section */}
+{offerHotels.length > 0 && (
+  <Card containerStyle={styles.card}>
+    <TouchableOpacity 
+      style={styles.sectionHeader} 
+      onPress={toggleOfferSummarySection}
+    >
+      <Text style={styles.sectionTitle}>{t('AgentTravelRequestDetailsScreen', 'offerSummary')}</Text>
+      <Icon 
+        name={offerSummaryCollapsed ? 'chevron-down' : 'chevron-up'} 
+        type="ionicon" 
+      />
+    </TouchableOpacity>
+    
+    {!offerSummaryCollapsed && (
+      <View style={styles.sectionContent}>
+        {/* Offer Dates */}
+        {existingOffer && (
+          <View style={styles.infoRow}>
+            <View style={styles.infoColumn}>
+              <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'startDate')}</Text>
+              <Text>{formatDate(existingOffer.start_date)}</Text>
             </View>
-            
-            <View style={styles.infoRow}>
-              <View style={styles.infoColumn}>
-                <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'minRating')}</Text>
-                <Text>{minRating} {t('AgentTravelRequestDetailsScreen', 'stars')}</Text>
-              </View>
-              <View style={styles.infoColumn}>
-                <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'maxRating')}</Text>
-                <Text>{maxRating} {t('AgentTravelRequestDetailsScreen', 'stars')}</Text>
-              </View>
+            <View style={styles.infoColumn}>
+              <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'endDate')}</Text>
+              <Text>{formatDate(existingOffer.end_date)}</Text>
             </View>
-            
-            <View style={styles.infoRow}>
-              <View style={styles.infoColumn}>
-                <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'numberOfHotels')}</Text>
-                <Text>{offerHotels.length}</Text>
-              </View>
-              <View style={styles.infoColumn}>
-                {userCanMakeOffer && (
-                  <Button
-                    title={isEditMode ? t('AgentTravelRequestDetailsScreen', 'updateOffer') : t('AgentTravelRequestDetailsScreen', 'makeOffer')}
-                    onPress={makeOffer}
-                    buttonStyle={styles.makeOfferButton}
-                  />
-                )}
-              </View>
-            </View>
-          </Card>
+          </View>
         )}
+        
+        <View style={styles.infoRow}>
+          <View style={styles.infoColumn}>
+            <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'minCost')}</Text>
+            <Text>${minCost}</Text>
+          </View>
+          <View style={styles.infoColumn}>
+            <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'maxCost')}</Text>
+            <Text>${maxCost}</Text>
+          </View>
+        </View>
+        
+        <View style={styles.infoRow}>
+          <View style={styles.infoColumn}>
+            <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'minRating')}</Text>
+            <Text>{minRating} {t('AgentTravelRequestDetailsScreen', 'stars')}</Text>
+          </View>
+          <View style={styles.infoColumn}>
+            <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'maxRating')}</Text>
+            <Text>{maxRating} {t('AgentTravelRequestDetailsScreen', 'stars')}</Text>
+          </View>
+        </View>
+        
+        <View style={styles.infoRow}>
+          <View style={styles.infoColumn}>
+            <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'numberOfHotels')}</Text>
+            <Text>{offerHotels.length}</Text>
+          </View>
+          <View style={styles.infoColumn}>
+            {userCanMakeOffer && (
+              <Button
+                title={isEditMode ? t('AgentTravelRequestDetailsScreen', 'updateOffer') : t('AgentTravelRequestDetailsScreen', 'makeOffer')}
+                onPress={makeOffer}
+                buttonStyle={styles.makeOfferButton}
+              />
+            )}
+          </View>
+        </View>
+      </View>
+    )}
+  </Card>
+)}
 
         {/* Add/Edit Hotel Section - Collapsible */}
         {userCanMakeOffer && (
