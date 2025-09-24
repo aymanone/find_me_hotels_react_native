@@ -1936,8 +1936,8 @@ export const ScreenTranslations = {
     from: 'from',
     viewed: 'Viewed',
     notViewed: 'Not Viewed',
-    "startDate": "Start Date",
-"endDate": "End Date", 
+    "startDate": "Offer's Start",
+"endDate": "Offer's end", 
 "notProvided": "Not Provided",
     // Form labels
     minCost: 'Min Cost:',
@@ -2007,8 +2007,8 @@ export const ScreenTranslations = {
     from: 'من',
     viewed: 'تم العرض',
     notViewed: 'لم يتم العرض',
-    "startDate": "تاريخ البداية",
-"endDate": "تاريخ النهاية",
+    "startDate": "بداية العرض",
+"endDate": "نهاية العرض",
 "notProvided": "غير محدد",
     
     // Form labels
