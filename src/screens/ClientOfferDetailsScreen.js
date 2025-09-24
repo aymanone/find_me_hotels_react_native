@@ -27,7 +27,7 @@ const ClientOfferDetailsScreen = ({ route, navigation }) => {
   const [offer, setOffer] = useState(null);
   const [hotelsSectionCollapsed, setHotelsSectionCollapsed] = useState(true);
   const [agentSectionCollapsed, setAgentSectionCollapsed] = useState(true);
-
+  const [offerInfoSectionCollapsed, setOfferInfoSectionCollapsed] = useState(false);
   useEffect(() => {
     
     const fetchOfferDetails = async () => {
@@ -105,7 +105,9 @@ const ClientOfferDetailsScreen = ({ route, navigation }) => {
   const toggleAgentSection = () => {
     setAgentSectionCollapsed(!agentSectionCollapsed);
   };
-
+  const toggleOfferInfoSection = () => {
+  setOfferInfoSectionCollapsed(!offerInfoSectionCollapsed);
+};
 const appHasLink =(messagingApp) =>{
   if(!messagingApp) return false;
 
@@ -215,65 +217,79 @@ const appHasLink =(messagingApp) =>{
 
   return (
     <ScrollView style={styles.container}>
-      {/* Offer Info Section */}
-      <Card containerStyle={styles.card}>
-        <Text style={styles.sectionTitle}>{t('ClientOfferDetailsScreen', 'offerInformation')}</Text>
-        <Divider style={styles.divider} />
-        {/* Date Range Row */}
-<View style={styles.infoRow}>
-  <View style={styles.infoColumn}>
-    <Text style={styles.label}>{t('ClientOfferDetailsScreen', 'startDate')}</Text>
-    <Text style={styles.value}>
-      {offer.start_date ? new Date(offer.start_date).toLocaleDateString('en-US', {
-        month: '2-digit',
-        day: 'numeric', 
-        year: 'numeric'
-      }) : t('ClientOfferDetailsScreen', 'notProvided')}
-    </Text>
-  </View>
-  <View style={styles.infoColumn}>
-    <Text style={styles.label}>{t('ClientOfferDetailsScreen', 'endDate')}</Text>
-    <Text style={styles.value}>
-      {offer.end_date ? new Date(offer.end_date).toLocaleDateString('en-US', {
-        month: '2-digit',
-        day: 'numeric',
-        year: 'numeric'
-      }) : t('ClientOfferDetailsScreen', 'notProvided')}
-    </Text>
-  </View>
-</View>
-        {/* Cost Row */}
-        <View style={styles.infoRow}>
-          <View style={styles.infoColumn}>
-            <Text style={styles.label}>{t('ClientOfferDetailsScreen', 'minCost')}</Text>
-            <Text style={styles.value}>${offer.min_cost}</Text>
-          </View>
-          <View style={styles.infoColumn}>
-            <Text style={styles.label}>{t('ClientOfferDetailsScreen', 'maxCost')}</Text>
-            <Text style={styles.value}>${offer.max_cost}</Text>
-          </View>
+    {/* Offer Info Section */}
+<Card containerStyle={styles.card}>
+  <TouchableOpacity 
+    style={styles.sectionHeader} 
+    onPress={toggleOfferInfoSection}
+  >
+    <Text style={styles.sectionTitle}>{t('ClientOfferDetailsScreen', 'offerInformation')}</Text>
+    <Icon 
+      name={offerInfoSectionCollapsed ? 'chevron-down' : 'chevron-up'} 
+      type="ionicon" 
+    />
+  </TouchableOpacity>
+  
+  {!offerInfoSectionCollapsed && (
+    <View style={styles.sectionContent}>
+      <Divider style={styles.divider} />
+       {/* Date Range Row */}
+      <View style={styles.infoRow}>
+        <View style={styles.infoColumn}>
+          <Text style={styles.label}>{t('ClientOfferDetailsScreen', 'startDate')}</Text>
+          <Text style={styles.value}>
+            {offer.start_date ? new Date(offer.start_date).toLocaleDateString('en-US', {
+              month: '2-digit',
+              day: 'numeric', 
+              year: 'numeric'
+            }) : t('ClientOfferDetailsScreen', 'notProvided')}
+          </Text>
         </View>
-        
-        {/* Rating Row */}
-        <View style={styles.infoRow}>
-          <View style={styles.infoColumn}>
-            <Text style={styles.label}>{t('ClientOfferDetailsScreen', 'minRating')}</Text>
-            <Text style={styles.value}>{offer.min_rating} {t('ClientOfferDetailsScreen', 'stars')}</Text>
-          </View>
-          <View style={styles.infoColumn}>
-            <Text style={styles.label}>{t('ClientOfferDetailsScreen', 'maxRating')}</Text>
-            <Text style={styles.value}>{offer.max_rating} {t('ClientOfferDetailsScreen', 'stars')}</Text>
-          </View>
+        <View style={styles.infoColumn}>
+          <Text style={styles.label}>{t('ClientOfferDetailsScreen', 'endDate')}</Text>
+          <Text style={styles.value}>
+            {offer.end_date ? new Date(offer.end_date).toLocaleDateString('en-US', {
+              month: '2-digit',
+              day: 'numeric',
+              year: 'numeric'
+            }) : t('ClientOfferDetailsScreen', 'notProvided')}
+          </Text>
         </View>
-        
-        {/* Number of Hotels */}
-        <View style={styles.infoRow}>
-          <View style={styles.fullWidth}>
-            <Text style={styles.label}>{t('ClientOfferDetailsScreen', 'numberHotels')}</Text>
-            <Text style={styles.value}>{offer.num_of_hotels}</Text>
-          </View>
+      </View>
+      {/* Cost Row */}
+      <View style={styles.infoRow}>
+        <View style={styles.infoColumn}>
+          <Text style={styles.label}>{t('ClientOfferDetailsScreen', 'minCost')}</Text>
+          <Text style={styles.value}>${offer.min_cost}</Text>
         </View>
-      </Card>
+        <View style={styles.infoColumn}>
+          <Text style={styles.label}>{t('ClientOfferDetailsScreen', 'maxCost')}</Text>
+          <Text style={styles.value}>${offer.max_cost}</Text>
+        </View>
+      </View>
+      
+      {/* Rating Row */}
+      <View style={styles.infoRow}>
+        <View style={styles.infoColumn}>
+          <Text style={styles.label}>{t('ClientOfferDetailsScreen', 'minRating')}</Text>
+          <Text style={styles.value}>{offer.min_rating} {t('ClientOfferDetailsScreen', 'stars')}</Text>
+        </View>
+        <View style={styles.infoColumn}>
+          <Text style={styles.label}>{t('ClientOfferDetailsScreen', 'maxRating')}</Text>
+          <Text style={styles.value}>{offer.max_rating} {t('ClientOfferDetailsScreen', 'stars')}</Text>
+        </View>
+      </View>
+      
+      {/* Number of Hotels */}
+      <View style={styles.infoRow}>
+        <View style={styles.fullWidth}>
+          <Text style={styles.label}>{t('ClientOfferDetailsScreen', 'numberHotels')}</Text>
+          <Text style={styles.value}>{offer.num_of_hotels}</Text>
+        </View>
+      </View>
+    </View>
+  )}
+</Card>
       
       {/* Hotels Section */}
       <Card containerStyle={styles.card}>
