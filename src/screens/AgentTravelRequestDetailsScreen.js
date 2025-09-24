@@ -194,7 +194,11 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
 };
   const formatDate = (timestamptz) => {
   if (!timestamptz) return t('AgentTravelRequestDetailsScreen', 'notAvailable');
-  return new Date(timestamptz).toLocaleDateString();
+  return new Date(timestamptz).toLocaleDateString('en-US', {
+        month: '2-digit',
+        day: 'numeric', 
+        year: 'numeric'
+      });
 };
   const shareRequest = async () => {
   if (!request) return;

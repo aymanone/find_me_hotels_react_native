@@ -388,7 +388,15 @@ const searchByNationality = async () => {
         <View style={styles.row}>
           <Text style={styles.label}>{t('AgentSearchTravelRequestsScreen', 'dates')}</Text>
           <Text style={styles.value}>
-            {new Date(item.start_date).toLocaleDateString()} - {new Date(item.end_date).toLocaleDateString()}
+            {new Date(item.start_date).toLocaleDateString('en-US', {
+        month: '2-digit',
+        day: 'numeric',
+        year: 'numeric'
+      })} - {new Date(item.end_date).toLocaleDateString('en-US', {
+        month: '2-digit',
+        day: 'numeric',
+        year: 'numeric'
+      })}
           </Text>
         </View>
         <View style={styles.row}>
