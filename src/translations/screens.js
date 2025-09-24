@@ -1936,7 +1936,9 @@ export const ScreenTranslations = {
     from: 'from',
     viewed: 'Viewed',
     notViewed: 'Not Viewed',
-    
+    "startDate": "Start Date",
+"endDate": "End Date", 
+"notProvided": "Not Provided",
     // Form labels
     minCost: 'Min Cost:',
     maxCost: 'Max Cost:',
@@ -2005,6 +2007,9 @@ export const ScreenTranslations = {
     from: 'من',
     viewed: 'تم العرض',
     notViewed: 'لم يتم العرض',
+    "startDate": "تاريخ البداية",
+"endDate": "تاريخ النهاية",
+"notProvided": "غير محدد",
     
     // Form labels
     minCost: 'الحد الأدنى للتكلفة:',

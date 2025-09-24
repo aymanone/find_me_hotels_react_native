@@ -219,7 +219,29 @@ const appHasLink =(messagingApp) =>{
       <Card containerStyle={styles.card}>
         <Text style={styles.sectionTitle}>{t('ClientOfferDetailsScreen', 'offerInformation')}</Text>
         <Divider style={styles.divider} />
-        
+        {/* Date Range Row */}
+<View style={styles.infoRow}>
+  <View style={styles.infoColumn}>
+    <Text style={styles.label}>{t('ClientOfferDetailsScreen', 'startDate')}</Text>
+    <Text style={styles.value}>
+      {offer.start_date ? new Date(offer.start_date).toLocaleDateString('en-US', {
+        month: '2-digit',
+        day: 'numeric', 
+        year: 'numeric'
+      }) : t('ClientOfferDetailsScreen', 'notProvided')}
+    </Text>
+  </View>
+  <View style={styles.infoColumn}>
+    <Text style={styles.label}>{t('ClientOfferDetailsScreen', 'endDate')}</Text>
+    <Text style={styles.value}>
+      {offer.end_date ? new Date(offer.end_date).toLocaleDateString('en-US', {
+        month: '2-digit',
+        day: 'numeric',
+        year: 'numeric'
+      }) : t('ClientOfferDetailsScreen', 'notProvided')}
+    </Text>
+  </View>
+</View>
         {/* Cost Row */}
         <View style={styles.infoRow}>
           <View style={styles.infoColumn}>
