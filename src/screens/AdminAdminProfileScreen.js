@@ -13,6 +13,7 @@ import supabase from '../config/supabase';
 import { checkUserRole , getCurrentUser,signOut} from '../utils/auth';
 import { validPasswordSignup } from '../utils/validation';
 import {showAlert} from "../components/ShowAlert";
+import { theme, commonStyles, screenSize, responsive } from '../styles//theme';
 import { useTranslation} from '../config/localization';
 
 export default function AdminAdminProfileScreen({ navigation }) {
@@ -117,7 +118,7 @@ export default function AdminAdminProfileScreen({ navigation }) {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color={theme.colors.primary}  />
       </View>
     );
   }
@@ -221,89 +222,87 @@ export default function AdminAdminProfileScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.background,
   },
   scrollContainer: {
-    padding: 20,
+    padding: theme.spacing.xl,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: theme.colors.background,
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: theme.spacing.xl,
   },
   errorText: {
-    fontSize: 16,
-    color: 'red',
+    fontSize: theme.typography.fontSize.md,
+    color: theme.colors.error,
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: theme.spacing.xl,
   },
   profileSection: {
-    backgroundColor: 'white',
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    backgroundColor: theme.colors.backgroundWhite,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.lg,
+    marginBottom: theme.spacing.xl,
+    ...theme.shadows.md,
   },
   passwordSection: {
-    backgroundColor: 'white',
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    backgroundColor: theme.colors.backgroundWhite,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.lg,
+    marginBottom: theme.spacing.xl,
+    ...theme.shadows.md,
   },
   sectionTitle: {
-    marginBottom: 15,
+    marginBottom: theme.spacing.lg,
     textAlign: 'center',
+    fontSize: theme.typography.h4.fontSize,
+    fontWeight: theme.typography.h4.fontWeight,
+    color: theme.typography.h4.color,
   },
   infoRow: {
     flexDirection: 'row',
-    marginBottom: 15,
+    marginBottom: theme.spacing.lg,
     alignItems: 'center',
   },
   label: {
-    fontWeight: 'bold',
+    fontWeight: theme.typography.fontWeight.bold,
     width: '35%',
-    fontSize: 16,
+    fontSize: theme.typography.fontSize.md,
+    color: theme.colors.text,
   },
   value: {
-    fontSize: 16,
+    fontSize: theme.typography.fontSize.md,
     flex: 1,
+    color: theme.colors.text,
   },
   statusContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   statusIndicator: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 8,
+    width: theme.components.statusIndicator.width,
+    height: theme.components.statusIndicator.height,
+    borderRadius: theme.components.statusIndicator.borderRadius,
+    marginRight: theme.components.statusIndicator.marginRight,
   },
   statusActive: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: theme.colors.statusActive,
   },
   statusInactive: {
-    backgroundColor: '#F44336',
+    backgroundColor: theme.colors.statusInactive,
   },
   inputContainer: {
-    marginBottom: 10,
+    marginBottom: theme.spacing.md,
   },
   buttonContainer: {
-    marginTop: 10,
+    marginTop: theme.spacing.md,
     width: '100%',
   },
 });

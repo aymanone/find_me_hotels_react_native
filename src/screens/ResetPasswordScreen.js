@@ -5,6 +5,7 @@ import supabase from '../config/supabase';
 import { validPasswordSignup } from '../utils/validation';
 import { useAuth } from '../contexts/AuthContext';
 import {showAlert} from "../components/ShowAlert";
+import { theme, commonStyles, responsive, screenSize } from '../styles/theme';
 import { useTranslation } from '../config/localization';
 import LanguageSelector from '../components/LanguageSelector';
 
@@ -119,7 +120,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
       <View style={styles.languageSelectorContainer}>
         <LanguageSelector />
       </View>
-      <Text h3 style={styles.title}>{t('ResetPasswordScreen', 'title')}</Text>
+      <Text  style={styles.title}>{t('ResetPasswordScreen', 'title')}</Text>
       <Text style={styles.subtitle}>
         {t('ResetPasswordScreen', 'enterNewPassword')}
       </Text>
@@ -133,10 +134,12 @@ export default function ResetPasswordScreen({ navigation, route }) {
         value={password}
         secureTextEntry={!showPassword}
         rightIcon={{ 
-          type: 'font-awesome', 
-          name: showPassword ? 'eye-slash' : 'eye',
-          onPress: () => setShowPassword(!showPassword)
-        }}
+             type: 'font-awesome', 
+             name: showPassword ? 'eye-slash' : 'eye',
+             size: theme.responsiveComponents.icon.medium,
+             color: theme.colors.textSecondary,
+             onPress: () => setShowPassword(!showPassword)
+       }}
         errorMessage={passwordError}
         disabled={!sessionEstablished || loading}
       />
@@ -163,27 +166,36 @@ export default function ResetPasswordScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    padding: theme.spacing.xl,
     justifyContent: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.backgroundWhite,
   },
+  
   languageSelectorContainer: {
     position: 'absolute',
-    top: 50,
-    right: 20,
+    top: responsive(40, 50, 50, 50, 50),
+    right: theme.spacing.xl,
     zIndex: 1,
   },
+  
   title: {
-    marginBottom: 20,
+    marginBottom: theme.spacing.xl,
     textAlign: 'center',
+    fontSize: theme.responsiveTypography.h3.fontSize,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text,
   },
+  
   subtitle: {
-    marginBottom: 30,
+    marginBottom: theme.spacing.xxxl,
     textAlign: 'center',
-    color: '#666',
+    fontSize: theme.responsiveTypography.fontSize.md,
+    color: theme.colors.textSecondary,
   },
+  
   button: {
-    marginTop: 20,
-    backgroundColor: '#007bff',
+    marginTop: theme.spacing.xl,
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.md,
   },
 });

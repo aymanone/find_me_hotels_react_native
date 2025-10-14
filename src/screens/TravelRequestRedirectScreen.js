@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { getCurrentUser, getUserRole } from '../utils/auth';
-
+import { theme, commonStyles, responsive, screenSize } from '../styles/theme';
 export default function TravelRequestRedirect({ navigation, route }) {
   const [loading, setLoading] = useState(true);
   const { id } = route.params;
@@ -81,7 +81,7 @@ export default function TravelRequestRedirect({ navigation, route }) {
   if (loading) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#0066cc" />
+        <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
     );
   }
@@ -95,6 +95,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.background,
   },
 });

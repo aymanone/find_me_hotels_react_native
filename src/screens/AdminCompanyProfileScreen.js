@@ -23,6 +23,7 @@ import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser, signOut } from '../utils/auth';
 import { validUrl, validEmail, validPhoneNumber } from '../utils/validation';
 import { showAlert } from "../components/ShowAlert";
+import { theme, commonStyles, screenSize, responsive } from '../styles//theme';
 import {  useTranslation } from '../config/localization';
 
 export default function AdminCompanyProfileScreen({ route, navigation }) {
@@ -333,7 +334,7 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
     );
   }
@@ -350,7 +351,7 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
             <Text style={styles.cardTitle}>{t('AdminCompanyProfileScreen', 'companyProfile')}</Text>
             {!editMode && (
               <TouchableOpacity onPress={() => setEditMode(true)}>
-                <Icon name="pencil" type="ionicon" color="#007bff" />
+                <Icon name="pencil" type="ionicon" color={theme.colors.primary} />
               </TouchableOpacity>
             )}
           </View>
@@ -408,31 +409,31 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
           
           <View style={styles.statsContainer}>
             <View style={styles.statItem}>
-              <Icon name="people" type="ionicon" color="#007bff" size={24} />
+              <Icon name="people" type="ionicon" color={theme.colors.primary} size={theme.spacing.xxl} />
               <Text style={styles.statValue}>{summaryStats.totalAgents}</Text>
               <Text style={styles.statLabel}>{t('AdminCompanyProfileScreen', 'totalAgents')}</Text>
             </View>
             
             <View style={styles.statItem}>
-              <Icon name="eye-off" type="ionicon" color="#ffc107" size={24} />
+              <Icon name="eye-off" type="ionicon" color={theme.colors.accent} size={theme.spacing.xxl} />
               <Text style={styles.statValue}>{summaryStats.notViewedOffers}</Text>
               <Text style={styles.statLabel}>{t('AdminCompanyProfileScreen', 'notViewed')}</Text>
             </View>
             
             <View style={styles.statItem}>
-              <Icon name="eye" type="ionicon" color="#17a2b8" size={24} />
+              <Icon name="eye" type="ionicon" color={theme.colors.info} size={theme.spacing.xxl} />
               <Text style={styles.statValue}>{summaryStats.viewedOffers}</Text>
               <Text style={styles.statLabel}>{t('AdminCompanyProfileScreen', 'viewed')}</Text>
             </View>
             
             <View style={styles.statItem}>
-              <Icon name="close-circle" type="ionicon" color="#dc3545" size={24} />
+              <Icon name="close-circle" type="ionicon" color={theme.colors.error} size={theme.spacing.xxl}/>
               <Text style={styles.statValue}>{summaryStats.rejectedOffers}</Text>
               <Text style={styles.statLabel}>{t('AdminCompanyProfileScreen', 'rejected')}</Text>
             </View>
             
             <View style={styles.statItem}>
-              <Icon name="checkmark-circle" type="ionicon" color="#28a745" size={24} />
+              <Icon name="checkmark-circle" type="ionicon" color={theme.colors.success} size={theme.spacing.xxl} />
               <Text style={styles.statValue}>{summaryStats.acceptedOffers}</Text>
               <Text style={styles.statLabel}>{t('AdminCompanyProfileScreen', 'accepted')}</Text>
             </View>
@@ -442,7 +443,7 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
         {/* Delete Button */}
         <Button
           title={t('AdminCompanyProfileScreen', 'deleteCompany')}
-          icon={<Icon name="trash" type="ionicon" color="white" style={{ marginRight: 10 }} />}
+          icon={<Icon name="trash" type="ionicon"  color={theme.colors.textWhite} style={{ marginRight: theme.spacing.md }} />}
           buttonStyle={styles.deleteButton}
           containerStyle={styles.deleteButtonContainer}
           onPress={() => setDeleteConfirmVisible(true)}
@@ -548,14 +549,14 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
               <Switch
                 value={permittedToWork}
                 onValueChange={setPermittedToWork}
-                trackColor={{ false: "#767577", true: "#81b0ff" }}
-                thumbColor={permittedToWork ? "#f5dd4b" : "#f4f3f4"}
-              />
+                trackColor={{ false: theme.colors.textSecondary, true: theme.colors.primaryLight }}
+                thumbColor={permittedToWork ? theme.colors.switchThumbActive : theme.colors.switchThumbInactive}
+                />
             </View>
             
             <Button
               title={t('AdminCompanyProfileScreen', 'updateCompany')}
-              icon={<Icon name="save" type="ionicon" color="white" style={{ marginRight: 10 }} />}
+              icon={<Icon name="save" type="ionicon"  color={theme.colors.textWhite} style={{ marginRight: theme.spacing.md }} />}
               buttonStyle={styles.updateButton}
               onPress={handleUpdateCompany}
             />
@@ -563,7 +564,7 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
             <Button
               title={t('AdminCompanyProfileScreen', 'cancel')}
               type="outline"
-              icon={<Icon name="close" type="ionicon" color="#007bff" style={{ marginRight: 10 }} />}
+              icon={<Icon name="close" type="ionicon"  color={theme.colors.primary} style={{ marginRight: theme.spacing.md }} />}
               buttonStyle={styles.cancelButton}
               onPress={() => setEditMode(false)}
             />
@@ -582,13 +583,13 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
             <Button
               title={t('AdminCompanyProfileScreen', 'cancel')}
               type="outline"
-              icon={<Icon name="close" type="ionicon" color="#007bff" style={{ marginRight: 10 }} />}
+              icon={<Icon name="close" type="ionicon"  color={theme.colors.primary} style={{ marginRight: theme.spacing.md }} />}
               buttonStyle={styles.cancelButton}
               onPress={() => setDeleteConfirmVisible(false)}
             />
             <Button
               title={t('AdminCompanyProfileScreen', 'delete')}
-              icon={<Icon name="trash" type="ionicon" color="white" style={{ marginRight: 10 }} />}
+              icon={<Icon name="trash" type="ionicon"  color={theme.colors.textWhite} style={{ marginRight: theme.spacing.md }} />}
               buttonStyle={styles.deleteConfirmButton}
               loading={deleteLoading}
               onPress={handleDeleteCompany}
@@ -603,54 +604,60 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: theme.colors.background,
   },
   card: {
-    borderRadius: 10,
-    margin: 15,
-    padding: 15,
+    borderRadius: theme.borderRadius.md,
+    margin: theme.spacing.lg,
+    padding: theme.spacing.lg,
+    backgroundColor: theme.colors.backgroundWhite,
+    ...theme.shadows.card,
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: theme.spacing.lg,
   },
   cardTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: theme.typography.h3.fontSize,
+    fontWeight: theme.typography.h3.fontWeight,
+    color: theme.typography.h3.color,
   },
   divider: {
-    marginVertical: 15,
+    marginVertical: theme.spacing.lg,
+    backgroundColor: theme.colors.border,
   },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: theme.spacing.md,
   },
   label: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: theme.typography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.bold,
     width: 120,
+    color: theme.colors.text,
   },
   value: {
-    fontSize: 16,
-    color: '#333',
+    fontSize: theme.typography.fontSize.md,
+    color: theme.colors.text,
   },
   statusText: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: theme.typography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.bold,
   },
   activeStatus: {
-    color: '#28a745',
+    color: theme.colors.success,
   },
   inactiveStatus: {
-    color: '#dc3545',
+    color: theme.colors.error,
   },
   statsContainer: {
     flexDirection: 'row',
@@ -659,121 +666,131 @@ const styles = StyleSheet.create({
   },
   statItem: {
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: theme.spacing.lg,
   },
   statValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: theme.typography.statValue.fontSize,
+    fontWeight: theme.typography.statValue.fontWeight,
+    color: theme.typography.statValue.color,
   },
   statLabel: {
-    fontSize: 14,
-    color: '#6c757d',
+    fontSize: theme.typography.statLabel.fontSize,
+    color: theme.colors.textSecondary,
   },
   deleteButton: {
-    backgroundColor: '#dc3545',
-    borderRadius: 5,
+    backgroundColor: theme.colors.error,
+    borderRadius: theme.borderRadius.md,
   },
   deleteButtonContainer: {
-    marginHorizontal: 15,
-    marginBottom: 15,
+    marginHorizontal: theme.spacing.lg,
+    marginBottom: theme.spacing.huge,
   },
   overlay: {
-    borderRadius: 10,
-    padding: 20,
-    width: '90%',
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.xl,
+    width: theme.components.overlay.widthPercentage * 100 + '%',
+    backgroundColor: theme.colors.backgroundWhite,
   },
   overlayTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 20,
+    fontSize: theme.typography.h3.fontSize,
+    fontWeight: theme.typography.h3.fontWeight,
+    marginBottom: theme.spacing.xl,
     textAlign: 'center',
+    color: theme.typography.h3.color,
   },
   pickerLabel: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 5,
+    fontSize: theme.typography.pickerLabel.fontSize,
+    fontWeight: theme.typography.pickerLabel.fontWeight,
+    marginBottom: theme.typography.pickerLabel.marginBottom,
+    color: theme.typography.pickerLabel.color,
   },
   dropdown: {
-    height: 50,
-    borderColor: '#ccc',
-    borderWidth: 0.5,
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    marginBottom: 20,
-    backgroundColor: '#fff',
+    height: theme.components.input.height,
+    borderColor: theme.colors.border,
+    borderWidth: theme.components.input.borderWidth,
+    borderRadius: theme.borderRadius.md,
+    paddingHorizontal: theme.spacing.sm,
+    marginBottom: theme.spacing.xl,
+    backgroundColor: theme.colors.backgroundWhite,
   },
   placeholderStyle: {
-    fontSize: 16,
-    color: '#aaa',
+    fontSize: theme.typography.fontSize.md,
+    color: theme.colors.textLight,
   },
   selectedTextStyle: {
-    fontSize: 16,
+    fontSize: theme.typography.fontSize.md,
+    color: theme.colors.text,
   },
   inputSearchStyle: {
     height: 40,
-    fontSize: 16,
+    fontSize: theme.typography.fontSize.md,
   },
   iconStyle: {
-    width: 20,
-    height: 20,
+    width: theme.spacing.xl,
+    height: theme.spacing.xl,
   },
   switchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    marginBottom: theme.spacing.xl,
   },
   switchLabel: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: theme.typography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text,
   },
   updateButton: {
-    backgroundColor: '#28a745',
-    borderRadius: 5,
-    marginBottom: 10,
+    backgroundColor: theme.colors.success,
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.spacing.md,
   },
   cancelButton: {
     backgroundColor: 'transparent',
-    borderRadius: 5,
-    borderColor: '#007bff',
+    borderRadius: theme.borderRadius.md,
+    borderColor: theme.colors.primary,
     borderWidth: 1,
   },
   confirmOverlay: {
-    borderRadius: 10,
-    padding: 20,
-    width: '90%',
+    borderRadius: theme.components.confirmOverlay.borderRadius,
+    padding: theme.components.confirmOverlay.padding,
+    width: theme.components.confirmOverlay.widthPercentage * 100 + '%',
     alignItems: 'center',
+    backgroundColor: theme.colors.backgroundWhite,
   },
   confirmTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 15,
-    textAlign: 'center',
+    fontSize: theme.typography.confirmTitle.fontSize,
+    fontWeight: theme.typography.confirmTitle.fontWeight,
+    marginBottom: theme.typography.confirmTitle.marginBottom,
+    textAlign: theme.typography.confirmTitle.textAlign,
+    color: theme.typography.confirmTitle.color,
   },
   confirmMessage: {
-    fontSize: 16,
-    color: '#333',
-    marginBottom: 20,
-    textAlign: 'center',
+    fontSize: theme.typography.confirmMessage.fontSize,
+    color: theme.typography.confirmMessage.color,
+    marginBottom: theme.typography.confirmMessage.marginBottom,
+    textAlign: theme.typography.confirmMessage.textAlign,
   },
   confirmButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
+    gap: theme.spacing.md,
   },
   deleteConfirmButton: {
-    backgroundColor: '#dc3545',
-    borderRadius: 5,
+    backgroundColor: theme.colors.error,
+    borderRadius: theme.borderRadius.md,
+    flex: 1,
   },
   dropdownItem: {
-    padding: 10,
+    padding: theme.spacing.md,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   textItem: {
     flex: 1,
-    fontSize: 16,
+    fontSize: theme.typography.fontSize.md,
+    color: theme.colors.text,
   },
 });

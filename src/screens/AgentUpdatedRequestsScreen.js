@@ -14,6 +14,7 @@ import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser, signOut } from '../utils/auth';
 import { format } from 'date-fns';
 import {showAlert} from "../components/ShowAlert";
+import { theme, commonStyles, responsive, screenSize } from '../styles/theme';
 import { useTranslation } from '../config/localization';
 
 const AgentUpdatedRequestsScreen = ({ navigation }) => {
@@ -89,7 +90,7 @@ const AgentUpdatedRequestsScreen = ({ navigation }) => {
   if (loading && !refreshing) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
     );
   }
@@ -110,7 +111,7 @@ const AgentUpdatedRequestsScreen = ({ navigation }) => {
       {/* Info banner */}
       {updatedRequests.length > 0 && (
         <View style={styles.infoBanner}>
-          <Icon name="information-circle-outline" type="ionicon" color="#0066cc" size={20} />
+          <Icon name="information-circle-outline" type="ionicon" color={theme.colors.primary} size={theme.responsiveComponents.icon.medium} />
                       <Text style={styles.infoText}>
               {t('AgentUpdatedRequestsScreen', 'theseRequestsUpdated')}
             </Text>
@@ -123,13 +124,13 @@ const AgentUpdatedRequestsScreen = ({ navigation }) => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={["#0066cc"]}
+            colors={[theme.colors.primary]}
           />
         }
       >
         {updatedRequests.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Icon name="checkmark-circle-outline" type="ionicon" size={60} color="#28a745" />
+            <Icon name="checkmark-circle-outline" type="ionicon" size={responsive(50, 60, 60, 60, 60)} color={theme.colors.success} />
             <Text style={styles.emptyText}>{t('AgentUpdatedRequestsScreen', 'noUpdatedRequests')}</Text>
           </View>
         ) : (
@@ -156,7 +157,7 @@ const AgentUpdatedRequestsScreen = ({ navigation }) => {
               
               {/* Date Range */}
               <View style={styles.detailRow}>
-                <Icon name="calendar-outline" type="ionicon" size={16} color="#0066cc" />
+                <Icon name="calendar-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary}  />
                                   <Text style={styles.detailText}>
                     <Text style={styles.detailLabel}>{t('AgentUpdatedRequestsScreen', 'travelDates')}: </Text>
                     {formatDate(item.start_date)} - {formatDate(item.end_date)}
@@ -165,7 +166,7 @@ const AgentUpdatedRequestsScreen = ({ navigation }) => {
               
               {/* Travelers */}
               <View style={styles.detailRow}>
-                <Icon name="people-outline" type="ionicon" size={16} color="#0066cc" />
+                <Icon name="people-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
                                   <Text style={styles.detailText}>
                     <Text style={styles.detailLabel}>{t('AgentUpdatedRequestsScreen', 'travelers')}: </Text>
                     {item.adults} {item.adults === 1 ? t('AgentUpdatedRequestsScreen', 'adult') : t('AgentUpdatedRequestsScreen', 'adults')}
@@ -177,7 +178,7 @@ const AgentUpdatedRequestsScreen = ({ navigation }) => {
               
               {/* Nationality */}
               <View style={styles.detailRow}>
-                <Icon name="flag-outline" type="ionicon" size={16} color="#0066cc" />
+                <Icon name="flag-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
                                   <Text style={styles.detailText}>
                     <Text style={styles.detailLabel}>{t('AgentUpdatedRequestsScreen', 'nationality')}: </Text>
                     {item.travelers_nationality_name}
@@ -190,9 +191,9 @@ const AgentUpdatedRequestsScreen = ({ navigation }) => {
                   <Icon
                     name="arrow-forward-outline"
                     type="ionicon"
-                    color="#ffffff"
-                    size={16}
-                    style={{ marginRight: 10 }}
+                    color={theme.colors.textWhite}
+                    size={theme.responsiveComponents.icon.small}
+                    style={{ marginRight: theme.spacing.sm }}
                   />
                 }
                 buttonStyle={styles.viewButton}
@@ -209,7 +210,7 @@ const AgentUpdatedRequestsScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.background,
   },
   loadingContainer: {
     flex: 1,
@@ -220,100 +221,100 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
-    backgroundColor: '#ffffff',
+    padding: theme.spacing.lg,
+    backgroundColor: theme.colors.backgroundWhite,
     borderBottomWidth: 1,
-    borderBottomColor: '#e1e1e1',
+    borderBottomColor: theme.colors.borderLight,
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333333',
+    fontSize: theme.typography.fontSize.xl,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text,
   },
   badgeContainer: {
-    padding: 2,
+    padding: theme.components.badge.padding,
   },
   badgeText: {
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontSize: theme.components.badge.fontSize,
+    fontWeight: theme.components.badge.fontWeight,
   },
   infoBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#e6f2ff',
-    padding: 12,
-    marginHorizontal: 16,
-    marginTop: 16,
-    borderRadius: 8,
+    backgroundColor: theme.colors.primaryLight,
+    padding: theme.spacing.md,
+    marginHorizontal: theme.spacing.lg,
+    marginTop: theme.spacing.lg,
+    borderRadius: theme.borderRadius.md,
     borderLeftWidth: 4,
-    borderLeftColor: '#0066cc',
+    borderLeftColor: theme.colors.primary,
   },
   infoText: {
-    marginLeft: 8,
-    color: '#0066cc',
+    marginLeft: theme.spacing.sm,
+    color: theme.colors.primary,
     flex: 1,
+    fontSize: theme.typography.fontSize.sm,
   },
   scrollView: {
     flex: 1,
-    marginTop: 8,
+    marginTop: theme.spacing.sm,
   },
   card: {
-    borderRadius: 8,
-    marginBottom: 16,
-    padding: 12,
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.spacing.lg,
+    padding: theme.spacing.md,
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: theme.spacing.sm,
   },
   requestInfo: {
     flex: 1,
   },
   destination: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333333',
+    fontSize: theme.typography.fontSize.lg,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text,
   },
   updatedDate: {
-    fontSize: 12,
-    color: '#666666',
-    marginTop: 4,
+    fontSize: theme.typography.fontSize.xs,
+    color: theme.colors.textSecondary,
+    marginTop: theme.spacing.xs,
   },
   statusBadgeContainer: {
-    marginLeft: 8,
+    marginLeft: theme.spacing.sm,
   },
   detailRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: theme.spacing.sm,
   },
   detailText: {
-    marginLeft: 8,
-    fontSize: 14,
-    color: '#333333',
+    marginLeft: theme.spacing.sm,
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.text,
   },
   detailLabel: {
-    fontWeight: 'bold',
+    fontWeight: theme.typography.fontWeight.bold,
   },
   viewButton: {
-    backgroundColor: '#0066cc',
-    borderRadius: 8,
-    marginTop: 8,
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.md,
+    marginTop: theme.spacing.sm,
   },
   emptyContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 40,
+    padding: theme.spacing.huge,
   },
   emptyText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: '#666666',
+    marginTop: theme.spacing.lg,
+    fontSize: theme.typography.fontSize.lg,
+    color: theme.colors.textSecondary,
     textAlign: 'center',
   },
 });
-
 export default AgentUpdatedRequestsScreen;

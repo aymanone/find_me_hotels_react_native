@@ -7,6 +7,7 @@ import {inDateReq} from '../utils/dateUtils';
 import { checkUserRole, signOut, getCurrentUser } from '../utils/auth';
 import { Dropdown } from 'react-native-element-dropdown';
 import {showAlert} from "../components/ShowAlert";
+import { theme, commonStyles, screenSize, responsive } from '../styles//theme';
 import { useTranslation} from '../config/localization';
 
 export default function ClientTravelRequestDetailsScreen({ route, navigation }) {
@@ -170,7 +171,7 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#007bff" />
+       <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
     );
   }
@@ -376,7 +377,7 @@ ${requestUrl}`;
             );
           }}
         > 
-          <Icon name="edit" type="font-awesome" size={14} color="#007bff" />
+        <Icon name="edit" type="font-awesome" size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
           <Text style={styles.actionButtonText}>{t('ClientTravelRequestDetailsScreen', 'edit')}</Text>
         </TouchableOpacity>)}
 
@@ -384,7 +385,7 @@ ${requestUrl}`;
           style={[styles.actionButton, styles.deleteButton]}
           onPress={handleDeleteRequest}
         >
-          <Icon name="trash" type="font-awesome" size={14} color="#dc3545" />
+         <Icon name="trash" type="font-awesome" size={theme.responsiveComponents.icon.small} color={theme.colors.error} />
           <Text style={styles.actionButtonText}>{t('ClientTravelRequestDetailsScreen', 'delete')}</Text>
         </TouchableOpacity>
       </View>
@@ -397,11 +398,11 @@ ${requestUrl}`;
   >
     <Text h4 style={styles.sectionTitle}>{t('ClientTravelRequestDetailsScreen', 'requestDetails')}</Text>
     <Icon
-      name={requestSectionExpanded ? 'chevron-up' : 'chevron-down'}
-      type="font-awesome"
-      size={18}
-      color="#007bff"
-    />
+  name={requestSectionExpanded ? 'chevron-up' : 'chevron-down'}
+  type="font-awesome"
+  size={theme.responsiveComponents.icon.medium}
+  color={theme.colors.primary}
+/>
   </TouchableOpacity>
   
   <TouchableOpacity
@@ -411,8 +412,8 @@ ${requestUrl}`;
       <Icon 
   name="share-social-outline" 
   type="ionicon" 
-  color="#007bff" 
-  size={24}
+  color={theme.colors.primary}
+  size={theme.responsiveComponents.icon.large}
   />
   </TouchableOpacity>
 </View>
@@ -536,12 +537,12 @@ ${requestUrl}`;
           onPress={() => setOffersSectionExpanded(!offersSectionExpanded)}
         >
           <Text h4 style={styles.sectionTitle}>{t('ClientTravelRequestDetailsScreen', 'offers')} ({offers.length})</Text>
-          <Icon
-            name={offersSectionExpanded ? 'chevron-up' : 'chevron-down'}
-            type="font-awesome"
-            size={18}
-            color="#007bff"
-          />
+         <Icon
+  name={requestSectionExpanded ? 'chevron-up' : 'chevron-down'}
+  type="font-awesome"
+  size={theme.responsiveComponents.icon.medium}
+  color={theme.colors.primary}
+/>
         </TouchableOpacity>
 
         <View style={styles.refreshButtonContainer}>
@@ -594,7 +595,7 @@ ${requestUrl}`;
                   <View style={styles.offerHeader}>
                     <Text style={styles.offerTitle}>{t('ClientTravelRequestDetailsScreen', 'offer')} #{index + 1}</Text>
                     <View style={styles.statusContainer}>
-                      <Text style={[styles.statusText, { color: offer.status === 'not viewed' ? '#FFA500' : '#28a745' }]}>
+                   <Text style={[styles.statusText, { color: offer.status === 'not viewed' ? theme.colors.warning : theme.colors.success }]}>
                         {offerUpToDateState(offer)} {offer.status === 'not viewed' ? t('ClientTravelRequestDetailsScreen', 'notViewed') : offer.status}
                       </Text>
                     </View>
@@ -604,21 +605,21 @@ ${requestUrl}`;
 
                   <View style={styles.offerDetailsContainer}>
                     <View style={styles.offerDetailRow}>
-                      <Icon name="cash-outline" type="ionicon" size={16} color="#28a745" />
+                      <Icon name="cash-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary}  />
                       <Text style={styles.offerDetailText}>
                         {t('ClientTravelRequestDetailsScreen', 'priceRange')}: ${offer.min_cost} - ${offer.max_cost}
                       </Text>
                     </View>
 
                     <View style={styles.offerDetailRow}>
-                      <Icon name="star" type="ionicon" size={16} color="#FFD700" />
+                      <Icon name="star" type="ionicon" size={theme.responsiveComponents.icon.small} color="#FFD700" />
                       <Text style={styles.offerDetailText}>
                         {t('ClientTravelRequestDetailsScreen', 'hotelsRating')}: {offer.min_rating} - {offer.max_rating} {t('ClientTravelRequestDetailsScreen', 'stars')}
                       </Text>
                     </View>
 
                     <View style={styles.offerDetailRow}>
-                      <Icon name="business" type="ionicon" size={16} color="#007bff" />
+                      <Icon name="business" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary}/>
                       <Text style={styles.offerDetailText}>
                         {t('ClientTravelRequestDetailsScreen', 'numHotels')}: {offer.num_of_hotels}
                       </Text>
@@ -627,7 +628,7 @@ ${requestUrl}`;
 
                   <Button
                     title={t('ClientTravelRequestDetailsScreen', 'viewDetails')}
-                    icon={<Icon name="eye-outline" type="ionicon" color="#fff" size={16} style={styles.buttonIcon} />}
+                  icon={<Icon name="eye-outline" type="ionicon" color={theme.colors.textWhite} size={theme.responsiveComponents.icon.small} style={styles.buttonIcon} />}
                     buttonStyle={[
                       styles.viewDetailsButton,
                       visitedOffers[offer.id] && styles.visitedButton
@@ -649,45 +650,45 @@ ${requestUrl}`;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: theme.colors.background,
   },
   card: {
-    padding: 15,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
-    marginBottom: 15,
+    padding: theme.responsiveSpacing.md,
+    borderRadius: theme.borderRadius.md,
+    ...theme.shadows.md,
+    marginBottom: theme.responsiveSpacing.md,
+    marginHorizontal: theme.responsiveSpacing.sm,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#f9f9f9',
+    padding: theme.responsiveSpacing.lg,
+    backgroundColor: theme.colors.backgroundGray,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: theme.responsiveTypography.fontSize.lg,
+    fontWeight: theme.typography.fontWeight.bold,
     margin: 0,
+    color: theme.colors.text,
   },
   sectionContent: {
-    padding: 16,
+    padding: theme.responsiveSpacing.lg,
   },
   infoRow: {
-    flexDirection: 'row',
+    flexDirection: screenSize.isXSmall ? 'column' : 'row',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: theme.responsiveSpacing.md,
   },
   infoColumn: {
     flex: 1,
+    marginBottom: screenSize.isXSmall ? theme.spacing.sm : 0,
   },
   fullWidth: {
     width: '100%',
@@ -697,206 +698,199 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   infoLabel: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 4,
-    fontWeight: 'bold',
+    fontSize: theme.responsiveTypography.fontSize.sm,
+    color: theme.colors.textSecondary,
+    marginBottom: theme.spacing.xs,
+    fontWeight: theme.typography.fontWeight.semibold,
   },
   infoValue: {
-    fontSize: 16,
-    color: '#333',
+    fontSize: theme.responsiveTypography.fontSize.md,
+    color: theme.colors.text,
     marginBottom: 2,
   },
   divider: {
-    marginVertical: 12,
+    marginVertical: theme.responsiveSpacing.md,
+    backgroundColor: theme.colors.borderLight,
   },
   notesContainer: {
     maxHeight: 100,
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 4,
-    padding: 8,
+    borderColor: theme.colors.border,
+    borderRadius: theme.borderRadius.sm,
+    padding: theme.responsiveSpacing.sm,
+    backgroundColor: theme.colors.backgroundWhite,
   },
   notesText: {
-    fontSize: 14,
-    color: '#333',
-  },
-  text: {
-    fontSize: 16,
-    marginBottom: 5,
-  },
-  offerContainer: {
-    marginTop: 10,
-  },
-  offerText: {
-    fontSize: 14,
-    marginBottom: 3,
+    fontSize: theme.responsiveTypography.fontSize.sm,
+    color: theme.colors.text,
   },
   noOffersText: {
-    fontSize: 16,
+    fontSize: theme.responsiveTypography.fontSize.md,
     fontStyle: 'italic',
-    marginTop: 10,
+    color: theme.colors.textSecondary,
+    marginTop: theme.responsiveSpacing.md,
+    textAlign: 'center',
   },
   offerCard: {
-    borderRadius: 8,
-    marginBottom: 15,
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.responsiveSpacing.md,
     padding: 0,
     overflow: 'hidden',
+    ...theme.shadows.md,
   },
   offerHeader: {
-    flexDirection: 'row',
+    flexDirection: screenSize.isXSmall ? 'column' : 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 12,
-    backgroundColor: '#f9f9f9',
+    alignItems: screenSize.isXSmall ? 'flex-start' : 'center',
+    padding: theme.responsiveSpacing.md,
+    backgroundColor: theme.colors.backgroundGray,
   },
   offerTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: theme.responsiveTypography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text,
+    marginBottom: screenSize.isXSmall ? theme.spacing.xs : 0,
   },
   statusContainer: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    backgroundColor: '#f8f9fa',
+    paddingHorizontal: theme.responsiveSpacing.sm,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.borderRadius.lg,
+    backgroundColor: theme.colors.backgroundWhite,
   },
   statusText: {
-    fontSize: 12,
-    fontWeight: 'bold',
+    fontSize: theme.responsiveTypography.fontSize.xs,
+    fontWeight: theme.typography.fontWeight.bold,
   },
   offerDetailsContainer: {
-    padding: 12,
+    padding: theme.responsiveSpacing.md,
   },
   offerDetailRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: theme.spacing.sm,
   },
   offerDetailText: {
-    marginLeft: 8,
-    fontSize: 14,
+    marginLeft: theme.spacing.sm,
+    fontSize: theme.responsiveTypography.fontSize.sm,
+    color: theme.colors.text,
   },
   viewDetailsButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: theme.colors.primary,
     borderRadius: 0,
-    marginTop: 8,
+    marginTop: theme.spacing.sm,
   },
   buttonIcon: {
-    marginRight: 8,
-  },
-  sectionHeaderWithButton: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#f9f9f9',
-  },
-  sectionTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
+    marginRight: theme.spacing.sm,
   },
   refreshButtonContainer: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    paddingHorizontal: 16,
+    paddingHorizontal: theme.responsiveSpacing.lg,
     paddingTop: 0,
-    paddingBottom: 8,
-    backgroundColor: '#f9f9f9',
+    paddingBottom: theme.responsiveSpacing.sm,
+    backgroundColor: theme.colors.backgroundGray,
   },
   refreshButton: {
-    paddingHorizontal: 10,
-    height: 36,
-    borderColor: '#007bff',
+    paddingHorizontal: theme.responsiveSpacing.sm,
+    height: responsive(32, 36, 36, 36, 36),
+    borderColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.sm,
   },
   refreshButtonText: {
-    fontSize: 12,
-    color: '#007bff',
+    fontSize: theme.responsiveTypography.fontSize.xs,
+    color: theme.colors.primary,
   },
   visitedButton: {
-    backgroundColor: '#6c757d',  // Gray color for visited buttons
+    backgroundColor: theme.colors.textSecondary,
   },
   actionButtonsContainer: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    backgroundColor: '#fff',
+    paddingHorizontal: theme.responsiveSpacing.md,
+    paddingVertical: theme.responsiveSpacing.sm,
+    backgroundColor: theme.colors.backgroundWhite,
+    flexWrap: 'wrap',
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 4,
-    marginLeft: 10,
+    paddingVertical: responsive(6, 8, 8, 8, 8),
+    paddingHorizontal: responsive(8, 12, 12, 12, 12),
+    borderRadius: theme.borderRadius.sm,
+    marginLeft: theme.spacing.sm,
     borderWidth: 1,
+    marginBottom: theme.spacing.xs,
   },
   editButton: {
-    backgroundColor: '#f8f9fa',
-    borderColor: '#007bff',
+    backgroundColor: theme.colors.backgroundGray,
+    borderColor: theme.colors.primary,
   },
   deleteButton: {
-    backgroundColor: '#f8f9fa',
-    borderColor: '#dc3545',
+    backgroundColor: theme.colors.backgroundGray,
+    borderColor: theme.colors.error,
   },
   actionButtonText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    marginLeft: 5,
+    fontSize: theme.responsiveTypography.fontSize.sm,
+    fontWeight: theme.typography.fontWeight.bold,
+    marginLeft: theme.spacing.xs,
+    color: theme.colors.text,
   },
   sortContainer: {
-    marginBottom: 15,
-    padding: 10,
-    backgroundColor: '#f9f9f9',
-    borderRadius: 8,
+    marginBottom: theme.responsiveSpacing.md,
+    padding: theme.responsiveSpacing.sm,
+    backgroundColor: theme.colors.backgroundGray,
+    borderRadius: theme.borderRadius.md,
   },
   sortLabel: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginBottom: 8,
+    fontSize: theme.responsiveTypography.fontSize.sm,
+    fontWeight: theme.typography.fontWeight.bold,
+    marginBottom: theme.responsiveSpacing.sm,
+    color: theme.colors.text,
   },
   sortDropdownsContainer: {
-    flexDirection: 'row',
+    flexDirection: screenSize.isXSmall ? 'column' : 'row',
     justifyContent: 'space-between',
   },
   sortDropdown: {
-    width: '48%',
-    height: 40,
-    borderColor: '#ccc',
+    width: screenSize.isXSmall ? '100%' : '48%',
+    height: responsive(38, 40, 40, 40, 40),
+    borderColor: theme.colors.border,
     borderWidth: 1,
-    borderRadius: 4,
-    paddingHorizontal: 8,
+    borderRadius: theme.borderRadius.sm,
+    paddingHorizontal: theme.responsiveSpacing.sm,
+    backgroundColor: theme.colors.backgroundWhite,
+    marginBottom: screenSize.isXSmall ? theme.spacing.sm : 0,
   },
   dropdownPlaceholder: {
-    fontSize: 14,
-    color: '#999',
+    fontSize: theme.responsiveTypography.fontSize.sm,
+    color: theme.colors.textLight,
   },
   dropdownSelectedText: {
-    fontSize: 14,
-    color: '#333',
+    fontSize: theme.responsiveTypography.fontSize.sm,
+    color: theme.colors.text,
   },
   dropdownContainer: {
-    backgroundColor: '#f9f9f9',
-    borderRadius: 4,
+    backgroundColor: theme.colors.backgroundWhite,
+    borderRadius: theme.borderRadius.sm,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: theme.colors.border,
   },
   sectionHeaderWithShare: {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  padding: 16,
-  backgroundColor: '#f9f9f9',
-},
-sectionHeaderTouch: {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  flex: 1,
-},
-shareButton: {
-  padding: 8,
-  marginLeft: 10,
-},
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: theme.responsiveSpacing.lg,
+    backgroundColor: theme.colors.backgroundGray,
+  },
+  sectionHeaderTouch: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flex: 1,
+  },
+  shareButton: {
+    padding: theme.responsiveSpacing.sm,
+    marginLeft: theme.spacing.sm,
+  },
 });
+

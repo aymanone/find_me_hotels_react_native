@@ -4,6 +4,7 @@ import { Button, Input, Text } from 'react-native-elements';
 import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser,notAllowedAuthenticatedUser } from '../utils/auth';
 import {showAlert} from "../components/ShowAlert";
+import { theme, commonStyles, responsive, screenSize } from '../styles/theme';
 import { useTranslation } from '../config/localization';
 import LanguageSelector from '../components/LanguageSelector';
 
@@ -55,7 +56,7 @@ useEffect(() => {
       <View style={styles.languageSelectorContainer}>
         <LanguageSelector />
       </View>
-      <Text h3 style={styles.title}>{t('SigninScreen', 'title')}</Text>
+      <Text  style={styles.title}>{t('SigninScreen', 'title')}</Text>
       <Input
         placeholder={t('SigninScreen', 'email')}
         onChangeText={setEmail}
@@ -67,11 +68,13 @@ useEffect(() => {
         onChangeText={setPassword}
         value={password}
         secureTextEntry={!showPassword}
-       rightIcon={{ 
+        rightIcon={{ 
           type: 'font-awesome',
           name: showPassword ? 'eye-slash' : 'eye',
+          size: theme.responsiveComponents.icon.medium,
+          color: theme.colors.textSecondary,
           onPress: () => setShowPassword(!showPassword)
-        }}
+      }}
       />
       <Button
         title={t('SigninScreen', 'login')}
@@ -102,17 +105,23 @@ useEffect(() => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    padding: theme.spacing.xl,
     justifyContent: 'center',
+    backgroundColor: theme.colors.backgroundWhite,
   },
+  
   languageSelectorContainer: {
     position: 'absolute',
-    top: 50,
-    right: 20,
+    top: responsive(40, 50, 50, 50, 50),
+    right: theme.spacing.xl,
     zIndex: 1,
   },
+  
   title: {
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: theme.spacing.xl,
+    fontSize: theme.responsiveTypography.h3.fontSize,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text,
   },
 });

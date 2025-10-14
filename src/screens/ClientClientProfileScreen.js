@@ -21,6 +21,7 @@ import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser, signOut } from '../utils/auth';
 import { validPasswordSignup } from '../utils/validation';
 import { showAlert } from "../components/ShowAlert";
+import { theme, commonStyles, responsive, screenSize } from '../styles/theme';
 import {  useTranslation } from '../config/localization';
 
 export default function ClientClientProfileScreen({ navigation }) {
@@ -271,7 +272,7 @@ export default function ClientClientProfileScreen({ navigation }) {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
     );
   }
@@ -380,7 +381,7 @@ export default function ClientClientProfileScreen({ navigation }) {
                 
                 <Button
                   title={t('ClientClientProfileScreen', 'editProfile')}
-                  icon={<Icon name="edit" type="material" color="white" size={20} style={styles.buttonIcon} />}
+                  icon={<Icon name="edit" type="material" color={theme.colors.textWhite} size={theme.responsiveComponents.icon.medium} style={styles.buttonIcon} />}
                   onPress={() => setIsEditing(true)}
                   containerStyle={styles.fullButtonContainer}
                 />
@@ -403,10 +404,12 @@ export default function ClientClientProfileScreen({ navigation }) {
                   placeholder={t('ClientClientProfileScreen', 'enterNewPassword')}
                   secureTextEntry={!showPassword}
                   rightIcon={
-                    <Icon
-                      name={showPassword ? 'eye-off' : 'eye'}
-                      type="ionicon"
-                      onPress={() => setShowPassword(!showPassword)}
+                   <Icon
+                     name={showPassword ? 'eye-off' : 'eye'}
+                     type="ionicon"
+                     color={theme.colors.textSecondary}
+                     size={theme.responsiveComponents.icon.medium}
+                     onPress={() => setShowPassword(!showPassword)}
                     />
                   }
                   containerStyle={styles.inputContainer}
@@ -443,7 +446,7 @@ export default function ClientClientProfileScreen({ navigation }) {
             ) : (
               <Button
                 title={t('ClientClientProfileScreen', 'changePassword')}
-                icon={<Icon name="lock" type="material" color="white" size={20} style={styles.buttonIcon} />}
+                icon={<Icon name="lock" type="material" color={theme.colors.textWhite} size={theme.responsiveComponents.icon.medium} style={styles.buttonIcon} />}
                 onPress={() => setIsChangingPassword(true)}
                 containerStyle={styles.fullButtonContainer}
               />
@@ -457,7 +460,7 @@ export default function ClientClientProfileScreen({ navigation }) {
             <Text style={styles.sectionTitle}>{t('ClientClientProfileScreen', 'dangerZone')}</Text>
             <Button
               title={t('ClientClientProfileScreen', 'deleteAccount')}
-              icon={<Icon name="delete" type="material" color="white" size={20} style={styles.buttonIcon} />}
+              icon={<Icon name="delete" type="material" color={theme.colors.textWhite} size={theme.responsiveComponents.icon.medium} style={styles.buttonIcon} />}
               buttonStyle={styles.deleteButton}
               onPress={confirmDeleteAccount}
               containerStyle={styles.fullButtonContainer}
@@ -472,116 +475,154 @@ export default function ClientClientProfileScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.background,
   },
+  
   scrollContainer: {
     flexGrow: 1,
-    padding: 15,
+    padding: theme.spacing.lg,
   },
+  
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: theme.colors.background,
   },
+  
   card: {
-    borderRadius: 10,
-    padding: 15,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.lg,
+    ...theme.shadows.card,
   },
+  
   cardTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
+    fontSize: theme.responsiveTypography.h2.fontSize,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text,
   },
+  
   divider: {
-    marginVertical: 15,
+    height: 1,
+    backgroundColor: theme.colors.borderLight,
+    marginVertical: theme.spacing.lg,
   },
+  
   section: {
-    marginBottom: 20,
+    marginBottom: theme.spacing.xl,
   },
+  
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 15,
+    fontSize: theme.responsiveTypography.h3.fontSize,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text,
+    marginBottom: theme.spacing.lg,
   },
+  
   inputContainer: {
-    marginBottom: 10,
+    marginBottom: theme.spacing.sm,
   },
+  
   pickerLabel: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#86939e',
-    marginLeft: 10,
-    marginBottom: 5,
+    fontSize: theme.responsiveTypography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.textLight,
+    marginLeft: theme.spacing.sm,
+    marginBottom: theme.spacing.xs,
   },
+  
   pickerContainer: {
     borderWidth: 1,
-    borderColor: '#e1e1e1',
-    borderRadius: 5,
-    marginBottom: 20,
-    marginHorizontal: 10,
+    borderColor: theme.colors.borderLight,
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.spacing.xl,
+    marginHorizontal: theme.spacing.sm,
   },
-  picker: {
-  },
+  
   dropdown: {
-    height: 50,
-    borderColor: '#ccc',
-    borderWidth: 0.5,
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    marginBottom: 20,
-    marginHorizontal: 10,
-    backgroundColor: '#fff',
+    height: theme.responsiveComponents.input.height,
+    borderColor: theme.colors.border,
+    borderWidth: 1,
+    borderRadius: theme.borderRadius.md,
+    paddingHorizontal: theme.spacing.sm,
+    marginBottom: theme.spacing.xl,
+    marginHorizontal: theme.spacing.sm,
+    backgroundColor: theme.colors.backgroundWhite,
   },
+  
   placeholderStyle: {
-    fontSize: 16,
-    color: '#aaa',
+    fontSize: theme.responsiveTypography.fontSize.md,
+    color: theme.colors.textLight,
   },
+  
   selectedTextStyle: {
-    fontSize: 16,
+    fontSize: theme.responsiveTypography.fontSize.md,
+    color: theme.colors.text,
   },
+  
   inputSearchStyle: {
     height: 40,
-    fontSize: 16,
+    fontSize: theme.responsiveTypography.fontSize.md,
   },
+  
   iconStyle: {
-    width: 20,
-    height: 20,
+    width: theme.responsiveComponents.icon.medium,
+    height: theme.responsiveComponents.icon.medium,
   },
+  
   dropdownItem: {
-    padding: 10,
+    padding: theme.spacing.sm,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  
   textItem: {
     flex: 1,
-    fontSize: 16,
+    fontSize: theme.responsiveTypography.fontSize.md,
+    color: theme.colors.text,
   },
+  
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: theme.spacing.sm,
+    alignItems: 'center',
   },
+  
   infoLabel: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: theme.responsiveTypography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text,
   },
+  
   infoValue: {
-    fontSize: 16,
+    fontSize: theme.responsiveTypography.fontSize.md,
+    color: theme.colors.textSecondary,
+    flex: 1,
+    textAlign: 'right',
   },
+  
   buttonRow: {
-    flexDirection: 'row',
+    flexDirection: screenSize.isXSmall ? 'column' : 'row',
     justifyContent: 'space-between',
+    gap: theme.spacing.sm,
   },
+  
   buttonContainer: {
-    width: '48%',
+    width: screenSize.isXSmall ? '100%' : '48%',
   },
+  
   fullButtonContainer: {
     width: '100%',
   },
+  
   buttonIcon: {
-    marginRight: 5,
+    marginRight: theme.spacing.xs,
   },
+  
   deleteButton: {
-    backgroundColor: 'red',
+    backgroundColor: theme.colors.error,
+    borderRadius: theme.borderRadius.md,
   },
 });

@@ -1,27 +1,25 @@
-import { View, StyleSheet, ScrollView, Platform, Alert ,KeyboardAvoidingView} from 'react-native';
-import React, { useState, useEffect ,useRef} from 'react';
+import { View, StyleSheet, ScrollView, Platform, Alert, KeyboardAvoidingView } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
 import supabase from '../config/supabase';
 import { Button, Input, Text, CheckBox } from 'react-native-elements';
 import { Dropdown } from 'react-native-element-dropdown';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
-import { checkUserRole, getCurrentUser,signOut} from '../utils/auth';
-import { removeFirstOccurrence } from '../utils/arrayUtils';  
-import {showAlert} from "../components/ShowAlert";
-import {unsubscribeChannels} from '../utils/channelUtils.js'; // Import the unsubscribe function
-import {  useTranslation } from '../config/localization';
+import { checkUserRole, getCurrentUser, signOut } from '../utils/auth';
+import { removeFirstOccurrence } from '../utils/arrayUtils';
+import { showAlert } from "../components/ShowAlert";
+import { unsubscribeChannels } from '../utils/channelUtils.js';
+import { useTranslation } from '../config/localization';
+import { theme, commonStyles,screenSize, responsive } from '../styles/theme';
 
 export default function TravelRequestForm({ navigation, route }) {
-  // Check if we're editing an existing request
-   const { t,language } = useTranslation();
+  const { t, language } = useTranslation();
 
-  // Check if user is client
   useEffect(() => {
     checkUserRole("client", navigation, "Signin");
   }, [navigation]);
 
-  // State variables
-  const channelsRef=useRef([]);
+  const channelsRef = useRef([]);
   const [isEditing, setIsEditing] = useState(!!route?.params?.requestId);
   const [requestId, setRequestId] = useState(route?.params?.requestId);
   const [allCountries, setAllCountries] = useState([]);
@@ -30,14 +28,12 @@ export default function TravelRequestForm({ navigation, route }) {
   const [initialLoading, setInitialLoading] = useState(isEditing);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
-  
-  // References to dropdowns for resetting
+
   const countryDropdownRef = useRef(null);
   const areaDropdownRef = useRef(null);
   const nationalityDropdownRef = useRef(null);
   const preferredAgentsDropdownRef = useRef(null);
-  
-  // Form data
+
   const [formData, setFormData] = useState({
     startDate: new Date(),
     endDate: new Date(new Date().setDate(new Date().getDate() + 1)),
@@ -55,7 +51,6 @@ export default function TravelRequestForm({ navigation, route }) {
     notes: ''
   });
 
-  // Prepare data for dropdowns
   const hotelRatings = Array.from({ length: 8 }, (_, i) => ({
     label: t('TravelRequestForm', 'starsLabel', { value: i }),
     value: i
@@ -65,17 +60,16 @@ export default function TravelRequestForm({ navigation, route }) {
     label: t('TravelRequestForm', 'yearsLabel', { age: i }),
     value: i
   }));
-  
-  const resetForm = ()=>{
-         setIsEditing(false);
-         setRequestId(null);
+
+  const resetForm = () => {
+    setIsEditing(false);
+    setRequestId(null);
   }
-  
-  // Fetch existing request data when editing
+
   useEffect(() => {
     const fetchRequestData = async () => {
       if (!isEditing) return;
-      
+
       try {
         setInitialLoading(true);
         const user = await getCurrentUser();
@@ -98,21 +92,22 @@ export default function TravelRequestForm({ navigation, route }) {
             navigation.goBack();
           } else {
             showAlert(
-              t('TravelRequestForm', 'error'), 
+              t('TravelRequestForm', 'error'),
               t('TravelRequestForm', 'failedLoadRequestData'),
               [
-                { text: t('TravelRequestForm', 'tryAgain'), onPress: () => {
-                 setTimeout(() => fetchRequestData(), 100);
-                }  },
+                {
+                  text: t('TravelRequestForm', 'tryAgain'), onPress: () => {
+                    setTimeout(() => fetchRequestData(), 100);
+                  }
+                },
                 { text: t('TravelRequestForm', 'cancel'), style: 'cancel' }
               ]
-            ); 
+            );
           }
-         
+
           return;
         }
 
-        // Check if request has offers (prevent editing)
         const { data: offers, error: offersError } = await supabase
           .from('offers')
           .select('id')
@@ -124,7 +119,6 @@ export default function TravelRequestForm({ navigation, route }) {
           return;
         }
 
-        // Populate form with existing data
         setFormData({
           startDate: new Date(request.start_date),
           endDate: new Date(request.end_date),
@@ -153,7 +147,6 @@ export default function TravelRequestForm({ navigation, route }) {
     fetchRequestData();
   }, [isEditing, requestId, navigation]);
 
-  // Fetch countries data
   useEffect(() => {
     const fetchCountries = async () => {
       try {
@@ -161,7 +154,7 @@ export default function TravelRequestForm({ navigation, route }) {
           .from('minimum_countries_info')
           .select('*')
           .order('country_name');
-        
+
         if (error) throw error;
         setAllCountries(data);
       } catch (error) {
@@ -176,7 +169,6 @@ export default function TravelRequestForm({ navigation, route }) {
     };
   }, []);
 
-  // Fetch areas when country is selected
   useEffect(() => {
     const fetchAreas = async () => {
       if (!formData.requestCountry) {
@@ -191,7 +183,7 @@ export default function TravelRequestForm({ navigation, route }) {
           .eq('country_id', formData.requestCountry)
           .eq('can_visit', true)
           .order('area_name');
-        
+
         if (error) throw error;
         setAreas(data);
       } catch (error) {
@@ -202,20 +194,18 @@ export default function TravelRequestForm({ navigation, route }) {
     fetchAreas();
   }, [formData.requestCountry]);
 
-  // Handle date changes
   const onStartDateChange = (event, selectedDate) => {
     setShowStartDatePicker(false);
     if (selectedDate) {
       const currentEndDate = formData.endDate;
       let newEndDate = currentEndDate;
-      
-      // If end date is before or equal to new start date, set end date to start date + 1 day
+
       if (currentEndDate <= selectedDate) {
         const nextDay = new Date(selectedDate);
         nextDay.setDate(nextDay.getDate() + 1);
         newEndDate = nextDay;
       }
-      
+
       setFormData({
         ...formData,
         startDate: selectedDate,
@@ -234,7 +224,6 @@ export default function TravelRequestForm({ navigation, route }) {
     }
   };
 
-  // Handle adding/removing children
   const addChild = (age) => {
     setFormData({
       ...formData,
@@ -249,24 +238,22 @@ export default function TravelRequestForm({ navigation, route }) {
     });
   }
 
-  // Handle meal selection
   const toggleMeal = (meal) => {
     const meals = [...formData.meals];
     const index = meals.indexOf(meal);
-    
+
     if (index === -1) {
       meals.push(meal);
     } else {
       meals.splice(index, 1);
     }
-    
+
     setFormData({
       ...formData,
       meals
     });
   };
 
-  // Handle preferred agent country selection
   const addPreferredAgentCountry = (countryId) => {
     if (formData.preferredAgentsCountries.length < 2 && !formData.preferredAgentsCountries.includes(countryId)) {
       setFormData({
@@ -283,12 +270,10 @@ export default function TravelRequestForm({ navigation, route }) {
     });
   };
 
-  // Submit form
   const handleSubmit = async () => {
-      
+
     try {
-      // Basic form validation
-      const today= new Date().setHours(0,0,0,0);
+      const today = new Date().setHours(0, 0, 0, 0);
       if (formData.startDate < new Date(today)) {
         showAlert(t('TravelRequestForm', 'datesNotValid'));
         return;
@@ -327,13 +312,13 @@ export default function TravelRequestForm({ navigation, route }) {
       }
       if (!formData.travelersNationality) {
         showAlert(t('TravelRequestForm', 'pleaseSelectTravelersNationality'));
-         return;
+        return;
       }
       if (formData.preferredAgentsCountries.length === 0) {
         showAlert(t('TravelRequestForm', 'pleaseChooseAtLeastOneCountryWhereYouCanPayAgents'));
         return;
       }
-      
+
       setLoading(true);
       const user = await getCurrentUser();
       if (!user) {
@@ -341,117 +326,100 @@ export default function TravelRequestForm({ navigation, route }) {
         await signOut(navigation);
         return;
       }
-      
-      // Refresh all countries data to ensure we have the latest status
+
       const { data: refreshedCountries, error: countriesError } = await supabase
         .from('minimum_countries_info')
         .select('*')
         .order('country_name');
-      
-      // Update the countries state with fresh data
+
       setAllCountries(refreshedCountries);
-      if (countriesError){ 
+      if (countriesError) {
         showAlert(t('TravelRequestForm', 'failedValidateCountries'));
         return;
       }
-      
-      // Validate destination country
+
       const destinationCountry = refreshedCountries.find(c => c.id === formData.requestCountry);
       if (!destinationCountry || !destinationCountry.can_visit) {
-        // Reset country and area selections
         setFormData(prev => ({
           ...prev,
           requestCountry: null,
           requestArea: null
         }));
-        
-        // Reset dropdown UI states
+
         if (countryDropdownRef.current) {
           countryDropdownRef.current.reset();
         }
         if (areaDropdownRef.current) {
           areaDropdownRef.current.reset();
         }
-        
+
         showAlert(t('TravelRequestForm', 'selectedDestinationCountryNoLongerAvailable'));
         return;
       }
-      
-      // Validate nationality country
+
       const nationalityCountry = refreshedCountries.find(c => c.id === formData.travelersNationality);
       if (!nationalityCountry || !nationalityCountry.citizens_can_travel) {
-        // Reset nationality selection
         setFormData(prev => ({
           ...prev,
           travelersNationality: null
         }));
-        
-        // Reset dropdown UI state
+
         if (nationalityDropdownRef.current) {
           nationalityDropdownRef.current.reset();
         }
-        
+
         showAlert(t('TravelRequestForm', 'selectedNationalityNoLongerAllowedToTravel'));
         return;
       }
-      
-      // Validate preferred agent countries
+
       if (formData.preferredAgentsCountries.length > 0) {
         const invalidAgentCountries = formData.preferredAgentsCountries.filter(
           countryId => !refreshedCountries.some(c => c.id === countryId)
         );
-        
+
         if (invalidAgentCountries.length > 0) {
-          // Reset invalid preferred agent countries
           setFormData(prev => ({
             ...prev,
             preferredAgentsCountries: []
           }));
-          
-          // Reset dropdown UI state
+
           if (preferredAgentsDropdownRef.current) {
             preferredAgentsDropdownRef.current.reset();
           }
-          
+
           showAlert(t('TravelRequestForm', 'somePreferredAgentCountriesNoLongerAvailable'));
           return;
         }
       }
-      
-      // Refresh areas data for the selected country
+
       const { data: refreshedAreas, error: areasError } = await supabase
         .from('areas')
         .select('*')
         .eq('country_id', formData.requestCountry)
         .eq('can_visit', true)
         .order('area_name');
-      
-      // Update the areas state with fresh data
+
       setAreas(refreshedAreas);
       if (areasError) {
         showAlert(t('TravelRequestForm', 'failedValidateAreas'));
         return;
       }
-      
-      // Validate area
+
       const selectedArea = refreshedAreas.find(a => a.id === formData.requestArea);
       if (!selectedArea) {
-        // Reset area selection
         setFormData(prev => ({
           ...prev,
           requestArea: null
         }));
-        
-        // Reset dropdown UI state
+
         if (areaDropdownRef.current) {
           areaDropdownRef.current.reset();
         }
-        
+
         showAlert(t('TravelRequestForm', 'selectedAreaNoLongerAvailable'));
         return;
       }
 
-      // Prepare data for insert/update
       const requestData = {
         adults: parseInt(formData.numOfAdults),
         children: formData.requestChildren,
@@ -467,22 +435,20 @@ export default function TravelRequestForm({ navigation, route }) {
         travelers_nationality: formData.travelersNationality,
         meals: formData.meals,
         preferred_agents_countries: formData.preferredAgentsCountries,
-        updated_at : new Date().toISOString(),
-            };
+        updated_at: new Date().toISOString(),
+      };
 
       let error;
-      
+
       if (isEditing) {
-        // Update existing request
         const updateResult = await supabase
           .from('travel_requests')
           .update(requestData)
           .eq('id', requestId)
           .eq('creator_id', user.id);
         error = updateResult.error;
-        
+
       } else {
-        // Create new request
         const insertResult = await supabase
           .from('travel_requests')
           .insert([{
@@ -490,26 +456,25 @@ export default function TravelRequestForm({ navigation, route }) {
             creator_id: user.id
           }]);
         error = insertResult.error;
-      
+
       }
 
-      if (error){
+      if (error) {
         throw error;
       }
-      
+
       showAlert(
-        t('TravelRequestForm', 'success'), 
+        t('TravelRequestForm', 'success'),
         isEditing ? t('TravelRequestForm', 'travelRequestUpdatedSuccessfully') : t('TravelRequestForm', 'travelRequestSubmittedSuccessfully')
       );
-      
-      // Wait for 3 seconds before navigating
+
       setTimeout(() => {
-          navigation.reset({
+        navigation.reset({
           index: 0,
           routes: [{ name: 'Requests' }],
-  });
+        });
       }, 3000);
-      
+
     } catch (error) {
       showAlert(t('TravelRequestForm', 'error'), t('TravelRequestForm', 'anErrorHappenedPleaseTryAgain'));
     } finally {
@@ -517,32 +482,29 @@ export default function TravelRequestForm({ navigation, route }) {
     }
   };
 
-  // Show loading screen while fetching request data
   if (initialLoading) {
     return (
-      <View style={[styles.container, styles.loadingContainer]}>
+      <View style={[styles.container, commonStyles.loadingContainer]}>
         <Text>{t('TravelRequestForm', 'loadingRequestData')}</Text>
       </View>
     );
   }
-  
+
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 40}
     >
-      <ScrollView style={styles.container} 
+      <ScrollView style={styles.container}
         keyboardShouldPersistTaps="handled"
       >
         <Text h4 style={styles.title}>
           {isEditing ? t('TravelRequestForm', 'editTravelRequest') : t('TravelRequestForm', 'newTravelRequest')}
         </Text>
-        
-        {/* Dates Row */}
+
         <View style={styles.row}>
           {Platform.OS === 'web' ? (
-            // WEB VERSION - Both dates
             <>
               <View style={styles.halfWidth}>
                 <Text style={styles.label}>{t('TravelRequestForm', 'startDate')}</Text>
@@ -558,7 +520,7 @@ export default function TravelRequestForm({ navigation, route }) {
                   style={styles.webDateInput}
                 />
               </View>
-              
+
               <View style={styles.halfWidth}>
                 <Text style={styles.label}>{t('TravelRequestForm', 'endDate')}</Text>
                 <input
@@ -575,7 +537,6 @@ export default function TravelRequestForm({ navigation, route }) {
               </View>
             </>
           ) : (
-            // MOBILE VERSION - Both dates with pickers
             <>
               <View style={styles.halfWidth}>
                 <Text style={styles.label}>{t('TravelRequestForm', 'startDate')}</Text>
@@ -596,7 +557,7 @@ export default function TravelRequestForm({ navigation, route }) {
                   />
                 )}
               </View>
-              
+
               <View style={styles.halfWidth}>
                 <Text style={styles.label}>{t('TravelRequestForm', 'endDate')}</Text>
                 <Button
@@ -619,8 +580,7 @@ export default function TravelRequestForm({ navigation, route }) {
             </>
           )}
         </View>
-        
-        {/* Destinations Row */}
+
         <View style={styles.row}>
           <View style={styles.halfWidth}>
             <Text style={styles.label}>{t('TravelRequestForm', 'destinationCountry')}</Text>
@@ -650,7 +610,7 @@ export default function TravelRequestForm({ navigation, route }) {
               searchPlaceholder={t('TravelRequestForm', 'searchCountry')}
             />
           </View>
-          
+
           <View style={styles.halfWidth}>
             <Text style={styles.label}>{t('TravelRequestForm', 'destinationArea')}</Text>
             <Dropdown
@@ -678,8 +638,7 @@ export default function TravelRequestForm({ navigation, route }) {
             />
           </View>
         </View>
-        
-        {/* Travelers Row */}
+
         <View style={styles.row}>
           <View style={styles.halfWidth}>
             <Text style={styles.label}>{t('TravelRequestForm', 'numberOfAdults')}</Text>
@@ -689,7 +648,7 @@ export default function TravelRequestForm({ navigation, route }) {
               onChangeText={(text) => {
                 const value = text.replace(/[^0-9]/g, '');
                 if (value === '' || (parseInt(value) >= 1 && parseInt(value) <= 1000)) {
-                  setFormData({...formData, numOfAdults: value});
+                  setFormData({ ...formData, numOfAdults: value });
                 }
               }}
               containerStyle={styles.input}
@@ -697,7 +656,7 @@ export default function TravelRequestForm({ navigation, route }) {
               inputStyle={styles.inputStyle}
             />
           </View>
-          
+
           <View style={styles.halfWidth}>
             <Text style={styles.label}>{t('TravelRequestForm', 'addChild')}</Text>
             <Dropdown
@@ -712,17 +671,16 @@ export default function TravelRequestForm({ navigation, route }) {
             />
           </View>
         </View>
-        
-        {/* Children Row (if any) */}
+
         {formData.requestChildren.length > 0 && (
           <View style={styles.childrenContainer}>
             <Text style={styles.label}>{t('TravelRequestForm', 'children')}</Text>
             <View style={styles.childrenList}>
-              {formData.requestChildren.map((age,index )=> (
+              {formData.requestChildren.map((age, index) => (
                 <View key={`${age}-${index}`} style={styles.childTag}>
                   <Text style={styles.childTagText}>{t('TravelRequestForm', 'yearsLabel', { age: age })}</Text>
                   <Button
-                    icon={{ name: 'close', size: 15, color: 'white' }}
+                    icon={{ name: 'close', size: theme.responsiveComponents.icon.small, color: theme.colors.textWhite }}
                     onPress={() => removeChild(age)}
                     buttonStyle={styles.removeChildButton}
                   />
@@ -731,8 +689,7 @@ export default function TravelRequestForm({ navigation, route }) {
             </View>
           </View>
         )}
-        
-        {/* Hotels Row */}
+
         <View style={styles.row}>
           <View style={styles.halfWidth}>
             <Text style={styles.label}>{t('TravelRequestForm', 'hotelRating')}</Text>
@@ -753,7 +710,7 @@ export default function TravelRequestForm({ navigation, route }) {
               selectedTextStyle={styles.selectedTextStyle}
             />
           </View>
-          
+
           <View style={styles.halfWidth}>
             <Text style={styles.label}>{t('TravelRequestForm', 'numberOfRooms')}</Text>
             <Input
@@ -762,7 +719,7 @@ export default function TravelRequestForm({ navigation, route }) {
               onChangeText={(text) => {
                 const value = text.replace(/[^0-9]/g, '');
                 if (value === '' || (parseInt(value) >= 1 && parseInt(value) <= 1000)) {
-                  setFormData({...formData, numOfRooms: value});
+                  setFormData({ ...formData, numOfRooms: value });
                 }
               }}
               containerStyle={styles.input}
@@ -771,8 +728,7 @@ export default function TravelRequestForm({ navigation, route }) {
             />
           </View>
         </View>
-        
-        {/* Meals Row */}
+
         <View style={styles.row}>
           <View style={styles.fullWidth}>
             <Text style={styles.label}>{t('TravelRequestForm', 'meals')}</Text>
@@ -789,8 +745,7 @@ export default function TravelRequestForm({ navigation, route }) {
             </View>
           </View>
         </View>
-    
-        {/* Budget Row */}
+
         <View style={styles.row}>
           <View style={styles.halfWidth}>
             <Text style={styles.label}>{t('TravelRequestForm', 'minimumBudget')}</Text>
@@ -800,7 +755,7 @@ export default function TravelRequestForm({ navigation, route }) {
               onChangeText={(text) => {
                 const value = text.replace(/[^0-9]/g, '');
                 if (value === '' || (parseInt(value) >= 0 && parseInt(value) <= 1000000)) {
-                  setFormData({...formData, minBudget: value});
+                  setFormData({ ...formData, minBudget: value });
                 }
               }}
               containerStyle={styles.input}
@@ -808,7 +763,7 @@ export default function TravelRequestForm({ navigation, route }) {
               inputStyle={styles.inputStyle}
             />
           </View>
-          
+
           <View style={styles.halfWidth}>
             <Text style={styles.label}>{t('TravelRequestForm', 'maximumBudget')}</Text>
             <Input
@@ -817,7 +772,7 @@ export default function TravelRequestForm({ navigation, route }) {
               onChangeText={(text) => {
                 const value = text.replace(/[^0-9]/g, '');
                 if (value === '' || (parseInt(value) >= 0 && parseInt(value) <= 1000000)) {
-                  setFormData({...formData, maxBudget: value});
+                  setFormData({ ...formData, maxBudget: value });
                 }
               }}
               containerStyle={styles.input}
@@ -826,8 +781,7 @@ export default function TravelRequestForm({ navigation, route }) {
             />
           </View>
         </View>
-        
-        {/* Travelers Nationality Row */}
+
         <View style={styles.row}>
           <View style={styles.fullWidth}>
             <Text style={styles.label}>{t('TravelRequestForm', 'travelersNationality')}</Text>
@@ -836,9 +790,9 @@ export default function TravelRequestForm({ navigation, route }) {
               data={allCountries.
                 filter(country => country.citizens_can_travel)
                 .map(country => ({
-                label: country.country_name,
-                value: country.id
-              }))}
+                  label: country.country_name,
+                  value: country.id
+                }))}
               labelField="label"
               valueField="value"
               value={formData.travelersNationality}
@@ -857,8 +811,7 @@ export default function TravelRequestForm({ navigation, route }) {
             />
           </View>
         </View>
-   
-        {/* Preferred Agents Countries Row */}
+
         <View style={styles.row}>
           <View style={styles.fullWidth}>
             <Text style={styles.label}>{t('TravelRequestForm', 'countriesWhereYouCanPayAgents')}</Text>
@@ -876,7 +829,7 @@ export default function TravelRequestForm({ navigation, route }) {
               showsVerticalScrollIndicator={true}
               placeholder={t('TravelRequestForm', 'selectCountry')}
               style={[
-                styles.dropdown, 
+                styles.dropdown,
                 formData.preferredAgentsCountries.length >= 2 ? styles.disabledDropdown : {}
               ]}
               placeholderStyle={styles.placeholderStyle}
@@ -887,8 +840,7 @@ export default function TravelRequestForm({ navigation, route }) {
               excludeItems={formData.preferredAgentsCountries.map(id => ({ value: id }))}
               excludeSearchItems={formData.preferredAgentsCountries.map(id => ({ value: id }))}
             />
-            
-            {/* Display selected countries as tags */}
+
             <View style={styles.agentCountriesContainer}>
               {formData.preferredAgentsCountries.map(countryId => (
                 <View key={countryId} style={styles.agentCountryTag}>
@@ -896,7 +848,7 @@ export default function TravelRequestForm({ navigation, route }) {
                     {allCountries.find(country => country.id === countryId)?.country_name}
                   </Text>
                   <Button
-                    icon={{ name: 'close', size: 15, color: 'white' }}
+                   icon={{ name: 'close', size: theme.responsiveComponents.icon.small, color: theme.colors.textWhite }}
                     onPress={() => removePreferredAgentCountry(countryId)}
                     buttonStyle={styles.removeAgentCountryButton}
                   />
@@ -905,11 +857,10 @@ export default function TravelRequestForm({ navigation, route }) {
             </View>
           </View>
         </View>
-         
-        {/* Notes Row */}
+
         <View style={styles.row}>
           <View style={styles.fullWidth}>
-            <Text style={styles.label} numberOflines={2}>
+            <Text style={styles.label} numberOfLines={2}>
               {t('TravelRequestForm', 'notesExamples')}
             </Text>
             <Input
@@ -917,15 +868,14 @@ export default function TravelRequestForm({ navigation, route }) {
               numberOfLines={10}
               textAlignVertical='top'
               value={formData.notes}
-              onChangeText={(text) => setFormData({...formData, notes: text})}
+              onChangeText={(text) => setFormData({ ...formData, notes: text })}
               containerStyle={styles.input}
               inputContainerStyle={styles.notesInputContainer}
               inputStyle={styles.notesInput}
             />
           </View>
         </View>
-        
-        {/* Submit Button */}
+
         <View style={styles.submitButtonContainer}>
           <Button
             title={isEditing ? t('TravelRequestForm', 'updateRequest') : t('TravelRequestForm', 'submitRequest')}
@@ -941,61 +891,61 @@ export default function TravelRequestForm({ navigation, route }) {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
-    backgroundColor: '#fff',
+    padding: theme.responsiveSpacing.lg,
+    backgroundColor: theme.colors.backgroundWhite,
     paddingBottom: 50,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   title: {
-    marginBottom: 16,
+    marginBottom: theme.responsiveSpacing.lg,
     textAlign: 'center'
   },
   row: {
-    flexDirection: 'row',
+    flexDirection: screenSize.isXSmall ? 'column' : 'row',
     justifyContent: 'space-between',
-    marginBottom: 16
+    marginBottom: theme.responsiveSpacing.lg,
+    gap: theme.responsiveSpacing.md,
   },
   halfWidth: {
-    width: '48%'
+    width: screenSize.isXSmall ? '100%' : '48%',
+    marginBottom: screenSize.isXSmall ? theme.spacing.sm : 0,
   },
   fullWidth: {
-    width: '100%'
+    width: '100%',
   },
   label: {
-    marginBottom: 8
+    ...theme.responsiveTypography.label,
   },
   input: {
-    marginBottom: 16,
+    marginBottom: theme.responsiveSpacing.lg,
   },
   dropdown: {
-    height: 50,
-    borderColor: '#ccc',
+    height: theme.responsiveComponents.input.height,
+    borderColor: theme.colors.border,
     borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    marginBottom: 16
+    borderRadius: theme.borderRadius.md,
+    paddingHorizontal: theme.responsiveSpacing.sm,
+    marginBottom: theme.responsiveSpacing.lg,
+    backgroundColor: theme.colors.backgroundWhite,
   },
   placeholderStyle: {
-    fontSize: 16
+    fontSize: theme.responsiveTypography.fontSize.md,
+    color: theme.colors.textLight,
   },
   selectedTextStyle: {
-    fontSize: 16
+    fontSize: theme.responsiveTypography.fontSize.md,
+    color: theme.colors.text,
   },
   mealsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap'
   },
   checkbox: {
-    margin: 4,
+    margin: theme.spacing.xs,
     backgroundColor: 'transparent',
     borderWidth: 0
   },
   childrenContainer: {
-    marginBottom: 16
+    marginBottom: theme.responsiveSpacing.lg
   },
   childrenList: {
     flexDirection: 'row',
@@ -1004,131 +954,103 @@ const styles = StyleSheet.create({
   childTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#007bff',
-    borderRadius: 16,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    marginRight: 8,
-    marginBottom: 8
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.round,
+    paddingVertical: theme.responsiveComponents.tag.paddingVertical,
+    paddingHorizontal: theme.responsiveComponents.tag.paddingHorizontal,
+    marginRight: theme.spacing.sm,
+    marginBottom: theme.spacing.sm
   },
   childTagText: {
-    color: '#fff',
-    marginRight: 4
+    color: theme.colors.textWhite,
+    fontSize: theme.responsiveTypography.fontSize.sm,
+    marginRight: theme.spacing.xs
   },
   removeChildButton: {
-    backgroundColor: '#dc3545',
+    backgroundColor: theme.colors.error,
     padding: 2,
-    borderRadius: 8
+    borderRadius: theme.borderRadius.md
   },
   agentCountriesContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginTop: 8,
+    marginTop: theme.spacing.sm,
     paddingBottom: 80,
   },
   notesInputContainer: {
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
+    borderColor: theme.colors.border,
+    borderRadius: theme.borderRadius.md,
     paddingHorizontal: 1,
     minHeight: 120,
   },
   notesInput: {
     minHeight: 100,
     textAlignVertical: 'top',
-    paddingTop: 8,
-    fontSize: 16,
+    paddingTop: theme.spacing.sm,
+    fontSize: theme.responsiveTypography.fontSize.md,
   },
   disabledDropdown: {
-    backgroundColor: '#f0f0f0',
-    borderColor: '#d0d0d0',
+    backgroundColor: theme.colors.disabled,
+    borderColor: theme.colors.borderLight,
     opacity: 0.7
   },
   agentCountryTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#28a745',
-    borderRadius: 16,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    marginRight: 8,
-    marginBottom: 8
+    backgroundColor: theme.colors.secondary,
+    borderRadius: theme.borderRadius.round,
+    paddingVertical: theme.responsiveComponents.tag.paddingVertical,
+    paddingHorizontal: theme.responsiveComponents.tag.paddingHorizontal,
+    marginRight: theme.spacing.sm,
+    marginBottom: theme.spacing.sm
   },
   agentCountryTagText: {
-    color: '#fff',
-    marginRight: 4
+    color: theme.colors.textWhite,
+    fontSize: theme.responsiveTypography.fontSize.sm,
+    marginRight: theme.spacing.xs
   },
   removeAgentCountryButton: {
-    backgroundColor: '#dc3545',
+    backgroundColor: theme.colors.error,
     padding: 2,
-    borderRadius: 8
+    borderRadius: theme.borderRadius.md
   },
   submitButtonContainer: {
-    marginTop: 16,
+    marginTop: theme.responsiveSpacing.lg,
     alignItems: 'center',
-    marginBottom: 32,
-  },
-  errorText: {
-    color: '#dc3545',
-    marginBottom: 8,
+    marginBottom: theme.spacing.xxxl,
   },
   dateButton: {
-    marginBottom: 8,
+    marginBottom: theme.spacing.sm,
   },
   datePickerContainer: {
     width: '100%',
     alignItems: 'center',
   },
-  sectionHeader: {
-    backgroundColor: '#f8f9fa',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 12,
-  },
-  sectionTitle: {
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  infoText: {
-    fontSize: 14,
-    color: '#6c757d',
-    marginBottom: 8,
-  },
-  warningText: {
-    color: '#dc3545',
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  successText: {
-    color: '#28a745',
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
   webDateInput: {
-    height: 50,             
+    height: theme.responsiveComponents.input.height,
     width: '100%',
-    borderColor: '#2196F3', 
+    borderColor: theme.colors.primary,
     borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    fontSize: 16,
+    borderRadius: theme.borderRadius.md,
+    paddingHorizontal: theme.responsiveSpacing.md,
+    fontSize: theme.responsiveTypography.fontSize.md,
     backgroundColor: 'transparent',
-    color: '#2196F3',
+    color: theme.colors.primary,
     fontWeight: '500',
     cursor: 'pointer',
     outline: 'none',
   },
   inputStyle: {
-  fontSize: 16,
-  ...(Platform.OS === 'web' && {
-    outlineWidth: 0, // Remove web focus outline
-    outline: 'none', // Additional web focus removal
-  }),
-},
-
-inputContainerWeb: Platform.OS === 'web' ? {
-  borderWidth: 1,
-  borderColor: '#ccc',
-  borderRadius: 8,
-} : {},
-});
+    fontSize: theme.responsiveTypography.fontSize.md,
+    ...(Platform.OS === 'web' && {
+      outlineWidth: 0,
+      outline: 'none',
+    }),
+  },
+  inputContainerWeb: Platform.OS === 'web' ? {
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.borderRadius.md,
+  } : {},
+  });

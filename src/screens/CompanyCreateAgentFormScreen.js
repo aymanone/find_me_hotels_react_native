@@ -6,6 +6,7 @@ import supabase from '../config/supabase';
 import { checkUserRole,getCurrentUser ,signOut} from '../utils/auth';
 import { validEmail } from '../utils/validation';
 import {showAlert} from "../components/ShowAlert";
+import { theme, commonStyles, screenSize, responsive } from '../styles//theme';
 import { useTranslation} from '../config/localization';
 const CompanyCreateAgentFormScreen = ({ navigation }) => {
   const { t,language } = useTranslation();
@@ -198,7 +199,7 @@ const CompanyCreateAgentFormScreen = ({ navigation }) => {
   if (loading && !countries.length) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color={theme.colors.primary} />
         <Text>{t('CompanyCreateAgentFormScreen', 'loading')}</Text>
       </View>
     );
@@ -293,7 +294,7 @@ const PermissionWarning = () => (
         disabled={loading}
       >
         {loading ? (
-          <ActivityIndicator size="small" color="#ffffff" />
+          <ActivityIndicator size="small" color={theme.colors.textWhite}  />
         ) : (
           <Text style={styles.buttonText}>{t('CompanyCreateAgentFormScreen', 'createAgent')}</Text>
         )}
@@ -307,116 +308,126 @@ const PermissionWarning = () => (
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: '#f5f5f5',
+    padding: theme.spacing.xl,
+    backgroundColor: theme.colors.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: theme.colors.background,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
+    fontSize: theme.typography.h2.fontSize,
+    fontWeight: theme.typography.h2.fontWeight,
+    marginBottom: theme.spacing.xl,
     textAlign: 'center',
+    color: theme.typography.h2.color,
   },
   formGroup: {
-    marginBottom: 15,
+    marginBottom: theme.spacing.lg,
   },
   label: {
-    fontSize: 16,
-    marginBottom: 5,
-    fontWeight: '500',
+    fontSize: theme.typography.label.fontSize,
+    marginBottom: theme.typography.label.marginBottom,
+    fontWeight: theme.typography.fontWeight.medium,
+    color: theme.typography.label.color,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 5,
-    padding: 10,
-    fontSize: 16,
-    backgroundColor: '#fff',
+    borderWidth: theme.components.input.borderWidth,
+    borderColor: theme.colors.border,
+    borderRadius: theme.components.input.borderRadius,
+    padding: theme.spacing.md,
+    fontSize: theme.components.input.fontSize,
+    backgroundColor: theme.colors.backgroundWhite,
+    height: theme.components.input.height,
   },
   inputError: {
-    borderColor: 'red',
+    borderColor: theme.colors.error,
   },
   errorText: {
-    color: 'red',
-    fontSize: 12,
-    marginTop: 5,
+    color: theme.colors.error,
+    fontSize: theme.typography.fontSize.xs,
+    marginTop: theme.spacing.xs,
   },
   dropdown: {
-    height: 50,
-    borderColor: '#ddd',
-    borderWidth: 1,
-    borderRadius: 5,
-    paddingHorizontal: 8,
-    backgroundColor: '#fff',
-  
+    height: theme.components.input.height,
+    borderColor: theme.colors.border,
+    borderWidth: theme.components.input.borderWidth,
+    borderRadius: theme.borderRadius.md,
+    paddingHorizontal: theme.spacing.sm,
+    backgroundColor: theme.colors.backgroundWhite,
   },
   placeholderStyle: {
-    fontSize: 16,
-    color: '#aaa',
+    fontSize: theme.typography.fontSize.md,
+    color: theme.colors.textLight,
   },
   selectedTextStyle: {
-    fontSize: 16,
+    fontSize: theme.typography.fontSize.md,
+    color: theme.colors.text,
   },
   inputSearchStyle: {
     height: 40,
-    fontSize: 16,
+    fontSize: theme.typography.fontSize.md,
   },
   iconStyle: {
-    width: 20,
-    height: 20,
+    width: theme.spacing.xl,
+    height: theme.spacing.xl,
   },
   dropdownItem: {
-    padding: 10,
+    padding: theme.spacing.md,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   textItem: {
     flex: 1,
-    fontSize: 16,
+    fontSize: theme.typography.fontSize.md,
+    color: theme.colors.text,
   },
   button: {
-    backgroundColor: '#007bff',
-    padding: 15,
-    borderRadius: 5,
-    alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 40,
+     backgroundColor: theme.colors.primary,
+  paddingVertical: theme.spacing.md,
+  paddingHorizontal: theme.spacing.xl,
+  borderRadius: theme.borderRadius.md,
+  alignItems: 'center',
+  marginTop: theme.spacing.xl,
+  marginBottom: 40,
+  justifyContent: 'center',
+  minHeight: theme.components.button.height,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
+    color: theme.colors.textWhite,
+  fontSize: theme.typography.fontSize.lg,
+  fontWeight: theme.typography.fontWeight.bold,
+  lineHeight: theme.typography.fontSize.lg * 1.4,
+  textAlignVertical: 'center',
+  includeFontPadding: false,
   },
-   warningContainer: {
-    backgroundColor: '#FFF3CD',
-    borderColor: '#FFEEBA',
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 20,
-    marginVertical: 20,
+  warningContainer: {
+    backgroundColor: theme.colors.warningContainer,
+    borderColor: theme.colors.warningBorder,
+    borderWidth: theme.components.warningBox.borderWidth,
+    borderRadius: theme.components.warningBox.borderRadius,
+    padding: theme.components.warningBox.padding,
+    marginVertical: theme.spacing.xl,
     alignItems: 'center',
   },
   warningIcon: {
-    fontSize: 48,
-    marginBottom: 10,
+    fontSize: theme.typography.warningIcon.fontSize,
+    marginBottom: theme.typography.warningIcon.marginBottom,
   },
   warningTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#856404',
-    marginBottom: 10,
+    fontSize: theme.typography.warningTitle.fontSize,
+    fontWeight: theme.typography.warningTitle.fontWeight,
+    color: theme.typography.warningTitle.color,
+    marginBottom: theme.typography.warningTitle.marginBottom,
   },
   warningText: {
-    fontSize: 16,
-    color: '#856404',
-    textAlign: 'center',
-    lineHeight: 24,
+    fontSize: theme.typography.warningText.fontSize,
+    color: theme.typography.warningText.color,
+    textAlign: theme.typography.warningText.textAlign,
+    lineHeight: theme.typography.warningText.lineHeight,
   },
 });
-
 export default CompanyCreateAgentFormScreen;

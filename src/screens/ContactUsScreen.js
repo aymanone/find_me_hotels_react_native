@@ -4,6 +4,7 @@ import { Button, Input, Text } from 'react-native-elements';
 import { showAlert } from "../components/ShowAlert";
 import { useTranslation } from '../config/localization';
 import LanguageSelector from '../components/LanguageSelector';
+import { theme, commonStyles, responsive, screenSize } from '../styles/theme';
 import { validEmail } from '../utils/validation';
 
 export default function ContactUsScreen({ navigation }) {
@@ -77,7 +78,7 @@ export default function ContactUsScreen({ navigation }) {
         <LanguageSelector />
       </View>
       
-      <Text h3 style={styles.title}>
+      <Text  style={styles.title}>
         {t('ContactUsScreen', 'title') || 'Contact Us'}
       </Text>
       
@@ -89,7 +90,12 @@ export default function ContactUsScreen({ navigation }) {
         placeholder={t('ContactUsScreen', 'namePlaceholder') || 'Your Name'}
         onChangeText={setName}
         value={name}
-        leftIcon={{ type: 'font-awesome', name: 'user' }}
+        leftIcon={{ 
+          type: 'font-awesome', 
+          name: 'user',
+          size: theme.responsiveComponents.icon.medium,
+          color: theme.colors.textSecondary
+}}
         containerStyle={styles.inputContainer}
       />
 
@@ -99,7 +105,12 @@ export default function ContactUsScreen({ navigation }) {
         value={email}
         autoCapitalize="none"
         keyboardType="email-address"
-        leftIcon={{ type: 'font-awesome', name: 'envelope' }}
+        leftIcon={{ 
+           type: 'font-awesome', 
+           name: 'envelope',
+           size: theme.responsiveComponents.icon.medium,
+           color: theme.colors.textSecondary
+}}
         containerStyle={styles.inputContainer}
       />
 
@@ -109,7 +120,12 @@ export default function ContactUsScreen({ navigation }) {
         value={message}
         multiline
         numberOfLines={4}
-        leftIcon={{ type: 'font-awesome', name: 'comment' }}
+        leftIcon={{ 
+             type: 'font-awesome', 
+             name: 'comment',
+             size: theme.responsiveComponents.icon.medium,
+             color: theme.colors.textSecondary
+}}
         containerStyle={styles.inputContainer}
         inputStyle={styles.messageInput}
       />
@@ -139,54 +155,66 @@ export default function ContactUsScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    padding: theme.spacing.xl,
     justifyContent: 'center',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: theme.colors.background,
   },
+  
   languageSelectorContainer: {
     position: 'absolute',
-    top: 15,
-    right: 20,
+    top: theme.spacing.lg,
+    right: theme.spacing.xl,
     zIndex: 1,
   },
+  
   title: {
     textAlign: 'center',
-    marginBottom: 10,
-    color: '#333',
+    marginBottom: theme.spacing.sm,
+    fontSize: theme.responsiveTypography.h3.fontSize,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text,
   },
+  
   subtitle: {
     textAlign: 'center',
-    marginBottom: 30,
-    fontSize: 16,
-    color: '#666',
+    marginBottom: theme.spacing.xxxl,
+    fontSize: theme.responsiveTypography.fontSize.md,
+    color: theme.colors.textSecondary,
   },
+  
   inputContainer: {
-    marginBottom: 15,
+    marginBottom: theme.spacing.lg,
   },
+  
   messageInput: {
     minHeight: 80,
     textAlignVertical: 'top',
   },
+  
   submitButton: {
-    backgroundColor: '#007bff',
-    marginTop: 20,
-    borderRadius: 8,
+    backgroundColor: theme.colors.primary,
+    marginTop: theme.spacing.xl,
+    borderRadius: theme.borderRadius.md,
+    paddingVertical: theme.spacing.md,
   },
+  
   blogLinkContainer: {
-    marginTop: 30,
+    marginTop: theme.spacing.xxxl,
     alignItems: 'center',
-    paddingTop: 20,
+    paddingTop: theme.spacing.xl,
     borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
+    borderTopColor: theme.colors.borderLight,
   },
+  
   blogText: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: theme.responsiveTypography.fontSize.sm,
+    color: theme.colors.textSecondary,
     textAlign: 'center',
-    marginBottom: 5,
+    marginBottom: theme.spacing.xs,
   },
+  
   blogLinkText: {
-    color: '#007bff',
-    fontSize: 14,
+    color: theme.colors.primary,
+    fontSize: theme.responsiveTypography.fontSize.sm,
   },
 });

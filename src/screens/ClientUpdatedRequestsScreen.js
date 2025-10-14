@@ -14,6 +14,7 @@ import { checkUserRole, getCurrentUser } from '../utils/auth';
 import supabase from '../config/supabase';
 import { format } from 'date-fns';
 import {showAlert} from "../components/ShowAlert";
+import { theme, commonStyles, responsive } from '../styles/theme';
 import {  useTranslation } from '../config/localization';
 
 const ClientUpdatedRequestsScreen = ({ navigation }) => {
@@ -104,7 +105,7 @@ const ClientUpdatedRequestsScreen = ({ navigation }) => {
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
+       <ActivityIndicator size="large" color={theme.colors.primary} />
         <Text style={styles.loadingText}>{t('ClientUpdatedRequestsScreen', 'loading')}</Text>
       </View>
     );
@@ -113,7 +114,7 @@ const ClientUpdatedRequestsScreen = ({ navigation }) => {
   if (error) {
     return (
       <View style={styles.centerContainer}>
-        <Icon name="alert-circle-outline" type="ionicon" size={50} color="#FF3B30" />
+       <Icon name="alert-circle-outline" type="ionicon" size={responsive(40, 50, 50, 60, 60)} color={theme.colors.error} />
         <Text style={styles.errorText}>{error}</Text>
         <View style={styles.buttonContainer}>
           <Button
@@ -125,7 +126,7 @@ const ClientUpdatedRequestsScreen = ({ navigation }) => {
             title={t('ClientUpdatedRequestsScreen', 'goBack')}
             onPress={() => navigation.goBack()}
             buttonStyle={styles.backButton}
-            titleStyle={{ color: '#007AFF' }}
+            titleStyle={{ color:  theme.colors.primary }}
             type="outline"
           />
         </View>
@@ -140,7 +141,7 @@ const ClientUpdatedRequestsScreen = ({ navigation }) => {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          colors={['#0000ff']}
+          colors={[theme.colors.primary]}
         />
       }
     >
@@ -152,14 +153,14 @@ const ClientUpdatedRequestsScreen = ({ navigation }) => {
         <Button
           title={t('ClientUpdatedRequestsScreen', 'refresh')}
           onPress={onRefresh}
-          icon={<Icon name="refresh-outline" type="ionicon" size={20} color="white" />}
+          icon={<Icon name="refresh-outline" type="ionicon" size={theme.responsiveComponents.icon.medium} color={theme.colors.textWhite} />}
           buttonStyle={styles.refreshButton}
         />
       </View>
 
       {requests.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Icon name="information-circle-outline" type="ionicon" size={50} color="#8E8E93" />
+         <Icon name="information-circle-outline" type="ionicon" size={responsive(40, 50, 50, 60, 60)} color={theme.colors.textLight} />
           <Text style={styles.emptyText}>{t('ClientUpdatedRequestsScreen', 'noUpdatedRequestsFound')}</Text>
           <Text style={styles.emptySubText}>
             {t('ClientUpdatedRequestsScreen', 'whenYouReceiveNewOffers')}
@@ -176,7 +177,7 @@ const ClientUpdatedRequestsScreen = ({ navigation }) => {
               <View style={styles.cardHeader}>
                 <Text style={styles.dateText}>{formatDate(request.created_at)}</Text>
                 <View style={styles.offersContainer}>
-                  <Icon name="notifications" type="ionicon" size={16} color="#FF9500" />
+                  <Icon name="notifications" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.notification} />
                   <Text style={styles.offersText}>
                     {request.offers_number} {request.offers_number === 1 ? t('ClientUpdatedRequestsScreen', 'offer') : t('ClientUpdatedRequestsScreen', 'offers')}
                   </Text>
@@ -187,7 +188,7 @@ const ClientUpdatedRequestsScreen = ({ navigation }) => {
 
               <View style={styles.infoRow}>
                 <View style={styles.infoItem}>
-                  <Icon name="location-outline" type="ionicon" size={16} color="#007AFF" />
+                  <Icon name="location-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary}  />
                   <Text style={styles.infoLabel}>{t('ClientUpdatedRequestsScreen', 'destination')}</Text>
                 </View>
                 <Text style={styles.infoValue}>
@@ -197,7 +198,7 @@ const ClientUpdatedRequestsScreen = ({ navigation }) => {
 
               <View style={styles.infoRow}>
                 <View style={styles.infoItem}>
-                  <Icon name="people-outline" type="ionicon" size={16} color="#007AFF" />
+                  <Icon name="people-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary}  />
                   <Text style={styles.infoLabel}>{t('ClientUpdatedRequestsScreen', 'travelers')}</Text>
                 </View>
                 <Text style={styles.infoValue}>
@@ -210,7 +211,7 @@ const ClientUpdatedRequestsScreen = ({ navigation }) => {
 
               <View style={styles.infoRow}>
                 <View style={styles.infoItem}>
-                  <Icon name="cash-outline" type="ionicon" size={16} color="#007AFF" />
+                  <Icon name="cash-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary}  />
                   <Text style={styles.infoLabel}>{t('ClientUpdatedRequestsScreen', 'budget')}</Text>
                 </View>
                 <Text style={styles.infoValue}>
@@ -221,7 +222,7 @@ const ClientUpdatedRequestsScreen = ({ navigation }) => {
               {request.meals && request.meals.length > 0 && (
                 <View style={styles.infoRow}>
                   <View style={styles.infoItem}>
-                    <Icon name="restaurant-outline" type="ionicon" size={16} color="#007AFF" />
+                    <Icon name="restaurant-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
                     <Text style={styles.infoLabel}>{t('ClientUpdatedRequestsScreen', 'meals')}</Text>
                   </View>
                   <Text style={styles.infoValue}>
@@ -232,7 +233,7 @@ const ClientUpdatedRequestsScreen = ({ navigation }) => {
 
               <View style={styles.viewDetailsContainer}>
                 <Text style={styles.viewDetailsText}>{t('ClientUpdatedRequestsScreen', 'viewDetails')}</Text>
-                <Icon name="chevron-forward-outline" type="ionicon" size={16} color="#007AFF" />
+               <Icon name="chevron-forward-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
               </View>
             </Card>
           </TouchableOpacity>
@@ -245,139 +246,165 @@ const ClientUpdatedRequestsScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.background,
   },
+  
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: theme.spacing.xl,
   },
+  
   loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: '#555',
+    marginTop: theme.spacing.sm,
+    fontSize: theme.responsiveTypography.fontSize.md,
+    color: theme.colors.textSecondary,
   },
+  
   errorText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: '#FF3B30',
+    marginTop: theme.spacing.sm,
+    fontSize: theme.responsiveTypography.fontSize.md,
+    color: theme.colors.error,
     textAlign: 'center',
   },
+  
   buttonContainer: {
     flexDirection: 'row',
-    marginTop: 20,
+    marginTop: theme.spacing.xl,
     width: '80%',
     justifyContent: 'space-around',
   },
+  
   retryButton: {
-    backgroundColor: '#007AFF',
-    paddingHorizontal: 30,
+    backgroundColor: theme.colors.primary,
+    paddingHorizontal: theme.spacing.xxxl,
+    borderRadius: theme.borderRadius.md,
   },
+  
   backButton: {
-    borderColor: '#007AFF',
-    paddingHorizontal: 30,
+    borderColor: theme.colors.primary,
+    paddingHorizontal: theme.spacing.xxxl,
+    borderRadius: theme.borderRadius.md,
   },
+  
   header: {
-    padding: 15,
-    backgroundColor: 'white',
+    padding: theme.spacing.lg,
+    backgroundColor: theme.colors.backgroundWhite,
     borderBottomWidth: 1,
-    borderBottomColor: '#e1e1e1',
-    marginBottom: 10,
+    borderBottomColor: theme.colors.borderLight,
+    marginBottom: theme.spacing.sm,
   },
+  
   headerTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 5,
+    fontSize: theme.responsiveTypography.h2.fontSize,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text,
+    marginBottom: theme.spacing.xs,
   },
+  
   requestCount: {
-    fontSize: 16,
-    color: '#555',
-    marginBottom: 10,
+    fontSize: theme.responsiveTypography.fontSize.md,
+    color: theme.colors.textSecondary,
+    marginBottom: theme.spacing.sm,
   },
+  
   refreshButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.md,
   },
+  
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 30,
-    backgroundColor: 'white',
-    margin: 15,
-    borderRadius: 10,
+    padding: theme.spacing.xxxl,
+    backgroundColor: theme.colors.backgroundWhite,
+    margin: theme.spacing.lg,
+    borderRadius: theme.borderRadius.lg,
     borderWidth: 1,
-    borderColor: '#e1e1e1',
+    borderColor: theme.colors.borderLight,
   },
+  
   emptyText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginTop: 15,
-    marginBottom: 5,
+    fontSize: theme.responsiveTypography.fontSize.lg,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text,
+    marginTop: theme.spacing.lg,
+    marginBottom: theme.spacing.xs,
   },
+  
   emptySubText: {
-    fontSize: 14,
-    color: '#8E8E93',
+    fontSize: theme.responsiveTypography.fontSize.sm,
+    color: theme.colors.textLight,
     textAlign: 'center',
   },
+  
   card: {
-    borderRadius: 10,
-    marginBottom: 10,
-    padding: 15,
+    borderRadius: theme.borderRadius.lg,
+    marginBottom: theme.spacing.sm,
+    padding: theme.spacing.lg,
+    ...theme.shadows.card,
   },
+  
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: theme.spacing.sm,
   },
+  
   dateText: {
-    fontSize: 14,
-    color: '#8E8E93',
+    fontSize: theme.responsiveTypography.fontSize.sm,
+    color: theme.colors.textLight,
   },
+  
   offersContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF5E6',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 12,
+    backgroundColor: theme.colors.notificationLight,
+    paddingVertical: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.sm,
+    borderRadius: theme.borderRadius.lg,
   },
+  
   offersText: {
-    fontSize: 14,
-    color: '#FF9500',
-    marginLeft: 4,
-    fontWeight: '500',
+    fontSize: theme.responsiveTypography.fontSize.sm,
+    color: theme.colors.notification,
+    marginLeft: theme.spacing.xs,
+    fontWeight: theme.typography.fontWeight.medium,
   },
+  
   infoRow: {
-    flexDirection: 'row',
-    marginBottom: 10,
-    alignItems: 'flex-start',
+    ...commonStyles.responsiveInfoRow,
   },
+  
   infoItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: 100,
+    ...commonStyles.responsiveInfoItem,
   },
+  
   infoLabel: {
-    fontSize: 14,
-    color: '#555',
-    marginLeft: 4,
+    fontSize: theme.responsiveTypography.fontSize.sm,
+    color: theme.colors.textSecondary,
+    marginLeft: theme.spacing.xs,
   },
+  
   infoValue: {
-    fontSize: 14,
+    fontSize: theme.responsiveTypography.fontSize.sm,
     flex: 1,
+    color: theme.colors.text,
   },
+  
   viewDetailsContainer: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: theme.spacing.sm,
   },
+  
   viewDetailsText: {
-    fontSize: 14,
-    color: '#007AFF',
-    marginRight: 4,
+    fontSize: theme.responsiveTypography.fontSize.sm,
+    color: theme.colors.primary,
+    marginRight: theme.spacing.xs,
   },
 });
-
 export default ClientUpdatedRequestsScreen;

@@ -9,6 +9,7 @@ import supabase from '../config/supabase';
 import {MESSAGING_APPS} from '../config/CONSTANTS'
 import {showAlert} from "../components/ShowAlert";
 import LanguageSelector from '../components/LanguageSelector';
+import { theme, commonStyles, responsive, screenSize } from '../styles/theme';
 import { useTranslation } from '../config/localization';
 // Custom debounce hook
 const useDebounce = (value, delay) => {
@@ -233,7 +234,7 @@ export default function SignupScreen({ navigation }) {
       <View style={styles.languageSelectorContainer}>
         <LanguageSelector />
       </View>
-      <Text h3 style={styles.title}>{t('SignupScreen', 'title')}</Text>
+      <Text style={styles.title}>{t('SignupScreen', 'title')}</Text>
       <View style={styles.form}>
         <Input
           placeholder={t('SignupScreen', 'email')}
@@ -251,11 +252,13 @@ export default function SignupScreen({ navigation }) {
           secureTextEntry={!showPassword}
           errorMessage={password && !validPasswordSignup(password) ? 
             t('SignupScreen', 'invalidPassword') : ""}
-            rightIcon={{ 
-          type: 'font-awesome', 
-          name: showPassword ? 'eye-slash' : 'eye',
-          onPress: () => setShowPassword(!showPassword)
-        }}
+           rightIcon={{ 
+             type: 'font-awesome', 
+             name: showPassword ? 'eye-slash' : 'eye',
+             size: theme.responsiveComponents.icon.medium,
+             color: theme.colors.textSecondary,
+             onPress: () => setShowPassword(!showPassword)
+}}
     />
   
         
@@ -269,11 +272,13 @@ export default function SignupScreen({ navigation }) {
           value={confirmPassword}
           secureTextEntry={!showPassword}
           errorMessage={confirmPassword && password !== confirmPassword ? t('SignupScreen', 'passwordMismatch') : ''}
-          rightIcon={{ 
-          type: 'font-awesome', 
-          name: showPassword ? 'eye-slash' : 'eye',
-          onPress: () => setShowPassword(!showPassword)
-        }}
+            rightIcon={{ 
+             type: 'font-awesome', 
+             name: showPassword ? 'eye-slash' : 'eye',
+             size: theme.responsiveComponents.icon.medium,
+             color: theme.colors.textSecondary,
+             onPress: () => setShowPassword(!showPassword)
+}}
     />
   
         
@@ -323,7 +328,7 @@ export default function SignupScreen({ navigation }) {
       
                 placeholderStyle={styles.placeholderStyle}
                 selectedTextStyle={styles.selectedTextStyle}
-                activeColor="#e8e8e8"
+                activeColor={theme.colors.primaryLight}
                 search
                 searchPlaceholder="Search country..."
                 searchQuery={countrySearch}
@@ -438,94 +443,117 @@ export default function SignupScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: '#fff',
+    padding: theme.spacing.xl,
+    backgroundColor: theme.colors.backgroundWhite,
   },
 
- scrollContainer: {
+  scrollContainer: {
     flexGrow: 1,
-    padding: 20,
-    paddingBottom: 100, // Add extra padding at the bottom
+    padding: theme.spacing.xl,
+    paddingBottom: 100,
   },
+  
   passwordHint: {
-    fontSize: 12,
-    color: '#86939e',
-    marginLeft: 10,
-    marginBottom: 15,
+    fontSize: theme.responsiveTypography.fontSize.xs,
+    color: theme.colors.textLight,
+    marginLeft: theme.spacing.sm,
+    marginBottom: theme.spacing.lg,
   },
+  
   phoneHint: {
-    fontSize: 12,
-    color: '#86939e',
-    marginLeft: 10,
-    marginBottom: 15,
+    fontSize: theme.responsiveTypography.fontSize.xs,
+    color: theme.colors.textLight,
+    marginLeft: theme.spacing.sm,
+    marginBottom: theme.spacing.lg,
   },
+  
   title: {
     textAlign: 'center',
-    marginTop: 60,
-    marginBottom: 30,
+    marginTop: responsive(50, 60, 60, 60, 60),
+    marginBottom: theme.spacing.xxxl,
+    fontSize: theme.responsiveTypography.h3.fontSize,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text,
   },
+  
   form: {
     flex: 1,
   },
+  
   label: {
-    fontSize: 16,
-    marginVertical: 10,
-    marginLeft: 10,
-    color: '#86939e',
+    fontSize: theme.responsiveTypography.fontSize.md,
+    marginVertical: theme.spacing.sm,
+    marginLeft: theme.spacing.sm,
+    color: theme.colors.textLight,
+    fontWeight: theme.typography.fontWeight.medium,
   },
+  
   dropdown: {
-    height: 50,
-    marginHorizontal: 10,
-    marginBottom: 20,
-    backgroundColor: '#f2f2f2',
-    borderRadius: 8,
-    paddingHorizontal: 12,
+    height: theme.responsiveComponents.input.height,
+    marginHorizontal: theme.spacing.sm,
+    marginBottom: theme.spacing.xl,
+    backgroundColor: theme.colors.backgroundGray,
+    borderRadius: theme.borderRadius.md,
+    paddingHorizontal: theme.spacing.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
+  
   selectedTextStyle: {
-    fontSize: 16,
+    fontSize: theme.responsiveTypography.fontSize.md,
+    color: theme.colors.text,
   },
+  
   placeholderStyle: {
-    fontSize: 16,
-    color: '#86939e',
+    fontSize: theme.responsiveTypography.fontSize.md,
+    color: theme.colors.textLight,
   },
+  
   signupButton: {
-    marginTop: 20,
+    marginTop: theme.spacing.xl,
   },
+  
   loadingText: {
-    color: '#86939e',
+    color: theme.colors.textLight,
+    fontSize: theme.responsiveTypography.fontSize.sm,
     textAlign: 'center',
-    marginVertical: 10,
+    marginVertical: theme.spacing.sm,
   },
+  
   errorText: {
-    color: '#ff190c',
+    color: theme.colors.error,
+    fontSize: theme.responsiveTypography.fontSize.sm,
     textAlign: 'center',
-    marginVertical: 10,
+    marginVertical: theme.spacing.sm,
   },
+  
   dropdownItemContainer: {
-    padding: 12,
+    padding: theme.spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: theme.colors.borderLight,
   },
+  
   dropdownItem: {
-    fontSize: 16,
-    color: '#333',
+    fontSize: theme.responsiveTypography.fontSize.md,
+    color: theme.colors.text,
   },
+  
   searchInput: {
     height: 40,
-    borderColor: '#ccc',
+    borderColor: theme.colors.border,
     borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    marginBottom: 10,
+    borderRadius: theme.borderRadius.md,
+    paddingHorizontal: theme.spacing.sm,
+    marginBottom: theme.spacing.sm,
   },
-  clientCountries:{
-    
-    marginBottom: 20,
   
+  clientCountries: {
+    marginBottom: theme.spacing.xl,
   },
+  
   languageSelectorContainer: {
     alignItems: 'flex-end',
-    marginBottom: 20,
+    marginBottom: theme.spacing.xl,
   },
 });
 

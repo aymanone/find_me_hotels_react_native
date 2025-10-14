@@ -11,6 +11,7 @@ import { Text, Card, Button, Icon } from 'react-native-elements';
 import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser } from '../utils/auth';
 import {showAlert} from "../components/ShowAlert";
+import { theme, commonStyles, screenSize, responsive } from '../styles//theme';
 import { useTranslation } from '../config/localization';
 
 export default function AdminCompaniesListScreen({ navigation }) {
@@ -85,7 +86,7 @@ export default function AdminCompaniesListScreen({ navigation }) {
   if (loading && !refreshing) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#007bff" />
+        <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
     );
   }
@@ -103,7 +104,7 @@ export default function AdminCompaniesListScreen({ navigation }) {
           loading={refreshing}
           type="clear"
           title={t('AdminCompaniesListScreen', 'updateCompanies')}
-          titleStyle={{ color: '#007bff' }}
+          titleStyle={{ color: theme.colors.primary }}
         />
       </View>
       
@@ -117,19 +118,19 @@ export default function AdminCompaniesListScreen({ navigation }) {
             <Card.Title style={styles.cardTitle}>{company.company_name}</Card.Title>
             
             <View style={styles.infoRow}>
-              <Icon name="mail-outline" type="ionicon" size={16} color="#007bff" />
+              <Icon name="mail-outline" type="ionicon" size={theme.spacing.lg} color={theme.colors.primary} />
               <Text style={styles.infoText}>{company.company_email || t('AdminCompaniesListScreen', 'noEmailProvided')}</Text>
             </View>
             
             <View style={styles.infoRow}>
-              <Icon name="globe-outline" type="ionicon" size={16} color="#007bff" />
+              <Icon name="globe-outline" type="ionicon" size={theme.spacing.lg} color={theme.colors.primary} />
               <Text style={styles.infoText}>
                 {company.countries?.country_name || t('AdminCompaniesListScreen', 'countryNotSpecified')}
               </Text>
             </View>
             
             <View style={styles.infoRow}>
-              <Icon name="location-outline" type="ionicon" size={16} color="#007bff" />
+              <Icon name="location-outline" type="ionicon" size={theme.spacing.lg} color={theme.colors.primary} />
               <Text style={styles.infoText}>{company.address || t('AdminCompaniesListScreen', 'noAddressProvided')}</Text>
             </View>
             
@@ -137,7 +138,7 @@ export default function AdminCompaniesListScreen({ navigation }) {
               title={t('AdminCompaniesListScreen', 'viewProfile')}
               onPress={() => viewCompanyProfile(company.id)}
               buttonStyle={styles.viewButton}
-              icon={<Icon name="arrow-forward" type="ionicon" color="#fff" size={16} style={styles.buttonIcon} />}
+              icon={<Icon name="arrow-forward" type="ionicon"  color={theme.colors.textWhite} size={theme.spacing.lg}  style={styles.buttonIcon} />}
               iconRight
             />
           </Card>
@@ -150,58 +151,65 @@ export default function AdminCompaniesListScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.background,
   },
   contentContainer: {
-    padding: 10,
+    padding: theme.spacing.md,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: theme.colors.background,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
-    paddingHorizontal: 10,
+    marginBottom: theme.spacing.md,
+    paddingHorizontal: theme.spacing.md,
   },
   card: {
-    borderRadius: 10,
-    marginBottom: 15,
-    padding: 15,
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.spacing.lg,
+    padding: theme.spacing.lg,
+    backgroundColor: theme.colors.backgroundWhite,
+    ...theme.shadows.card,
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: theme.typography.fontSize.lg,
     textAlign: 'left',
-    marginBottom: 10,
+    marginBottom: theme.spacing.md,
+    fontWeight: theme.typography.fontWeight.semibold,
+    color: theme.colors.text,
   },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: theme.spacing.md,
   },
   infoText: {
-    marginLeft: 10,
-    fontSize: 16,
-    color: '#333',
+    marginLeft: theme.spacing.md,
+    fontSize: theme.typography.fontSize.md,
+    color: theme.colors.text,
   },
   viewButton: {
-    backgroundColor: '#007bff',
-    borderRadius: 5,
-    marginTop: 10,
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.md,
+    marginTop: theme.spacing.md,
   },
   buttonIcon: {
-    marginLeft: 5,
+    marginLeft: theme.spacing.xs,
   },
   noDataCard: {
-    borderRadius: 10,
-    padding: 20,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.xl,
     alignItems: 'center',
+    backgroundColor: theme.colors.backgroundWhite,
+    ...theme.shadows.card,
   },
   noDataText: {
-    fontSize: 16,
-    color: '#666',
+    fontSize: theme.typography.fontSize.md,
+    color: theme.colors.textSecondary,
   },
 });

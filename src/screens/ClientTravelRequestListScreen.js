@@ -8,6 +8,7 @@ import { checkUserRole, signOut, getCurrentUser } from '../utils/auth';
 import { unsubscribeChannels } from '../utils/channelUtils';
 import {earliestDate} from '../utils/dateUtils'; // Import earliestDate function
 import {showAlert} from "../components/ShowAlert";
+import { theme, commonStyles, screenSize, responsive } from '../styles//theme';
 import { useTranslation } from '../config/localization';
 
 export default function ClientTravelRequestList({ navigation }) {
@@ -157,13 +158,13 @@ const fetchTravelRequests = async () => {
     const isHighlighted = highlightedRequests[requestKey];
     const isActive = isRequestActive(request);
 
-    return {
-      ...styles.card,
-      borderColor: isHighlighted ? '#FFD700' : isActive ? '#28a745' : '#d0d0d0',
-      borderWidth: isHighlighted ? 2 : 1,
-      backgroundColor: isActive ? '#ffffff' : '#f8f9fa',
-      opacity: isActive ? 1 : 0.7,
-    };
+   return {
+  ...styles.card,
+  borderColor: isHighlighted ? '#FFD700' : isActive ? theme.colors.success : theme.colors.border,
+  borderWidth: isHighlighted ? 2 : 1,
+  backgroundColor: isActive ? theme.colors.backgroundWhite : theme.colors.backgroundGray,
+  opacity: isActive ? 1 : 0.7,
+};
   };
 
   const handleRequestPress = (item) => {
@@ -237,7 +238,7 @@ const fetchTravelRequests = async () => {
           {/* New Offers Indicator - only show if there are new offers */}
           {item.new_offers && (
             <View style={styles.newOffersIndicator}>
-              <Icon name="bell" type="font-awesome" size={14} color="#fff" />
+             <Icon name="bell" type="font-awesome" size={theme.responsiveComponents.icon.small} color={theme.colors.textWhite} />
               <Text style={styles.newOffersText}>{t('ClientTravelRequestListScreen', 'newOffers')}</Text>
             </View>
           )}
@@ -250,13 +251,13 @@ const fetchTravelRequests = async () => {
             }}
             style={styles.deleteButton}
           >
-            <Icon name="trash" type="font-awesome" size={16} color="#dc3545" />
+           <Icon name="trash" type="font-awesome" size={theme.responsiveComponents.icon.small} color={theme.colors.error} />
           </TouchableOpacity>
         </View>
         
         {/* Destination Row */}
         <View style={styles.row}>
-          <Icon name="map-marker" type="font-awesome" size={16} color="#007bff" />
+         <Icon name="map-marker" type="font-awesome" size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
           <Text style={styles.label}>{t('ClientTravelRequestListScreen', 'destination')}:</Text>
           <Text style={styles.value}>
             {item.country_name}{item.area_name ? `, ${item.area_name}` : ''}
@@ -265,7 +266,7 @@ const fetchTravelRequests = async () => {
 
         {/* Dates Row */}
         <View style={styles.row}>
-          <Icon name="calendar" type="font-awesome" size={16} color="#007bff" />
+         <Icon name="calendar" type="font-awesome" size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
           <Text style={styles.label}>{t('ClientTravelRequestListScreen', 'dates')}:</Text>
           <Text style={styles.value}>
             {format(startDate, 'MMM dd, yyyy')} - {format(endDate, 'MMM dd, yyyy')}
@@ -274,12 +275,12 @@ const fetchTravelRequests = async () => {
 
         {/* Info Row */}
         <View style={styles.row}>
-          <Icon name="info-circle" type="font-awesome" size={16} color="#007bff" />
+        <Icon name="info-circle" type="font-awesome" size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
           <Text style={styles.label}>{t('ClientTravelRequestListScreen', 'status')}:</Text>
-          <Text style={[
-            styles.statusText,
-            { color: isRequestActive(item) ? '#28a745' : '#6c757d' }
-          ]}>
+         <Text style={[
+          styles.statusText,
+             { color: isRequestActive(item) ? theme.colors.success : theme.colors.textSecondary }
+            ]}>
             {item.status.toUpperCase()}
           </Text>
           <Text style={styles.offersText}>
@@ -288,8 +289,8 @@ const fetchTravelRequests = async () => {
           <Icon 
             name="chevron-right" 
             type="font-awesome" 
-            size={16} 
-            color="#007bff"
+            size={theme.responsiveComponents.icon.small} 
+            color={theme.colors.primary}
             containerStyle={styles.chevronIcon}
           />
         </View>
@@ -338,15 +339,15 @@ const fetchTravelRequests = async () => {
           <Icon 
             name="refresh" 
             type="font-awesome" 
-            size={16} 
-            color="#007bff" 
-            containerStyle={{marginRight: 8}}
+            size={theme.responsiveComponents.icon.small} 
+           color={theme.colors.primary} 
+           containerStyle={{marginRight: theme.spacing.sm}}
           />
         }
       />
       
       {loading ? (
-        <ActivityIndicator size="large" color="#007bff" style={styles.loader} />
+        <ActivityIndicator size="large" color={theme.colors.primary} style={styles.loader} />
       ) : filteredRequests.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>{t('ClientTravelRequestListScreen', 'noRequests')}</Text>
@@ -368,7 +369,7 @@ const fetchTravelRequests = async () => {
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={handleRefresh}
-                colors={["#007bff"]}
+                colors={[theme.colors.primary]}
               />
             }
           />
@@ -378,59 +379,69 @@ const fetchTravelRequests = async () => {
   );
 }
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: '#f5f5f5',
+    padding: theme.responsiveSpacing.lg,
+    backgroundColor: theme.colors.background,
   },
   title: {
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: theme.responsiveSpacing.lg,
+    fontSize: theme.responsiveTypography.fontSize.xl,
+    color: theme.colors.text,
   },
   filterContainer: {
-    marginBottom: 16,
-    height: 40,
+    marginBottom: theme.responsiveSpacing.lg,
+    height: responsive(36, 40, 40, 40, 40),
   },
   listContainer: {
-    paddingBottom: 80, // Space for floating button
+    paddingBottom: 80,
   },
   card: {
-    borderRadius: 8,
-    marginBottom: 12,
-    padding: 12,
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.responsiveSpacing.md,
+    padding: theme.responsiveSpacing.md,
+    ...theme.shadows.md,
   },
   cardHeader: {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  marginBottom: 8,
-},
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: theme.spacing.sm,
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: theme.spacing.sm,
     flexWrap: 'wrap',
   },
   label: {
-    fontWeight: 'bold',
-    marginLeft: 8,
-    marginRight: 4,
+    fontWeight: theme.typography.fontWeight.bold,
+    marginLeft: theme.spacing.sm,
+    marginRight: theme.spacing.xs,
+    fontSize: theme.responsiveTypography.fontSize.sm,
+    color: theme.colors.text,
   },
   value: {
     flex: 1,
+    fontSize: theme.responsiveTypography.fontSize.sm,
+    color: theme.colors.text,
   },
   statusText: {
-    fontWeight: 'bold',
-    marginRight: 8,
+    fontWeight: theme.typography.fontWeight.bold,
+    marginRight: theme.spacing.sm,
+    fontSize: theme.responsiveTypography.fontSize.sm,
   },
   offersText: {
-    backgroundColor: '#007bff',
-    color: 'white',
-    paddingHorizontal: 8,
+    backgroundColor: theme.colors.primary,
+    color: theme.colors.textWhite,
+    paddingHorizontal: theme.spacing.sm,
     paddingVertical: 2,
-    borderRadius: 12,
-    fontSize: 12,
+    borderRadius: theme.borderRadius.lg,
+    fontSize: theme.responsiveTypography.fontSize.xs,
+    fontWeight: theme.typography.fontWeight.medium,
   },
   chevronIcon: {
     marginLeft: 'auto',
@@ -444,9 +455,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyText: {
-    fontSize: 16,
-    color: '#6c757d',
-    marginBottom: 16,
+    fontSize: theme.responsiveTypography.fontSize.md,
+    color: theme.colors.textSecondary,
+    marginBottom: theme.responsiveSpacing.lg,
   },
   newRequestButton: {
     width: '80%',
@@ -470,52 +481,50 @@ const styles = StyleSheet.create({
     right: -10,
   },
   newOffersBadgeText: {
-    fontSize: 10,
+    fontSize: theme.typography.fontSize.xs,
   },
   deleteButtonContainer: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    
   },
   deleteButton: {
-    padding: 3,
-    backgroundColor: '#f8f9fa',
-    marginLeft:'auto',
-    borderRadius:4,
-    
-    
+    padding: theme.spacing.xs,
+    backgroundColor: theme.colors.backgroundGray,
+    marginLeft: 'auto',
+    borderRadius: theme.borderRadius.sm,
   },
   refreshButton: {
-    marginBottom: 16,
-    borderColor: '#007bff',
-    borderRadius: 8,
-    padding: 8,
+    marginBottom: theme.responsiveSpacing.lg,
+    borderColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.sm,
   },
   refreshButtonText: {
-    color: '#007bff',
-    fontSize: 14,
+    color: theme.colors.primary,
+    fontSize: theme.responsiveTypography.fontSize.sm,
   },
   actionButtonsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: theme.spacing.sm,
   },
   newOffersIndicator: {
-     flexDirection: 'row',
-  alignItems: 'center',
-  backgroundColor: '#ff9800',
-  paddingHorizontal: 8,
-  paddingVertical: 4,
-  borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.warning,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.borderRadius.lg,
   },
   newOffersText: {
-    color: '#fff',
-    marginLeft: 4,
-    fontSize: 12,
-    fontWeight:'bold',
+    color: theme.colors.textWhite,
+    marginLeft: theme.spacing.xs,
+    fontSize: theme.responsiveTypography.fontSize.xs,
+    fontWeight: theme.typography.fontWeight.bold,
   },
   spacer: {
     flex: 1,
   },
 });
+

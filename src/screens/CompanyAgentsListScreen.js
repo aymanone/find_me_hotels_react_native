@@ -16,6 +16,7 @@ import {
 import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser } from '../utils/auth';
 import { showAlert } from "../components/ShowAlert";
+import { theme, commonStyles, screenSize, responsive } from '../styles//theme';
 import { useTranslation } from '../config/localization';
 
 const CompanyAgentsListScreen = ({ navigation }) => {
@@ -174,7 +175,7 @@ const CompanyAgentsListScreen = ({ navigation }) => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
     );
   }
@@ -232,7 +233,7 @@ const CompanyAgentsListScreen = ({ navigation }) => {
                 />
                 
                 <Button
-                  icon={<Icon name="trash-outline" type="ionicon" color="#fff" size={20} />}
+                  icon={ <Icon name="trash-outline" type="ionicon" color={theme.colors.textWhite} size={theme.spacing.xl} />}
                   buttonStyle={styles.deleteButton}
                   onPress={() => handleDeleteAgent(agent.id, `${agent.first_name} ${agent.second_name}`)}
                 />
@@ -248,86 +249,95 @@ const CompanyAgentsListScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.background,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 15,
-    paddingTop: 15,
-    paddingBottom: 5,
+    paddingHorizontal: theme.spacing.lg,
+    paddingTop: theme.spacing.lg,
+    paddingBottom: theme.spacing.xs,
   },
   headerTitle: {
-    fontSize: 22,
+    fontSize: theme.typography.h3.fontSize,
+    fontWeight: theme.typography.h3.fontWeight,
+    color: theme.typography.h3.color,
   },
   refreshButton: {
-    padding: 8,
+    padding: theme.spacing.sm,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: theme.colors.background,
   },
   searchBarContainer: {
     backgroundColor: 'transparent',
     borderBottomColor: 'transparent',
     borderTopColor: 'transparent',
-    paddingHorizontal: 10,
-    marginBottom: 10,
+    paddingHorizontal: theme.spacing.md,
+    marginBottom: theme.spacing.md,
   },
   searchBarInputContainer: {
-    backgroundColor: '#e1e1e1',
+    backgroundColor: theme.colors.backgroundGray,
   },
   scrollView: {
     flex: 1,
   },
   agentCard: {
-    borderRadius: 10,
-    marginBottom: 15,
-    padding: 15,
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.spacing.lg,
+    padding: theme.spacing.lg,
+    backgroundColor: theme.colors.backgroundWhite,
+    ...theme.shadows.card,
   },
   agentHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: theme.spacing.md,
   },
   agentName: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: theme.typography.fontSize.lg,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text,
   },
   agentId: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.textSecondary,
   },
   agentCountry: {
-    fontSize: 16,
-    marginBottom: 15,
+    fontSize: theme.typography.fontSize.md,
+    marginBottom: theme.spacing.lg,
+    color: theme.colors.text,
   },
   actionButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    gap: theme.spacing.md,
   },
   viewButton: {
-    borderColor: '#007bff',
-    borderRadius: 5,
-    paddingHorizontal: 20,
+    borderColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.md,
+    paddingHorizontal: theme.spacing.xl,
   },
   deleteButton: {
-    backgroundColor: '#dc3545',
-    borderRadius: 5,
-    paddingHorizontal: 20,
+    backgroundColor: theme.colors.error,
+    borderRadius: theme.borderRadius.md,
+    paddingHorizontal: theme.spacing.xl,
   },
   noAgentsCard: {
-    borderRadius: 10,
-    padding: 20,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.xl,
     alignItems: 'center',
+    backgroundColor: theme.colors.backgroundWhite,
+    ...theme.shadows.card,
   },
   noAgentsText: {
-    fontSize: 16,
-    color: '#666',
+    fontSize: theme.typography.fontSize.md,
+    color: theme.colors.textSecondary,
   },
 });
-
 export default CompanyAgentsListScreen;

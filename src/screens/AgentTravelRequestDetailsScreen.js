@@ -27,6 +27,7 @@ import { checkUserRole } from '../utils/auth';
 import { getCurrentUser,signOut } from '../utils/auth';
 import {inDateReq} from '../utils/dateUtils';
 import {showAlert} from "../components/ShowAlert";
+import { theme, commonStyles, screenSize, responsive } from '../styles/theme';
 import { useTranslation } from '../config/localization';
 
 const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
@@ -497,7 +498,7 @@ ${requestUrl}`;
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color={theme.colors.primary}  />
       </View>
     );
   }
@@ -538,6 +539,8 @@ ${requestUrl}`;
             <Icon 
               name={requestSectionCollapsed ? 'chevron-down' : 'chevron-up'} 
               type="ionicon" 
+              size={theme.responsiveComponents.icon.medium}
+              color={theme.colors.primary}
             />
           </TouchableOpacity>
           {(Platform.OS !== 'web' || true) && (
@@ -548,8 +551,8 @@ ${requestUrl}`;
      <Icon 
   name="share-social-outline" 
   type="ionicon" 
-  color="#007bff" 
-  size={24}
+  color={theme.colors.primary} 
+  size={theme.responsiveComponents.icon.large}
 />
         </TouchableOpacity>
   )}
@@ -663,6 +666,8 @@ ${requestUrl}`;
       <Icon 
         name={offerSummaryCollapsed ? 'chevron-down' : 'chevron-up'} 
         type="ionicon" 
+         size={theme.responsiveComponents.icon.medium}
+         color={theme.colors.primary}
       />
     </TouchableOpacity>
     
@@ -737,6 +742,8 @@ ${requestUrl}`;
               <Icon 
                 name={addHotelSectionCollapsed ? 'chevron-down' : 'chevron-up'} 
                 type="ionicon" 
+                 size={theme.responsiveComponents.icon.medium}
+                 color={theme.colors.primary}
               />
             </TouchableOpacity>
             
@@ -833,13 +840,13 @@ ${requestUrl}`;
                       <Button
                         title={t('AgentTravelRequestDetailsScreen', 'updateHotel')}
                         onPress={updateHotel}
-                        buttonStyle={[styles.addButton, { backgroundColor: '#007bff' }]}
+                        buttonStyle={[styles.addButton, { backgroundColor: theme.colors.primary }]}
                         containerStyle={styles.buttonContainer}
                       />
                       <Button
                         title={t('AgentTravelRequestDetailsScreen', 'cancel')}
                         onPress={cancelEditingHotel}
-                        buttonStyle={[styles.addButton, { backgroundColor: '#6c757d' }]}
+                        buttonStyle={[styles.addButton, { backgroundColor: theme.colors.textSecondary  }]}
                         containerStyle={styles.buttonContainer}
                       />
                     </>
@@ -870,6 +877,8 @@ ${requestUrl}`;
               <Icon 
                 name={hotelsSectionCollapsed ? 'chevron-down' : 'chevron-up'} 
                 type="ionicon" 
+                 size={theme.responsiveComponents.icon.medium}
+                 color={theme.colors.primary}
               />
             </TouchableOpacity>
             
@@ -883,7 +892,7 @@ ${requestUrl}`;
                         onPress={() => startEditingHotel(index)}
                         style={styles.editIconContainer}
                       >
-                        <Icon name="pencil" type="ionicon" color="#007bff" size={20} />
+                        <Icon name="pencil" type="ionicon" color={theme.colors.primary} size={theme.responsiveComponents.icon.medium} />
                       </TouchableOpacity>
                     )}
                     {userCanMakeOffer && (
@@ -891,7 +900,7 @@ ${requestUrl}`;
                         onPress={() => deleteHotel(index)}
                         style={styles.deleteIconContainer}
                       >
-                        <Icon name="trash-outline" type="ionicon" color="#dc3545" size={20} />
+                        <Icon name="trash-outline" type="ionicon" color={theme.colors.error} size={theme.responsiveComponents.icon.medium} />
                       </TouchableOpacity>
                     )}
                   </View>
@@ -901,37 +910,37 @@ ${requestUrl}`;
                 
                 <View style={styles.hotelDetailsContainer}>
                   <View style={styles.hotelDetailRow}>
-                    <Icon name="location-outline" type="ionicon" size={16} color="#007bff" />
+                    <Icon name="location-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
                     <Text style={styles.hotelDetailText}>{hotel.address}</Text>
                   </View>
                   
                   <View style={styles.hotelDetailRow}>
-                    <Icon name="bed-outline" type="ionicon" size={16} color="#007bff" />
+                  <Icon name="bed-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
                     <Text style={styles.hotelDetailText}>
                       {hotel.rooms} {hotel.rooms === 1 ? t('AgentTravelRequestDetailsScreen', 'room') : t('AgentTravelRequestDetailsScreen', 'roomsUnit')}, {hotel.room_size} {t('AgentTravelRequestDetailsScreen', 'metersSquared')}
                     </Text>
                   </View>
                   
                   <View style={styles.hotelDetailRow}>
-                    <Icon name="star" type="ionicon" size={16} color="#FFD700" />
+                    <Icon name="star" type="ionicon" size={theme.responsiveComponents.icon.small} color="#FFD700" />
                     <Text style={styles.hotelDetailText}>{hotel.rating} {t('AgentTravelRequestDetailsScreen', 'stars')}</Text>
                   </View>
                   
                   <View style={styles.hotelDetailRow}>
-                    <Icon name="restaurant-outline" type="ionicon" size={16} color="#007bff" />
+                 <Icon name="restaurant-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
                     <Text style={styles.hotelDetailText}>
                       {t('AgentTravelRequestDetailsScreen', 'mealsColon')} {hotel.meals.length > 0 ? hotel.meals.join(', ') : t('AgentTravelRequestDetailsScreen', 'none')}
                     </Text>
                   </View>
                   
                   <View style={styles.hotelDetailRow}>
-                    <Icon name="cash-outline" type="ionicon" size={16} color="#28a745" />
+                   <Icon name="cash-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.success} />
                     <Text style={styles.hotelDetailText}>{t('AgentTravelRequestDetailsScreen', 'totalCost')} ${hotel.cost}</Text>
                   </View>
                   
                   {hotel.notes && (
                     <View style={styles.hotelDetailRow}>
-                      <Icon name="document-text-outline" type="ionicon" size={16} color="#007bff" />
+                      <Icon name="document-text-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
                       <Text style={styles.hotelDetailText}>{t('AgentTravelRequestDetailsScreen', 'notesColon')} {hotel.notes}</Text>
                     </View>
                   )}
@@ -948,177 +957,181 @@ ${requestUrl}`;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: theme.colors.background,
   },
   card: {
-    borderRadius: 10,
-    marginBottom: 15,
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.responsiveSpacing.md,
+    ...theme.shadows.md,
   },
   warningCard: {
-    borderRadius: 10,
-    marginBottom: 15,
-    backgroundColor: '#fff3cd',
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.responsiveSpacing.md,
+    backgroundColor: theme.colors.warningLight,
     borderColor: '#ffeeba',
+    ...theme.shadows.sm,
   },
   warningText: {
     color: '#856404',
     textAlign: 'center',
-    fontWeight: 'bold',
+    fontWeight: theme.typography.fontWeight.bold,
+    fontSize: theme.responsiveTypography.fontSize.md,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
-
+    marginBottom: theme.spacing.sm,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: theme.responsiveTypography.fontSize.lg,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text,
   },
   sectionContent: {
-    marginTop: 10,
+    marginTop: theme.spacing.sm,
   },
   infoRow: {
-    flexDirection: 'row',
-    marginBottom: 15,
+    flexDirection: screenSize.isXSmall ? 'column' : 'row',
+    marginBottom: theme.responsiveSpacing.md,
   },
   infoColumn: {
     flex: 1,
+    marginBottom: screenSize.isXSmall ? theme.spacing.sm : 0,
   },
   fullWidth: {
     flex: 2,
   },
   label: {
-    fontWeight: 'bold',
-    marginBottom: 5,
+    fontWeight: theme.typography.fontWeight.bold,
+    marginBottom: theme.spacing.xs,
+    fontSize: theme.responsiveTypography.fontSize.sm,
+    color: theme.colors.text,
   },
   childrenAges: {
-    marginTop: 5,
+    marginTop: theme.spacing.xs,
     paddingLeft: 2,
   },
   notesContainer: {
     maxHeight: 100,
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 5,
-    padding: 10,
-    backgroundColor: '#f9f9f9',
+    borderColor: theme.colors.border,
+    borderRadius: theme.borderRadius.sm,
+    padding: theme.spacing.sm,
+    backgroundColor: theme.colors.backgroundGray,
   },
   makeOfferButton: {
-    backgroundColor: '#28a745',
-    borderRadius: 5,
-    paddingHorizontal: 20,
+    backgroundColor: theme.colors.success,
+    borderRadius: theme.borderRadius.sm,
+    paddingHorizontal: theme.spacing.xl,
   },
   row: {
-    flexDirection: 'row',
+    flexDirection: screenSize.isXSmall ? 'column' : 'row',
     justifyContent: 'space-between',
-    marginHorizontal:10,
-    marginBottom: 10,
+    marginHorizontal: theme.spacing.sm,
+    marginBottom: theme.spacing.sm,
   },
   halfWidth: {
-    flex: 0.48,
+    flex: screenSize.isXSmall ? 1 : 0.48,
+    width: screenSize.isXSmall ? '100%' : 'auto',
+    marginBottom: screenSize.isXSmall ? theme.spacing.sm : 0,
   },
   dropdownLabel: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#86939e',
-    marginBottom: 5,
-    marginLeft: 10,
+    fontSize: theme.responsiveTypography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.textSecondary,
+    marginBottom: theme.spacing.xs,
+    marginLeft: theme.spacing.sm,
   },
   dropdown: {
-    height: 50,
-    borderColor: '#86939e',
-    borderWidth: 0.5,
-    borderRadius: 5,
-    paddingHorizontal: 8,
-     marginBottom: 15,
-    marginHorizontal: 10,
-    
+    height: theme.responsiveComponents.input.height,
+    borderColor: theme.colors.border,
+    borderWidth: 1,
+    borderRadius: theme.borderRadius.sm,
+    paddingHorizontal: theme.spacing.sm,
+    marginBottom: theme.responsiveSpacing.md,
+    marginHorizontal: theme.spacing.sm,
+    backgroundColor: theme.colors.backgroundWhite,
   },
   inputContainer: {
     paddingHorizontal: 0,
-    height:50,
+    height: theme.responsiveComponents.input.height,
   },
   inputInnerContainer: {
     borderBottomWidth: 1,
-    borderBottomColor: '#86939e',
+    borderBottomColor: theme.colors.border,
   },
   notesInputContainer: {
-     borderWidth: 1,
-  borderColor: '#ccc',
-  borderRadius: 8,
-  paddingHorizontal: 8,
-  maxHeight: 150,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.borderRadius.md,
+    paddingHorizontal: theme.spacing.sm,
+    maxHeight: 150,
   },
   notesInput: {
     textAlignVertical: 'top',
     minHeight: 100,
-    paddingTop:8,
+    paddingTop: theme.spacing.sm,
+    fontSize: theme.responsiveTypography.fontSize.md,
   },
   mealsLabel: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#86939e',
-    marginBottom: 10,
-    marginLeft: 10,
+    fontSize: theme.responsiveTypography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.textSecondary,
+    marginBottom: theme.spacing.sm,
+    marginLeft: theme.spacing.sm,
   },
   mealsContainer: {
     flexDirection: 'row',
-    flexWrap:'wrap',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginHorizontal:10,
-    marginBottom: 15,
+    marginHorizontal: theme.spacing.sm,
+    marginBottom: theme.responsiveSpacing.md,
   },
   mealCheckbox: {
     backgroundColor: 'transparent',
     borderWidth: 0,
     padding: 0,
     margin: 0,
-    width: '30%',
+    width: screenSize.isXSmall ? '100%' : '30%',
   },
   buttonRow: {
-    flexDirection: 'row',
+    flexDirection: screenSize.isXSmall ? 'column' : 'row',
     justifyContent: 'space-around',
-    marginTop: 10,
+    marginTop: theme.spacing.sm,
   },
   buttonContainer: {
     flex: 1,
-    marginHorizontal: 5,
+    marginHorizontal: theme.spacing.xs,
+    marginBottom: screenSize.isXSmall ? theme.spacing.sm : 0,
   },
   addButton: {
-    backgroundColor: '#28a745',
-    borderRadius: 5,
-    paddingVertical: 12,
+    backgroundColor: theme.colors.success,
+    borderRadius: theme.borderRadius.sm,
+    paddingVertical: theme.spacing.md,
   },
   hotelItemCard: {
-    borderRadius: 8,
-    marginBottom: 10,
-    backgroundColor: '#ffffff',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.spacing.sm,
+    backgroundColor: theme.colors.backgroundWhite,
+    ...theme.shadows.card,
   },
   hotelHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: theme.spacing.sm,
   },
   hotelName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: theme.responsiveTypography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text,
     flex: 1,
   },
   hotelActions: {
@@ -1126,39 +1139,39 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   editIconContainer: {
-    padding: 8,
-    marginRight: 5,
+    padding: theme.spacing.sm,
+    marginRight: theme.spacing.xs,
   },
   deleteIconContainer: {
-    padding: 8,
+    padding: theme.spacing.sm,
   },
   hotelDivider: {
-    backgroundColor: '#e1e8ed',
+    backgroundColor: theme.colors.borderLight,
     height: 1,
-    marginVertical: 10,
+    marginVertical: theme.spacing.sm,
   },
   hotelDetailsContainer: {
-    paddingTop: 5,
+    paddingTop: theme.spacing.xs,
   },
   hotelDetailRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: theme.spacing.sm,
   },
   hotelDetailText: {
-    marginLeft: 8,
-    fontSize: 14,
-    color: '#333',
+    marginLeft: theme.spacing.sm,
+    fontSize: theme.responsiveTypography.fontSize.sm,
+    color: theme.colors.text,
     flex: 1,
   },
   headerTitleContainer: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  flex: 1,
-},
-shareIconContainer: {
-  padding: 8,
-  marginLeft: 10,
-},
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  shareIconContainer: {
+    padding: theme.spacing.sm,
+    marginLeft: theme.spacing.sm,
+  },
 });
 export default AgentTravelRequestDetailsScreen; 

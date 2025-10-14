@@ -24,6 +24,7 @@ import { validPhoneNumber, validPasswordSignup
 
  } from '../utils/validation';
 import {showAlert} from "../components/ShowAlert";
+import { theme, commonStyles, screenSize, responsive } from '../styles//theme';
 import {useTranslation} from "../config/localization";
 export default function AgentAgentProfileScreen({ navigation }) {
   const { t,language } = useTranslation();
@@ -268,7 +269,7 @@ const updatePassword = async () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#007bff" />
+        <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
     );
   }
@@ -285,13 +286,13 @@ const updatePassword = async () => {
             {!editMode ? (
               <Button
                 type="clear"
-                icon={<Icon name="edit" type="material" color="#007bff" />}
+                icon={<Icon name="edit" type="material" color={theme.colors.primary} />}
                 onPress={() => setEditMode(true)}
               />
             ) : (
               <Button
                 type="clear"
-                icon={<Icon name="close" type="material" color="#dc3545" />}
+                icon={<Icon name="close" type="material" color={theme.colors.error} />}
                 onPress={() => {
                   setEditMode(false);
                   setPhoneNumber(profileData.phone_number || '');
@@ -326,17 +327,17 @@ const updatePassword = async () => {
             <View style={styles.infoRow}>
               <Text style={styles.label}>{t('AgentAgentProfileScreen', 'accountStatus')}:</Text>
               <View style={styles.statusContainer}>
-                <Icon
+               <Icon
                   name={profileData?.permitted_to_work ? 'check-circle' : 'cancel'}
                   type="material"
-                  color={profileData?.permitted_to_work ? '#28a745' : '#dc3545'}
-                  size={16}
+                  color={profileData?.permitted_to_work ? theme.colors.success : theme.colors.error}
+                  size={theme.responsiveComponents.icon.small}
                   style={styles.statusIcon}
-                />
-                <Text style={[
+             />
+               <Text style={[
                   styles.statusText,
-                  { color: profileData?.permitted_to_work ? '#28a745' : '#dc3545' }
-                ]}>
+                  { color: profileData?.permitted_to_work ? theme.colors.success : theme.colors.error }
+               ]}>
                   {profileData?.permitted_to_work ? t('AgentAgentProfileScreen', 'active') : t('AgentAgentProfileScreen', 'suspended')}
                 </Text>
               </View>
@@ -403,7 +404,7 @@ const updatePassword = async () => {
   {!isChangingPassword ? (
     <Button
       title={t('AgentAgentProfileScreen', 'changePassword')}
-      icon={<Icon name="lock" type="material" color="#007bff" size={20} style={{ marginRight: 10 }} />}
+      icon={<Icon name="lock" type="material"  color={theme.colors.primary} size={theme.responsiveComponents.icon.medium} style={{ marginRight: theme.spacing.sm }} />}
       type="outline"
       buttonStyle={styles.securityButton}
       containerStyle={styles.buttonContainer}
@@ -474,22 +475,22 @@ const updatePassword = async () => {
                   </View>
                   
                   <View style={styles.statItem}>
-                    <Text style={[styles.statValue, { color: '#28a745' }]}>{offerStats.accepted_offers || 0}</Text>
+                    <Text style={[styles.statValue, { color: theme.colors.success  }]}>{offerStats.accepted_offers || 0}</Text>
                     <Text style={styles.statLabel}>{t('AgentAgentProfileScreen', 'accepted')}</Text>
                   </View>
                   
                   <View style={styles.statItem}>
-                    <Text style={[styles.statValue, { color: '#dc3545' }]}>{offerStats.rejected_offers || 0}</Text>
+                    <Text style={[styles.statValue, { color: theme.colors.error  }]}>{offerStats.rejected_offers || 0}</Text>
                     <Text style={styles.statLabel}>{t('AgentAgentProfileScreen', 'rejected')}</Text>
                   </View>
                   
                   <View style={styles.statItem}>
-                    <Text style={[styles.statValue, { color: '#17a2b8' }]}>{offerStats.viewed_offers || 0}</Text>
+                    <Text style={[styles.statValue, { color: theme.colors.info}]}>{offerStats.viewed_offers || 0}</Text>
                     <Text style={styles.statLabel}>{t('AgentAgentProfileScreen', 'viewed')}</Text>
                   </View>
                   
                   <View style={styles.statItem}>
-                    <Text style={[styles.statValue, { color: '#ffc107' }]}>{offerStats.not_viewed_offers || 0}</Text>
+                    <Text style={[styles.statValue, { color: theme.colors.warning }]}>{offerStats.not_viewed_offers || 0}</Text>
                     <Text style={styles.statLabel}>{t('AgentAgentProfileScreen', 'notViewed')}</Text>
                   </View>
                 </View>
@@ -577,7 +578,7 @@ const updatePassword = async () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.background,
   },
   loadingContainer: {
     flex: 1,
@@ -585,142 +586,146 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   card: {
-    borderRadius: 10,
-    marginBottom: 15,
-    padding: 15,
+    borderRadius: theme.borderRadius.lg,
+    marginBottom: theme.spacing.lg,
+    padding: theme.spacing.lg,
   },
   headerContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: theme.spacing.sm,
   },
   headerText: {
-    fontWeight: 'bold',
+    fontWeight: theme.typography.fontWeight.bold,
+    fontSize: theme.responsiveTypography.fontSize.xl,
+    color: theme.colors.text,
   },
   divider: {
-    marginVertical: 15,
+    marginVertical: theme.spacing.lg,
   },
   section: {
-    marginBottom: 15,
+    marginBottom: theme.spacing.lg,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 15,
-    color: '#333',
+    fontSize: theme.responsiveTypography.fontSize.lg,
+    fontWeight: theme.typography.fontWeight.bold,
+    marginBottom: theme.spacing.lg,
+    color: theme.colors.text,
   },
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: theme.spacing.sm,
   },
   label: {
-    fontSize: 16,
-    color: '#555',
-    fontWeight: 'bold',
+    fontSize: theme.responsiveTypography.fontSize.md,
+    color: theme.colors.labelText,
+    fontWeight: theme.typography.fontWeight.bold,
   },
   value: {
-    fontSize: 16,
-    color: '#333',
+    fontSize: theme.responsiveTypography.fontSize.md,
+    color: theme.colors.text,
   },
   statusContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   statusIcon: {
-    marginRight: 5,
+    marginRight: theme.spacing.xs,
   },
   statusText: {
-    fontSize: 16,
+    fontSize: theme.responsiveTypography.fontSize.md,
   },
   inputContainer: {
-    marginBottom: 15,
+    marginBottom: theme.spacing.lg,
   },
   dropdownLabel: {
-    fontSize: 16,
-    color: '#555',
-    marginBottom: 5,
-    fontWeight: 'bold',
+    fontSize: theme.responsiveTypography.fontSize.md,
+    color: theme.colors.labelText,
+    marginBottom: theme.spacing.xs,
+    fontWeight: theme.typography.fontWeight.bold,
   },
   dropdownContainer: {
-    marginBottom: 15,
+    marginBottom: theme.spacing.lg,
   },
   dropdown: {
-    height: 50,
+    height: theme.responsiveComponents.input.height,
   },
   saveButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: theme.colors.primary,
   },
   buttonContainer: {
     width: '100%',
-    marginBottom: 15,
+    marginBottom: theme.spacing.lg,
   },
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     flexWrap: 'wrap',
-    marginHorizontal: -5,
+    marginHorizontal: -theme.spacing.xs,
   },
   statItem: {
     alignItems: 'center',
-    marginVertical: 10,
+    marginVertical: theme.spacing.sm,
     width: '33%',
   },
   statValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: theme.responsiveTypography.statValue.fontSize,
+    fontWeight: theme.responsiveTypography.statValue.fontWeight,
+    color: theme.responsiveTypography.statValue.color,
   },
   statLabel: {
-    fontSize: 16,
-    color: '#555',
+    fontSize: theme.responsiveTypography.statLabel.fontSize,
+    color: theme.responsiveTypography.statLabel.color,
   },
   deleteButton: {
-    borderColor: '#dc3545',
+    borderColor: theme.colors.error,
   },
   deleteButtonText: {
-    color: '#dc3545',
+    color: theme.colors.error,
   },
   overlay: {
-    borderRadius: 10,
-    padding: 20,
+    borderRadius: theme.responsiveComponents.overlay.borderRadius,
+    padding: theme.responsiveComponents.overlay.padding,
     width: '80%',
   },
   overlayTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: theme.responsiveTypography.fontSize.xl,
+    fontWeight: theme.typography.fontWeight.bold,
     textAlign: 'center',
-    marginBottom: 15,
+    marginBottom: theme.spacing.lg,
+    color: theme.colors.text,
   },
   overlayText: {
-    fontSize: 16,
+    fontSize: theme.responsiveTypography.fontSize.md,
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: theme.spacing.xl,
+    color: theme.colors.text,
   },
   overlayButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   cancelButton: {
-    borderColor: '#007bff',
+    borderColor: theme.colors.primary,
   },
   confirmDeleteButton: {
-    backgroundColor: '#dc3545',
+    backgroundColor: theme.colors.error,
   },
   overlayButtonContainer: {
     width: '48%',
   },
   securityButton: {
-  borderColor: '#007bff',
-},
-passwordButtonsContainer: {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  marginBottom: 15,
-},
-passwordButtonContainer: {
-  width: '48%',
-},
+    borderColor: theme.colors.primary,
+  },
+  passwordButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: theme.spacing.lg,
+  },
+  passwordButtonContainer: {
+    width: '48%',
+  },
 });

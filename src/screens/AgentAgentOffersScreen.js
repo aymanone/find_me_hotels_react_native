@@ -12,6 +12,7 @@ import { Text, Card, Divider, Icon } from 'react-native-elements';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser, signOut } from '../utils/auth';
+import { theme, commonStyles, screenSize, responsive } from '../styles//theme';
 import {showAlert} from "../components/ShowAlert";
 import { useTranslation} from '../config/localization';
 
@@ -129,20 +130,20 @@ export default function AgentAgentOffersScreen() {
     return children.map(age => age).join(', ');
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'accepted':
-        return '#28a745'; // green
-      case 'rejected':
-        return '#dc3545'; // red
-      case 'viewed':
-        return '#17a2b8'; // blue
-      case 'not viewed':
-        return '#ffc107'; // yellow
-      default:
-        return '#6c757d'; // gray
-    }
-  };
+const getStatusColor = (status) => {
+  switch (status) {
+    case 'accepted':
+      return theme.colors.success;
+    case 'rejected':
+      return theme.colors.error;
+    case 'viewed':
+      return theme.colors.statusViewed;
+    case 'not viewed':
+      return theme.colors.statusNotViewed;
+    default:
+      return theme.colors.outdated;
+  }
+};
 
   const getStatusText = (status) => {
     return t('AgentAgentOffersScreen', status.replace(' ', ''));
@@ -169,7 +170,7 @@ export default function AgentAgentOffersScreen() {
       )}
       
       {loading ? (
-        <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />
+        <ActivityIndicator size="large" color={theme.colors.primary} style={styles.loader} />
       ) : offers.length === 0 ? (
         <Card containerStyle={styles.noOffersCard}>
           <Text style={styles.noOffersText}>{t('AgentAgentOffersScreen', 'noOffersYet')}</Text>
@@ -201,7 +202,7 @@ export default function AgentAgentOffersScreen() {
               {offer.travel_requests && (
                 <View style={styles.requestDetails}>
                   <View style={styles.detailRow}>
-                    <Icon name="map-marker" type="font-awesome" size={16} color={outdated ? "#999" : "#007bff"} />
+                    <Icon name="map-marker" type="font-awesome" size={theme.responsiveComponents.icon.small} color={outdated ? theme.colors.outdatedText : theme.colors.primary}  />
                     <Text style={[styles.detailText, outdated && styles.outdatedText]}>
                       <Text style={[styles.detailLabel, outdated && styles.outdatedLabel]}>{t('AgentAgentOffersScreen', 'destination')}</Text>
                       {offer.travel_requests.countries?.country_name || t('AgentAgentOffersScreen', 'na')}, 
@@ -210,7 +211,7 @@ export default function AgentAgentOffersScreen() {
                   </View>
                   
                   <View style={styles.detailRow}>
-                    <Icon name="calendar" type="font-awesome" size={16} color={outdated ? "#999" : "#007bff"} />
+                    <Icon name="calendar" type="font-awesome" size={theme.responsiveComponents.icon.small} color={outdated ? theme.colors.outdatedText : theme.colors.primary} />
                     <Text style={[styles.detailText, outdated && styles.outdatedText]}>
                       <Text style={[styles.detailLabel, outdated && styles.outdatedLabel]}>{t('AgentAgentOffersScreen', 'dates')}</Text>
                       {formatDate(offer.travel_requests.start_date)} to {formatDate(offer.travel_requests.end_date)}
@@ -218,7 +219,7 @@ export default function AgentAgentOffersScreen() {
                   </View>
                   
                   <View style={styles.detailRow}>
-                    <Icon name="users" type="font-awesome" size={16} color={outdated ? "#999" : "#007bff"} />
+                    <Icon name="users" type="font-awesome" size={theme.responsiveComponents.icon.small} color={outdated ? theme.colors.outdatedText : theme.colors.primary}  />
                     <Text style={[styles.detailText, outdated && styles.outdatedText]}>
                       <Text style={[styles.detailLabel, outdated && styles.outdatedLabel]}>{t('AgentAgentOffersScreen', 'people')}</Text>
                       {offer.travel_requests.adults} {t('AgentAgentOffersScreen', 'adults')},{' '}
@@ -227,7 +228,7 @@ export default function AgentAgentOffersScreen() {
                   </View>
                   
                   <View style={styles.detailRow}>
-                    <Icon name="clock-o" type="font-awesome" size={16} color={outdated ? "#999" : "#007bff"} />
+                    <Icon name="clock-o" type="font-awesome" size={theme.responsiveComponents.icon.small} color={outdated ? theme.colors.outdatedText : theme.colors.primary} />
                     <Text style={[styles.detailText, outdated && styles.outdatedText]}>
                       <Text style={[styles.detailLabel, outdated && styles.outdatedLabel]}>{t('AgentAgentOffersScreen', 'created')}</Text>
                       {formatDate(offer.created_at)}
@@ -246,7 +247,7 @@ export default function AgentAgentOffersScreen() {
                 <Text style={styles.viewButtonText}>
                   {outdated ? t('AgentAgentOffersScreen', 'viewOutdatedOffer') : activeOfferState(offer.travel_requests.updated_at, offer.updated_at)}
                 </Text>
-                <Icon name="arrow-right" type="font-awesome" size={16} color="#fff" />
+                <Icon name="arrow-right" type="font-awesome" size={theme.responsiveComponents.icon.small} color={theme.colors.textWhite} />
               </TouchableOpacity>
             </Card>
           );
@@ -259,123 +260,125 @@ export default function AgentAgentOffersScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-    padding: 10,
+    backgroundColor: theme.colors.background,
+    padding: theme.spacing.sm,
   },
   screenTitle: {
     textAlign: 'center',
-    marginVertical: 15,
-    color: '#333',
+    marginVertical: theme.spacing.lg,
+    color: theme.colors.text,
+    fontSize: theme.typography.fontSize.xl,
+    fontWeight: theme.typography.fontWeight.semibold,
   },
   warningCard: {
-    borderRadius: 10,
-    marginBottom: 15,
-    backgroundColor: '#fff3cd',
-    borderColor: '#ffeeba',
+    borderRadius: theme.borderRadius.lg,
+    marginBottom: theme.spacing.lg,
+    backgroundColor: theme.colors.warningLight,
+    borderColor: theme.colors.accentLight,
   },
   warningText: {
-    color: '#856404',
+    color: theme.colors.warning,
     textAlign: 'center',
-    padding: 5,
+    padding: theme.spacing.xs,
+    fontSize: theme.typography.fontSize.sm,
   },
   loader: {
-    marginTop: 50,
+    marginTop: theme.spacing.xxxl,
   },
   offerCard: {
-    borderRadius: 10,
-    marginBottom: 15,
-    padding: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderRadius: theme.borderRadius.lg,
+    marginBottom: theme.spacing.lg,
+    padding: theme.spacing.lg,
+    ...theme.shadows.card,
   },
   outdatedOfferCard: {
     opacity: 0.8,
-    backgroundColor: '#f8f9fa',
-    borderColor: '#dee2e6',
+    backgroundColor: theme.colors.outdatedBackground,
+    borderColor: theme.colors.outdatedBorder,
   },
   offerHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: theme.spacing.sm,
   },
   offerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: theme.typography.fontSize.lg,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text,
   },
   statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 15,
+    paddingHorizontal: theme.components.statusBadge.paddingHorizontal,
+    paddingVertical: theme.components.statusBadge.paddingVertical,
+    borderRadius: theme.components.statusBadge.borderRadius,
   },
   outdatedBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 15,
-    backgroundColor: '#6c757d',
+    paddingHorizontal: theme.components.statusBadge.paddingHorizontal,
+    paddingVertical: theme.components.statusBadge.paddingVertical,
+    borderRadius: theme.components.statusBadge.borderRadius,
+    backgroundColor: theme.colors.outdated,
   },
   statusText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: 'bold',
+    color: theme.colors.textWhite,
+    fontSize: theme.components.statusBadge.fontSize,
+    fontWeight: theme.components.statusBadge.fontWeight,
   },
   outdatedText: {
-    color: '#6c757d',
+    color: theme.colors.outdated,
   },
   outdatedLabel: {
-    fontWeight: 'bold',
-    color: '#6c757d',
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.outdated,
   },
   divider: {
-    marginVertical: 10,
+    marginVertical: theme.spacing.sm,
   },
   requestDetails: {
-    marginTop: 5,
+    marginTop: theme.spacing.xs,
   },
   detailRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 10,
+    marginBottom: theme.spacing.sm,
   },
   detailText: {
-    marginLeft: 10,
+    marginLeft: theme.spacing.sm,
     flex: 1,
     flexWrap: 'wrap',
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.text,
   },
   detailLabel: {
-    fontWeight: 'bold',
+    fontWeight: theme.typography.fontWeight.bold,
   },
   viewButton: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 12,
-    borderRadius: 5,
-    marginTop: 10,
+    padding: theme.spacing.md,
+    borderRadius: theme.borderRadius.sm,
+    marginTop: theme.spacing.sm,
   },
   activeViewButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: theme.colors.primary,
   },
   outdatedViewButton: {
-    backgroundColor: '#6c757d',
+    backgroundColor: theme.colors.outdated,
   },
   viewButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    marginRight: 5,
+    color: theme.colors.textWhite,
+    fontWeight: theme.typography.fontWeight.bold,
+    marginRight: theme.spacing.xs,
+    fontSize: theme.typography.fontSize.sm,
   },
   noOffersCard: {
-    borderRadius: 10,
-    padding: 20,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.xl,
     alignItems: 'center',
   },
   noOffersText: {
-    fontSize: 16,
-    color: '#666',
+    fontSize: theme.typography.fontSize.md,
+    color: theme.colors.textSecondary,
     textAlign: 'center',
   },
 });

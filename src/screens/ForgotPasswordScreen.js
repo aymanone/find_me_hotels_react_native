@@ -6,6 +6,7 @@ import Constants from 'expo-constants';
 import {validEmail} from '../utils/validation';
 import {signOut,notAllowedAuthenticatedUser} from '../utils/auth';
 import {showAlert} from "../components/ShowAlert";
+import { theme, commonStyles, responsive, screenSize } from '../styles/theme';
 import { useTranslation } from '../config/localization';
 import LanguageSelector from '../components/LanguageSelector';
 
@@ -98,7 +99,7 @@ useEffect(() => {
       <View style={styles.languageSelectorContainer}>
         <LanguageSelector />
       </View>
-      <Text h3 style={styles.title}>{t('ForgotPasswordScreen', 'title')}</Text>
+      <Text  style={styles.title}>{t('ForgotPasswordScreen', 'title')}</Text>
       <Text style={styles.subtitle}>
         {t('ForgotPasswordScreen', 'enterEmail')}
       </Text>
@@ -109,7 +110,12 @@ useEffect(() => {
         value={email}
         autoCapitalize="none"
         keyboardType="email-address"
-        leftIcon={{ type: 'font-awesome', name: 'envelope' }}
+        leftIcon={{ 
+           type: 'font-awesome', 
+           name: 'envelope',
+           size: theme.responsiveComponents.icon.medium,
+           color: theme.colors.textSecondary
+}}
       />
       
       <Button
@@ -131,27 +137,37 @@ useEffect(() => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: '#fff',
+    padding: theme.spacing.xl,
+    backgroundColor: theme.colors.backgroundWhite,
     justifyContent: 'center',
   },
+  
   languageSelectorContainer: {
     position: 'absolute',
-    top: 50,
-    right: 20,
+    top: responsive(40, 50, 50, 50, 50),
+    right: theme.spacing.xl,
     zIndex: 1,
   },
+  
   title: {
     textAlign: 'center',
-    marginBottom: 10,
+    marginBottom: theme.spacing.sm,
+    fontSize: theme.responsiveTypography.h3.fontSize,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text,
   },
+  
   subtitle: {
     textAlign: 'center',
-    marginBottom: 20,
-    color: '#666',
+    marginBottom: theme.spacing.xl,
+    fontSize: theme.responsiveTypography.fontSize.md,
+    color: theme.colors.textSecondary,
   },
+  
   button: {
-    marginTop: 10,
-    marginBottom: 20,
+    marginTop: theme.spacing.sm,
+    marginBottom: theme.spacing.xl,
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.md,
   },
 });

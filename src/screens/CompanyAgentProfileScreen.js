@@ -20,6 +20,7 @@ import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser, signOut } from '../utils/auth';
 import { validEmail } from '../utils/validation';
 import {showAlert} from "../components/ShowAlert";
+import { theme, commonStyles, screenSize, responsive } from '../styles//theme';
 import { useTranslation } from '../config/localization';
 
 const CompanyAgentProfileScreen = ({ route, navigation }) => {
@@ -279,7 +280,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
     );
   }
@@ -302,7 +303,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
       {!isPermittedToWork && (
         <Card containerStyle={styles.warningCard}>
           <View style={styles.warningContainer}>
-            <Icon name="alert-circle-outline" type="ionicon" color="#856404" size={24} />
+            <Icon name="alert-circle-outline" type="ionicon"  color={theme.colors.warningIcon} size={theme.responsiveComponents.icon.large}  />
             <Text style={styles.warningText}>
               {t('CompanyAgentProfileScreen', 'accountInactiveWarning')}
             </Text>
@@ -315,21 +316,21 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
           <Icon
             name="person-circle-outline"
             type="ionicon"
-            size={80}
-            color="#007bff"
+            size={responsive(70, 80, 80, 80, 80)}
+            color={theme.colors.primary}
           />
           <Text style={styles.agentName}>
             {agent.first_name} {agent.second_name}
           </Text>
           
           <Button
-            icon={<Icon name={isEditing ? "close" : "edit"} type="material" size={20} color="white" />}
+            icon={<Icon name={isEditing ? "close" : "edit"} type="material"  size={theme.responsiveComponents.icon.medium} color={theme.colors.textWhite} />}
             title={isEditing ? t('CompanyAgentProfileScreen', 'cancel') : t('CompanyAgentProfileScreen', 'editProfile')}
             onPress={handleEditButtonPress}
             buttonStyle={[
               styles.editButton, 
-              isEditing && { backgroundColor: '#dc3545' },
-              !isPermittedToWork && { backgroundColor: '#6c757d' }
+              isEditing && { backgroundColor: theme.colors.error },
+              !isPermittedToWork && { backgroundColor: theme.colors.outdated }
             ]}
             containerStyle={styles.editButtonContainer}
             disabled={!isPermittedToWork}
@@ -414,8 +415,8 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
                   <Switch
                     value={editedAgent.permitted_to_work}
                     onValueChange={(value) => setEditedAgent({...editedAgent, permitted_to_work: value})}
-                    trackColor={{ false: "#dc3545", true: "#28a745" }}
-                    thumbColor={editedAgent.permitted_to_work ? "#f5dd4b" : "#f4f3f4"}
+                    trackColor={{ false: theme.colors.error, true: theme.colors.success }}
+                    thumbColor={editedAgent.permitted_to_work ? theme.colors.accent : theme.colors.disabled}
                   />
                 </View>
               </View>
@@ -444,7 +445,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
                 <Text style={styles.infoLabel}>{t('CompanyAgentProfileScreen', 'status')}</Text>
                 <Text style={[
                   styles.infoValue,
-                  { color: agent?.permitted_to_work ? '#28a745' : '#dc3545' }
+                  { color: agent?.permitted_to_work ? theme.colors.success : theme.colors.error }
                 ]}>
                   {agent?.permitted_to_work ? t('CompanyAgentProfileScreen', 'active') : t('CompanyAgentProfileScreen', 'inactive')}
                 </Text>
@@ -471,22 +472,22 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
           </View>
           
           <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: '#28a745' }]}>{stats.acceptedOffers}</Text>
+            <Text style={[styles.statValue, { color: theme.colors.success }]}>{stats.acceptedOffers}</Text>
             <Text style={styles.statLabel}>{t('CompanyAgentProfileScreen', 'accepted')}</Text>
           </View>
           
           <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: '#dc3545' }]}>{stats.rejectedOffers}</Text>
+            <Text style={[styles.statValue, { color: theme.colors.error }]}>{stats.rejectedOffers}</Text>
             <Text style={styles.statLabel}>{t('CompanyAgentProfileScreen', 'rejected')}</Text>
           </View>
           
           <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: '#ffc107' }]}>{stats.viewedOffers}</Text>
+            <Text style={[styles.statValue, { color: theme.colors.info }]}>{stats.viewedOffers}</Text>
             <Text style={styles.statLabel}>{t('CompanyAgentProfileScreen', 'viewed')}</Text>
           </View>
 
           <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: '#dc3545' }]}>{stats.notViewedOffers}</Text>
+            <Text style={[styles.statValue, { color: theme.colors.warning }]}>{stats.notViewedOffers}</Text>
             <Text style={styles.statLabel}>{t('CompanyAgentProfileScreen', 'notViewed')}</Text>
           </View>
         </View>
@@ -498,7 +499,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: theme.colors.background,
   },
   loadingContainer: {
     flex: 1,
@@ -509,166 +510,178 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: theme.spacing.xl,
   },
   errorText: {
-    fontSize: 18,
-    marginBottom: 20,
-    color: '#dc3545',
+    fontSize: theme.responsiveTypography.fontSize.lg,
+    marginBottom: theme.spacing.xl,
+    color: theme.colors.error,
   },
   backButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: theme.colors.primary,
   },
   warningCard: {
-    borderRadius: 10,
-    margin: 10,
-    padding: 10,
-    backgroundColor: '#fff3cd',
+    borderRadius: theme.borderRadius.lg,
+    margin: theme.spacing.sm,
+    padding: theme.spacing.sm,
+    backgroundColor: theme.colors.warningLight,
   },
   warningContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   warningText: {
-    marginLeft: 10,
-    fontSize: 16,
-    color: '#856404',
+    marginLeft: theme.spacing.sm,
+    fontSize: theme.responsiveTypography.fontSize.md,
+    color: theme.colors.warningTitle,
   },
   profileCard: {
-    borderRadius: 10,
-    margin: 10,
-    padding: 10,
+    borderRadius: theme.borderRadius.lg,
+    margin: theme.spacing.sm,
+    padding: theme.spacing.sm,
   },
   profileHeader: {
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: theme.spacing.sm,
   },
   agentName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginTop: 10,
+    fontSize: theme.responsiveTypography.fontSize.xxl,
+    fontWeight: theme.typography.fontWeight.bold,
+    marginTop: theme.spacing.sm,
+    color: theme.colors.text,
   },
   editButton: {
-    backgroundColor: '#007bff',
-    width: 150,
-    height: 40,
-    borderRadius: 20,
+    backgroundColor: theme.colors.primary,
+    width: responsive(130, 150, 150, 150, 150),
+    height: responsive(36, 40, 40, 40, 40),
+    borderRadius: theme.borderRadius.xl,
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
   },
   editButtonContainer: {
-    marginTop: 10,
+    marginTop: theme.spacing.sm,
   },
   divider: {
-    marginVertical: 10,
+    marginVertical: theme.spacing.sm,
   },
   infoSection: {
-    marginHorizontal: 10,
+    marginHorizontal: theme.spacing.sm,
   },
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: theme.spacing.sm,
   },
   editRow: {
-    marginBottom: 10,
+    marginBottom: theme.spacing.sm,
   },
   infoLabel: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: theme.responsiveTypography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text,
   },
   infoValue: {
-    fontSize: 16,
+    fontSize: theme.responsiveTypography.fontSize.md,
+    color: theme.colors.text,
   },
   editInput: {
     width: '100%',
   },
   editInputText: {
-    fontSize: 16,
+    fontSize: theme.responsiveTypography.fontSize.md,
   },
   dropdownContainer: {
     width: '100%',
-    marginVertical: 5,
+    marginVertical: theme.spacing.xs,
   },
   dropdown: {
-    height: 50,
-    borderColor: '#ddd',
+    height: theme.responsiveComponents.input.height,
+    borderColor: theme.colors.border,
     borderWidth: 1,
-    borderRadius: 5,
-    paddingHorizontal: 8,
-    backgroundColor: '#fff',
+    borderRadius: theme.borderRadius.sm,
+    paddingHorizontal: theme.spacing.sm,
+    backgroundColor: theme.colors.backgroundWhite,
   },
   placeholderStyle: {
-    fontSize: 16,
-    color: '#aaa',
+    fontSize: theme.responsiveTypography.fontSize.md,
+    color: theme.colors.textLight,
   },
   selectedTextStyle: {
-    fontSize: 16,
+    fontSize: theme.responsiveTypography.fontSize.md,
+    color: theme.colors.text,
   },
   inputSearchStyle: {
-    height: 40,
-    fontSize: 16,
+    height: responsive(36, 40, 40, 40, 40),
+    fontSize: theme.responsiveTypography.fontSize.md,
   },
   iconStyle: {
-    width: 20,
-    height: 20,
+    width: theme.responsiveComponents.icon.medium,
+    height: theme.responsiveComponents.icon.medium,
   },
   dropdownItem: {
-    padding: 10,
+    padding: theme.spacing.sm,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   textItem: {
     flex: 1,
-    fontSize: 16,
+    fontSize: theme.responsiveTypography.fontSize.md,
+    color: theme.colors.text,
   },
   switchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   switchLabel: {
-    fontSize: 16,
-    marginRight: 10,
+    fontSize: theme.responsiveTypography.fontSize.md,
+    marginRight: theme.spacing.sm,
+    color: theme.colors.text,
   },
   inactiveText: {
-    color: '#dc3545',
+    color: theme.colors.error,
   },
   saveButton: {
-    backgroundColor: '#28a745',
+    backgroundColor: theme.colors.success,
     width: '100%',
-    height: 40,
-    borderRadius: 20,
+    height: responsive(36, 40, 40, 40, 40),
+    borderRadius: theme.borderRadius.xl,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: theme.spacing.sm,
   },
   statsCard: {
-    borderRadius: 10,
-    margin: 10,
-    padding: 10,
+    borderRadius: theme.borderRadius.lg,
+    margin: theme.spacing.sm,
+    padding: theme.spacing.sm,
   },
   cardTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
+    fontSize: theme.responsiveTypography.fontSize.xl,
+    fontWeight: theme.typography.fontWeight.bold,
+    marginBottom: theme.spacing.sm,
+    color: theme.colors.text,
   },
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
+    flexWrap: 'wrap',
+    marginHorizontal: -responsive(4, 8, 8, 8, 8), //
   },
   statItem: {
-    alignItems: 'center',
+   alignItems: 'center',
+  minWidth: responsive(80, 100, 100, 100, 100),
+  marginHorizontal: responsive(4, 8, 8, 8, 8),
+  marginVertical: theme.spacing.sm,
   },
   statValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: theme.responsiveTypography.statValue.fontSize,
+    fontWeight: theme.responsiveTypography.statValue.fontWeight,
+    color: theme.responsiveTypography.statValue.color,
   },
   statLabel: {
-    fontSize: 14,
-    color: '#6c757d',
+    fontSize: theme.responsiveTypography.statLabel.fontSize,
+    color: theme.responsiveTypography.statLabel.color,
   },
 });
-
 export default CompanyAgentProfileScreen;

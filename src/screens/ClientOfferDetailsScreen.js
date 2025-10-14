@@ -18,6 +18,7 @@ import supabase from '../config/supabase';
 import {MESSAGING_APPS} from '../config/CONSTANTS';
 import { checkUserRole } from '../utils/auth';
 import {showAlert} from "../components/ShowAlert";
+import { theme, commonStyles, responsive, screenSize } from '../styles/theme';
 import { useTranslation } from '../config/localization';
 
 const ClientOfferDetailsScreen = ({ route, navigation }) => {
@@ -200,7 +201,7 @@ const appHasLink =(messagingApp) =>{
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color={theme.colors.primary}/>
       </View>
     );
   }
@@ -227,6 +228,8 @@ const appHasLink =(messagingApp) =>{
     <Icon 
       name={offerInfoSectionCollapsed ? 'chevron-down' : 'chevron-up'} 
       type="ionicon" 
+      size={theme.responsiveComponents.icon.medium}
+      color={theme.colors.textSecondary}
     />
   </TouchableOpacity>
   
@@ -301,6 +304,8 @@ const appHasLink =(messagingApp) =>{
           <Icon 
             name={hotelsSectionCollapsed ? 'chevron-down' : 'chevron-up'} 
             type="ionicon" 
+            size={theme.responsiveComponents.icon.medium}
+            color={theme.colors.textSecondary}
           />
         </TouchableOpacity>
         
@@ -310,7 +315,7 @@ const appHasLink =(messagingApp) =>{
               <Card key={index} containerStyle={styles.hotelItemCard}>
                 {/* Hotel Name */}
                 <View style={styles.hotelDetailRow}>
-                  <Icon name="business-outline" type="ionicon" size={16} color="#007bff" />
+                  <Icon name="business-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary}/>
                   <Text style={styles.hotelDetailText}>
                     <Text style={styles.hotelDetailLabel}>{t('ClientOfferDetailsScreen', 'name')} </Text>
                     {hotel.name}
@@ -319,7 +324,7 @@ const appHasLink =(messagingApp) =>{
                 
                 {/* Hotel Address */}
                 <View style={styles.hotelDetailRow}>
-                  <Icon name="location-outline" type="ionicon" size={16} color="#007bff" />
+                  <Icon name="location-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
                   <Text style={styles.hotelDetailText}>
                     <Text style={styles.hotelDetailLabel}>{t('ClientOfferDetailsScreen', 'address')} </Text>
                     {hotel.address}
@@ -328,7 +333,7 @@ const appHasLink =(messagingApp) =>{
                 
                 {/* Rooms and Room Size */}
                 <View style={styles.hotelDetailRow}>
-                  <Icon name="bed-outline" type="ionicon" size={16} color="#007bff" />
+                  <Icon name="bed-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
                   <Text style={styles.hotelDetailText}>
                     <Text style={styles.hotelDetailLabel}>{t('ClientOfferDetailsScreen', 'rooms')} </Text>
                     {hotel.rooms} {hotel.rooms === 1 ? t('ClientOfferDetailsScreen', 'room') : t('ClientOfferDetailsScreen', 'rooms')}, {hotel.room_size} {t('ClientOfferDetailsScreen', 'squareMeters')}
@@ -337,7 +342,7 @@ const appHasLink =(messagingApp) =>{
                 
                 {/* Cost and Rating */}
                 <View style={styles.hotelDetailRow}>
-                  <Icon name="star" type="ionicon" size={16} color="#FFD700" />
+                  <Icon name="star" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.warning} />
                   <Text style={styles.hotelDetailText}>
                     <Text style={styles.hotelDetailLabel}>{t('ClientOfferDetailsScreen', 'rating')} </Text>
                     {hotel.rating} {t('ClientOfferDetailsScreen', 'stars')}
@@ -345,7 +350,7 @@ const appHasLink =(messagingApp) =>{
                 </View>
                 
                 <View style={styles.hotelDetailRow}>
-                  <Icon name="cash-outline" type="ionicon" size={16} color="#28a745" />
+                  <Icon name="cash-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.success} />
                   <Text style={styles.hotelDetailText}>
                     <Text style={styles.hotelDetailLabel}>{t('ClientOfferDetailsScreen', 'cost')} </Text>
                     ${hotel.cost}
@@ -354,7 +359,7 @@ const appHasLink =(messagingApp) =>{
                 
                 {/* Meals */}
                 <View style={styles.hotelDetailRow}>
-                  <Icon name="restaurant-outline" type="ionicon" size={16} color="#007bff" />
+                  <Icon name="restaurant-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
                   <Text style={styles.hotelDetailText}>
                     <Text style={styles.hotelDetailLabel}>{t('ClientOfferDetailsScreen', 'meals')} </Text>
                     {hotel.meals && hotel.meals.length > 0 ? hotel.meals.join(', ') : t('ClientOfferDetailsScreen', 'none')}
@@ -364,7 +369,7 @@ const appHasLink =(messagingApp) =>{
                 {/* Notes */}
                 {hotel.notes && (
                   <View style={styles.hotelDetailRow}>
-                    <Icon name="document-text-outline" type="ionicon" size={16} color="#007bff" />
+                    <Icon name="document-text-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
                     <Text style={styles.hotelDetailText}>
                       <Text style={styles.hotelDetailLabel}>{t('ClientOfferDetailsScreen', 'notes')} </Text>
                       {hotel.notes}
@@ -387,6 +392,8 @@ const appHasLink =(messagingApp) =>{
           <Icon 
             name={agentSectionCollapsed ? 'chevron-down' : 'chevron-up'} 
             type="ionicon" 
+            size={theme.responsiveComponents.icon.medium}
+            color={theme.colors.textSecondary}
           />
         </TouchableOpacity>
         
@@ -411,7 +418,7 @@ const appHasLink =(messagingApp) =>{
                 <Text style={styles.value}>{t('ClientOfferDetailsScreen', 'phone')} {agent.phone_number}</Text>
                 <Text style={styles.value}>{t('ClientOfferDetailsScreen', 'messagingApp')} {agent.messaging_app}</Text>
              { appHasLink(agent.messaging_app) &&  (<View style={styles.contactHint}>
-          <Icon name="chatbubble-outline" type="ionicon" size={14} color="#007bff" />
+          <Icon name="chatbubble-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
           <Text style={styles.contactHintText}>{t('ClientOfferDetailsScreen', 'tapToContactVia')} {agent.messaging_app}</Text>
            </View>)}
            </View>
@@ -477,110 +484,133 @@ const appHasLink =(messagingApp) =>{
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.background,
   },
+  
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: theme.colors.background,
   },
+  
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: theme.spacing.xl,
   },
+  
   errorText: {
-    fontSize: 16,
-    color: 'red',
+    fontSize: theme.responsiveTypography.fontSize.md,
+    color: theme.colors.error,
     textAlign: 'center',
   },
+  
   card: {
-    borderRadius: 10,
-    marginBottom: 15,
+    borderRadius: theme.borderRadius.lg,
+    marginBottom: theme.spacing.lg,
+    ...theme.shadows.card,
   },
+  
   sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
+    ...commonStyles.responsiveSectionHeader,
   },
+  
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    ...commonStyles.responsiveSectionTitle,
   },
+  
   divider: {
-    marginVertical: 10,
+    height: 1,
+    backgroundColor: theme.colors.borderLight,
+    marginVertical: theme.spacing.sm,
   },
+  
   sectionContent: {
-    marginTop: 10,
+    marginTop: theme.spacing.sm,
   },
+  
   infoRow: {
-    flexDirection: 'row',
-    marginBottom: 15,
+    ...commonStyles.responsiveInfoRow,
   },
+  
   infoColumn: {
     flex: 1,
   },
+  
   fullWidth: {
     flex: 2,
   },
+  
   label: {
-    fontWeight: 'bold',
-    marginBottom: 5,
-    color: '#555',
+    fontWeight: theme.typography.fontWeight.bold,
+    marginBottom: theme.spacing.xs,
+    color: theme.colors.textSecondary,
+    fontSize: theme.responsiveTypography.fontSize.sm,
   },
+  
   value: {
-    fontSize: 16,
+    fontSize: theme.responsiveTypography.fontSize.md,
+    color: theme.colors.text,
   },
+  
   linkText: {
-    color: '#007bff',
+    color: theme.colors.primary,
     textDecorationLine: 'underline',
-    fontSize: 16,
+    fontSize: theme.responsiveTypography.fontSize.md,
   },
+  
   hotelItemCard: {
-    borderRadius: 8,
-    marginBottom: 10,
-    padding: 10,
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.spacing.sm,
+    padding: theme.spacing.sm,
     borderWidth: 1,
-    borderColor: '#e1e1e1',
+    borderColor: theme.colors.borderLight,
+    backgroundColor: theme.colors.backgroundWhite,
   },
+  
   hotelDetailRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: theme.spacing.sm,
   },
+  
   hotelDetailText: {
-    marginLeft: 8,
-    fontSize: 14,
-    color: '#333',
+    marginLeft: theme.spacing.sm,
+    fontSize: theme.responsiveTypography.fontSize.sm,
+    color: theme.colors.text,
     flex: 1,
   },
+  
   hotelDetailLabel: {
-    fontWeight: 'bold',
+    fontWeight: theme.typography.fontWeight.bold,
   },
-  // Add to your existing styles object
-contactButton: {
-  backgroundColor: '#f0f8ff',  // Light blue background
-  borderRadius: 8,
-  padding: 10,
-  borderWidth: 1,
-  borderColor: '#cce5ff',
-},
-contactButtonContent: {
-  flexDirection: 'column',
-},
-contactHint: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  marginTop: 8,
-},
-contactHintText: {
-  color: '#007bff',
-  fontSize: 14,
-  marginLeft: 5,
-  fontStyle: 'italic',
-},
+  
+  contactButton: {
+    backgroundColor: theme.colors.primaryLight,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  
+  contactButtonContent: {
+    flexDirection: 'column',
+  },
+  
+  contactHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: theme.spacing.sm,
+  },
+  
+  contactHintText: {
+    color: theme.colors.primary,
+    fontSize: theme.responsiveTypography.fontSize.sm,
+    marginLeft: theme.spacing.xs,
+    fontStyle: 'italic',
+  },
 });
 
 export default ClientOfferDetailsScreen;

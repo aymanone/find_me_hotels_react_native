@@ -20,6 +20,7 @@ import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser, signOut } from '../utils/auth';
 import { validPasswordSignup } from '../utils/validation';
 import { showAlert } from "../components/ShowAlert";
+import { theme, commonStyles, screenSize, responsive } from '../styles//theme';
 import {  useTranslation} from '../config/localization';
 
 const CompanyCompanyProfileScreen = ({ navigation }) => {
@@ -266,7 +267,7 @@ const CompanyCompanyProfileScreen = ({ navigation }) => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color={theme.colors.primary}  />
       </View>
     );
   }
@@ -291,7 +292,7 @@ const CompanyCompanyProfileScreen = ({ navigation }) => {
         
         {/* Company Name */}
         <View style={styles.infoRow}>
-          <Icon name="business-outline" type="ionicon" size={20} color="#007bff" />
+          <Icon name="business-outline" type="ionicon"  size={theme.spacing.xl} color={theme.colors.primary} />
           <View style={styles.infoTextContainer}>
             <Text style={styles.label}>
               {t('CompanyCompanyProfileScreen', 'companyName')}
@@ -302,7 +303,7 @@ const CompanyCompanyProfileScreen = ({ navigation }) => {
         
         {/* Company Email */}
         <View style={styles.infoRow}>
-          <Icon name="mail-outline" type="ionicon" size={20} color="#007bff" />
+          <Icon name="mail-outline" type="ionicon"  size={theme.spacing.xl} color={theme.colors.primary}/>
           <View style={styles.infoTextContainer}>
             <Text style={styles.label}>
               {t('CompanyCompanyProfileScreen', 'email')}
@@ -314,7 +315,7 @@ const CompanyCompanyProfileScreen = ({ navigation }) => {
         {/* Company Country */}
         {company.countries && (
           <View style={styles.infoRow}>
-            <Icon name="globe-outline" type="ionicon" size={20} color="#007bff" />
+            <Icon name="globe-outline" type="ionicon"  size={theme.spacing.xl} color={theme.colors.primary} />
             <View style={styles.infoTextContainer}>
               <Text style={styles.label}>
                 {t('CompanyCompanyProfileScreen', 'country')}
@@ -327,7 +328,7 @@ const CompanyCompanyProfileScreen = ({ navigation }) => {
         {/* Company Address (if available) */}
         {company.address && (
           <View style={styles.infoRow}>
-            <Icon name="location-outline" type="ionicon" size={20} color="#007bff" />
+            <Icon name="location-outline" type="ionicon"  size={theme.spacing.xl} color={theme.colors.primary} />
             <View style={styles.infoTextContainer}>
               <Text style={styles.label}>
                 {t('CompanyCompanyProfileScreen', 'address')}
@@ -340,7 +341,7 @@ const CompanyCompanyProfileScreen = ({ navigation }) => {
         {/* Company URL (if available) */}
         {company.url && (
           <View style={styles.infoRow}>
-            <Icon name="globe-outline" type="ionicon" size={20} color="#007bff" />
+            <Icon name="globe-outline" type="ionicon"  size={theme.spacing.xl} color={theme.colors.primary} />
             <View style={styles.infoTextContainer}>
               <Text style={styles.label}>
                 {t('CompanyCompanyProfileScreen', 'website')}
@@ -363,7 +364,7 @@ const CompanyCompanyProfileScreen = ({ navigation }) => {
         {!isChangingPassword ? (
           <Button
             title={t('CompanyCompanyProfileScreen', 'changePassword')}
-            icon={<Icon name="lock-closed-outline" type="ionicon" color="white" size={20} style={styles.buttonIcon} />}
+            icon={<Icon name="lock-closed-outline" type="ionicon" color={theme.colors.textWhite} size={theme.spacing.xl} style={styles.buttonIcon}  />}
             buttonStyle={styles.securityButton}
             onPress={() => setIsChangingPassword(true)}
           />
@@ -439,7 +440,7 @@ const CompanyCompanyProfileScreen = ({ navigation }) => {
         </Text>
         <Button
           title={t('CompanyCompanyProfileScreen', 'deleteAccount')}
-          icon={<Icon name="trash-outline" type="ionicon" color="white" size={20} style={styles.buttonIcon} />}
+          icon={<Icon name="trash-outline" type="ionicon" color={theme.colors.textWhite} size={theme.spacing.xl} style={styles.buttonIcon}  />}
           buttonStyle={styles.deleteButton}
           onPress={handleDeleteAccount}
         />
@@ -482,96 +483,105 @@ const CompanyCompanyProfileScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: theme.colors.background,
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: theme.spacing.xl,
   },
   errorText: {
-    fontSize: 16,
-    color: '#dc3545',
+    fontSize: theme.typography.fontSize.md,
+    color: theme.colors.error,
     textAlign: 'center',
   },
   card: {
-    borderRadius: 10,
-    marginBottom: 15,
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.spacing.lg,
+    backgroundColor: theme.colors.backgroundWhite,
+    ...theme.shadows.card,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 15,
+    fontSize: theme.typography.h3.fontSize,
+    fontWeight: theme.typography.h3.fontWeight,
+    marginBottom: theme.spacing.lg,
+    color: theme.typography.h3.color,
   },
   divider: {
-    marginBottom: 15,
+    marginBottom: theme.spacing.lg,
+    backgroundColor: theme.colors.border,
   },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 15,
+    marginBottom: theme.spacing.lg,
   },
   infoTextContainer: {
-    marginLeft: 10,
+    marginLeft: theme.spacing.md,
     flex: 1,
   },
   label: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#555',
+    fontSize: theme.typography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.labelText,
   },
   value: {
-    fontSize: 16,
-    color: '#333',
+    fontSize: theme.typography.fontSize.md,
+    color: theme.colors.text,
   },
   linkValue: {
-    fontSize: 16,
-    color: '#007bff',
+    fontSize: theme.typography.fontSize.md,
+    color: theme.colors.primary,
     textDecorationLine: 'underline',
   },
   dangerCard: {
-    borderRadius: 10,
-    marginBottom: 15,
-    borderColor: '#dc3545',
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.spacing.lg,
+    borderColor: theme.colors.dangerCard,
+    borderWidth: 1,
+    backgroundColor: theme.colors.backgroundWhite,
+    ...theme.shadows.card,
   },
   dangerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#dc3545',
-    marginBottom: 15,
+    fontSize: theme.typography.dangerTitle.fontSize,
+    fontWeight: theme.typography.dangerTitle.fontWeight,
+    color: theme.typography.dangerTitle.color,
+    marginBottom: theme.typography.dangerTitle.marginBottom,
   },
   dangerText: {
-    marginBottom: 15,
-    color: '#555',
+    marginBottom: theme.spacing.lg,
+    color: theme.colors.dangerText,
+    fontSize: theme.typography.fontSize.md,
   },
   deleteButton: {
-    backgroundColor: '#dc3545',
-    borderRadius: 5,
+    backgroundColor: theme.colors.error,
+    borderRadius: theme.borderRadius.md,
   },
   buttonIcon: {
-    marginRight: 10,
+    marginRight: theme.spacing.md,
   },
   securityButton: {
-    backgroundColor: '#007bff',
-    borderRadius: 5,
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.md,
   },
   inputContainer: {
-    marginBottom: 15,
+    marginBottom: theme.spacing.lg,
   },
   inputLabel: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#555',
-    marginBottom: 5,
+    fontSize: theme.typography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.labelText,
+    marginBottom: theme.spacing.xs,
   },
   passwordInputContainer: {
-    marginBottom: 10,
+    marginBottom: theme.spacing.md,
   },
   passwordInput: {
     paddingHorizontal: 0,
@@ -579,42 +589,46 @@ const styles = StyleSheet.create({
   passwordButtonsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 10,
+    marginTop: theme.spacing.md,
+    gap: theme.spacing.md,
   },
   passwordButtonContainer: {
-    width: '48%',
+    flex: 1,
   },
   saveButton: {
-    backgroundColor: '#28a745',
-    borderRadius: 5,
+    backgroundColor: theme.colors.success,
+    borderRadius: theme.borderRadius.md,
   },
   cancelButton: {
-    borderColor: '#6c757d',
-    borderRadius: 5,
+    borderColor: theme.colors.textSecondary,
+    borderRadius: theme.borderRadius.md,
   },
   overlay: {
-    width: '80%',
-    padding: 20,
-    borderRadius: 10,
+    width: theme.components.overlay.widthPercentage * 100 + '%',
+    padding: theme.components.overlay.padding,
+    borderRadius: theme.components.overlay.borderRadius,
+    backgroundColor: theme.colors.backgroundWhite,
   },
   overlayTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 15,
-    textAlign: 'center',
+    fontSize: theme.typography.overlayTitle.fontSize,
+    fontWeight: theme.typography.overlayTitle.fontWeight,
+    marginBottom: theme.typography.overlayTitle.marginBottom,
+    textAlign: theme.typography.overlayTitle.textAlign,
+    color: theme.typography.overlayTitle.color,
   },
   overlayText: {
-    fontSize: 16,
-    marginBottom: 20,
-    textAlign: 'center',
+    fontSize: theme.typography.overlayText.fontSize,
+    marginBottom: theme.typography.overlayText.marginBottom,
+    textAlign: theme.typography.overlayText.textAlign,
+    color: theme.typography.overlayText.color,
   },
   overlayButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    gap: theme.spacing.md,
   },
   overlayButtonContainer: {
-    width: '48%',
+    flex: 1,
   },
 });
-
 export default CompanyCompanyProfileScreen;
