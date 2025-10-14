@@ -8,7 +8,7 @@ const { width, height } = Dimensions.get('window');
 // Screen size breakpoints
 export const breakpoints = {
   xs: 320,   // Very small phones
-  sm: 350,   // Small phones (iPhone SE, etc) 375 old
+  sm: 360,   // Small phones (iPhone SE, etc) 375 old
   md: 414,   // Medium phones (iPhone 11, etc)
   lg: 768,   // Tablets
   xl: 1024,  // Large tablets / small desktops
