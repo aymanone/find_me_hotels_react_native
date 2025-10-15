@@ -36,82 +36,161 @@ export const responsive = (xs, sm, md, lg, xl) => {
   if (width < breakpoints.xl) return lg || md || sm || xs;
   return xl || lg || md || sm || xs;
 };
+// ========================================
+// INTERNAL COLOR PALETTE (not exported)
+// Single source of truth for ALL colors
+// ========================================
+const palette = {
+  primary: {
+    900: '#1a6fb8',
+    500: '#2089dc',
+    100: '#e3f2fd',
+  },
+  
+  secondary: {
+    900: '#218838',
+    500: '#28a745',
+    100: '#d4edda',
+  },
+  
+  accent: {
+    900: '#e0a800',
+    500: '#ffc107',
+    100: '#fff3cd',
+  },
+  
+  error: {
+    500: '#dc3545',
+    100: '#f8d7da',
+  },
+  
+  warning: {
+    700: '#856404',
+    500: '#FFA500',
+    200: '#FFEEBA',
+    100: '#FFF3CD',
+  },
+  
+  info: {
+    500: '#17a2b8',
+    100: '#d1ecf1',
+  },
+  
+  gray: {
+    900: '#212529',
+    800: '#495057',
+    700: '#6c757d',
+    600: '#555555',
+    500: '#adb5bd',
+    400: '#ced4da',
+    300: '#dee2e6',
+    200: '#e9ecef',
+    100: '#f5f5f5',
+    50: '#f8f9fa',
+  },
+  
+  notification: {
+    500: '#FF9500',
+    100: '#FFF5E6',
+  },
+  
+  status: {
+    active: '#4CAF50',
+    inactive: '#F44336',
+  },
+  
+  // Pure colors
+  white: '#ffffff',
+  black: '#000000',
+  
+  // Unique colors that don't fit a scale
+  outdatedText: '#999999',
+};
 
+// ========================================
+// COLORS OBJECT (built from palette)
+// ========================================
+const colors = {
+  // Danger zone colors
+  dangerCard: palette.error[500],
+  dangerTitle: palette.error[500],
+  dangerText: palette.gray[600],
+  
+  // Label colors
+  labelText: palette.gray[600],
+  
+  // Status colors for offers
+  statusViewed: palette.info[500],
+  statusNotViewed: palette.accent[500],
+  
+  // Outdated/disabled colors
+  outdated: palette.gray[700],
+  outdatedBackground: palette.gray[50],
+  outdatedBorder: palette.gray[300],
+  outdatedText: palette.outdatedText,
+  
+  // Primary colors
+  primary: palette.primary[500],
+  primaryDark: palette.primary[900],
+  primaryLight: palette.primary[100],
+  
+  // Secondary Colors
+  secondary: palette.secondary[500],
+  secondaryDark: palette.secondary[900],
+  secondaryLight: palette.secondary[100],
+  
+  // Accent Colors
+  accent: palette.accent[500],
+  accentDark: palette.accent[900],
+  accentLight: palette.accent[100],
+  
+  // Status Colors
+  error: palette.error[500],
+  errorLight: palette.error[100],
+  success: palette.secondary[500],
+  successLight: palette.secondary[100],
+  warning: palette.warning[500],
+  warningLight: palette.warning[100],
+  info: palette.info[500],
+  infoLight: palette.info[100],
+  
+  // Neutral Colors - Easy on eyes
+  background: palette.gray[50],
+  backgroundWhite: palette.white,
+  backgroundGray: palette.gray[100],
+  
+  // Text Colors
+  text: palette.gray[900],
+  textSecondary: palette.gray[700],
+  textLight: palette.gray[500],
+  textWhite: palette.white,
+  
+  // Border Colors
+  border: palette.gray[300],
+  borderLight: palette.gray[200],
+  borderDark: palette.gray[400],
+  
+  // Disabled States
+  disabled: palette.gray[200],
+  disabledText: palette.gray[500],
+  
+  // Notifications
+  notification: palette.notification[500],
+  notificationLight: palette.notification[100],
+  
+  // Warning container colors
+  warningContainer: palette.warning[100],
+  warningBorder: palette.warning[200],
+  warningIcon: palette.warning[700],
+  warningTitle: palette.warning[700],
+  
+  // Status indicator colors
+  statusActive: palette.status.active,
+  statusInactive: palette.status.inactive,
+};
 export const theme = {
   // Color Palette - Professional & Easy on Eyes
-  colors: {
-
-    // Danger zone colors
-     dangerCard: '#dc3545',
-     dangerTitle: '#dc3545',
-     dangerText: '#555555',
-    // Label colors
-    labelText: '#555555',
-    // Status colors for offers
-   statusViewed: '#17a2b8',      // blue for viewed status
-   statusNotViewed: '#ffc107',   // yellow for not viewed status
-
-  // Outdated/disabled colors
-  outdated: '#6c757d',          // gray for outdated items
-  outdatedBackground: '#f8f9fa', // light gray background
-  outdatedBorder: '#dee2e6',    // light gray border
-  outdatedText: '#999999',      // gray text for outdated items
-  //primary colors
-    primary: '#2089dc',           // Calm blue for main actions
-    primaryDark: '#1a6fb8',       // Darker blue for pressed states
-    primaryLight: '#e3f2fd',      // Light blue for backgrounds
-    
-    // Secondary Colors
-    secondary: '#28a745',         // Success green
-    secondaryDark: '#218838',     // Darker green
-    secondaryLight: '#d4edda',    // Light green background
-    
-    // Accent Colors
-    accent: '#ffc107',            // Warning/highlight yellow
-    accentDark: '#e0a800',
-    accentLight: '#fff3cd',
-    
-    // Status Colors
-    error: '#dc3545',             // Error red
-    errorLight: '#f8d7da',
-    success: '#28a745',
-    successLight: '#d4edda',
-    warning: '#FFA500',           // Orange for status indicators
-    warningLight: '#fff3cd',
-    info: '#17a2b8',
-    infoLight: '#d1ecf1',
-    
-    // Neutral Colors - Easy on eyes
-    background: '#f8f9fa',        // Main background (soft gray)
-    backgroundWhite: '#ffffff',   // Card/form background
-    backgroundGray: '#f5f5f5',    // Alternative background
-    
-    // Text Colors
-    text: '#212529',              // Primary text (dark gray, not pure black)
-    textSecondary: '#6c757d',     // Secondary text
-    textLight: '#adb5bd',         // Light text/placeholders
-    textWhite: '#ffffff',         // White text on dark backgrounds
-    
-    // Border Colors
-    border: '#dee2e6',            // Default border
-    borderLight: '#e9ecef',       // Light border
-    borderDark: '#ced4da',        // Darker border for focus
-    
-    // Disabled States
-    disabled: '#e9ecef',
-    disabledText: '#adb5bd',
-    // notifications
-    notification: '#FF9500',        // Orange for notification badges
-    notificationLight: '#FFF5E6',   // Light orange background
-    // Warning container colors
-    warningContainer: '#FFF3CD',
-    warningBorder: '#FFEEBA',
-    warningIcon: '#856404',
-    warningTitle: '#856404',
-    // Status indicator colors
-    statusActive: '#4CAF50',
-    statusInactive: '#F44336',
-  },
+ colors,
   
   // Typography
   typography: {
