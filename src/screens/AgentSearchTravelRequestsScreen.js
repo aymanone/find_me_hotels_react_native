@@ -23,7 +23,7 @@ const AgentSearchTravelRequestsScreen = () => {
   const [sortField, setSortField] = useState('min_budget');
   const [showSortOptions, setShowSortOptions] = useState(false);
   const [requestsWithDetails, setRequestsWithDetails] = useState([]);
-
+  const LIMIT=400;
   const requestOptions = [
     { label: t('AgentSearchTravelRequestsScreen', 'preferredRequests'), value: 'preferred requests' },
     { label: t('AgentSearchTravelRequestsScreen', 'allRequests'), value: 'all requests' },
@@ -149,7 +149,8 @@ const AgentSearchTravelRequestsScreen = () => {
           p_agent_id: user.id,
           p_agent_country: agent.agent_country,
           p_max_offers: MAXIMUM_OFFERS,
-          p_start_date: formattedDate
+          p_start_date: formattedDate,
+          p_limit:LIMIT,
         });
       } else if (requestOption === 'preferred requests') {
         response = await supabase.rpc('agent_preferred_travel_requests_by_nationality', {
@@ -157,14 +158,16 @@ const AgentSearchTravelRequestsScreen = () => {
           p_travelers_nationality: selectedCountry,
           p_agent_country: agent?.agent_country || null,
           p_max_offers: MAXIMUM_OFFERS,
-          p_start_date: formattedDate
+          p_start_date: formattedDate,
+          p_limit:LIMIT,
         });
       } else {
         response = await supabase.rpc('agent_available_travel_requests_by_nationality', {
           p_agent_id: user.id,
           p_travelers_nationality: selectedCountry,
           p_max_offers: MAXIMUM_OFFERS,
-          p_start_date: formattedDate
+          p_start_date: formattedDate,
+          p_limit:LIMIT,
         });
       }
 
@@ -215,7 +218,8 @@ const AgentSearchTravelRequestsScreen = () => {
           p_agent_id: user.id,
           p_agent_country: agent.agent_country,
           p_max_offers: MAXIMUM_OFFERS,
-          p_start_date: formattedDate
+          p_start_date: formattedDate,
+          p_limit:LIMIT,
         });
       } else if (requestOption === 'preferred requests') {
         response = await supabase.rpc('agent_preferred_travel_requests', {
@@ -223,14 +227,16 @@ const AgentSearchTravelRequestsScreen = () => {
           p_request_country: selectedCountry,
           p_start_date: formattedDate,
           p_agent_country: agent?.agent_country || null,
-          p_max_offers: MAXIMUM_OFFERS
+          p_max_offers: MAXIMUM_OFFERS,
+          p_limit:LIMIT,
         });
       } else {
         response = await supabase.rpc('agent_available_travel_requests', {
           p_agent_id: user.id,
           p_request_country: selectedCountry,
           p_start_date: formattedDate,
-          p_max_offers: MAXIMUM_OFFERS
+          p_max_offers: MAXIMUM_OFFERS,
+          p_limit:LIMIT,
         });
       }
 
@@ -606,6 +612,7 @@ const styles = StyleSheet.create({
   },
   requestsList: {
     paddingBottom: 20,
+   
   },
   requestCard: {
     backgroundColor: theme.colors.backgroundWhite,
@@ -613,6 +620,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.md,
     marginBottom: theme.responsiveSpacing.md,
     ...theme.shadows.md,
+ 
   },
   dataRow: {
     flexDirection: 'row',
