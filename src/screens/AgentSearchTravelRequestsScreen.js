@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Platform , Dimensions } from 'react-native';
 import { Button } from 'react-native-elements';
 import { Dropdown } from 'react-native-element-dropdown';
 import { checkUserRole, getCurrentUser } from '../utils/auth';
@@ -8,8 +8,19 @@ import { MAXIMUM_OFFERS } from '../config/CONSTANTS';
 import { useNavigation } from '@react-navigation/native';
 import { showAlert } from "../components/ShowAlert";
 import { useTranslation } from '../config/localization';
-import { theme, commonStyles, screenSize, responsive } from '../styles/theme';
-
+import { theme, commonStyles, screenSize, responsive ,breakpoints} from '../styles/theme';
+// Function to calculate number of columns based on current screen width
+const getNumColumns = () => {
+  const { width } = Dimensions.get('window');
+  
+  if (width < breakpoints.md) {
+    return 1; // Mobile: 1 column
+  } else if (width < breakpoints.xl) {
+    return 2; // Tablet: 2 columns
+  } else {
+    return 3; // Desktop: 3 columns
+  }
+};
 const AgentSearchTravelRequestsScreen = () => {
   const navigation = useNavigation();
   const { t, language } = useTranslation();
@@ -23,7 +34,9 @@ const AgentSearchTravelRequestsScreen = () => {
   const [sortField, setSortField] = useState('min_budget');
   const [showSortOptions, setShowSortOptions] = useState(false);
   const [requestsWithDetails, setRequestsWithDetails] = useState([]);
+  const [numColumns, setNumColumns] = useState(getNumColumns());
   const LIMIT=400;
+ 
   const requestOptions = [
     { label: t('AgentSearchTravelRequestsScreen', 'preferredRequests'), value: 'preferred requests' },
     { label: t('AgentSearchTravelRequestsScreen', 'allRequests'), value: 'all requests' },
@@ -53,7 +66,17 @@ const AgentSearchTravelRequestsScreen = () => {
     checkUserIsAgent();
     fetchCountries();
   }, []);
-
+  useEffect(() => {
+  const updateLayout = () => {
+    setNumColumns(getNumColumns());
+  };
+  
+  // Only needed for web where window can resize
+  if (Platform.OS === 'web') {
+  const subscription = Dimensions.addEventListener('change', updateLayout);
+    return () => subscription?.remove();
+  }
+}, []);
   const checkUserIsAgent = async () => {
     const isAgent = await checkUserRole('agent');
     if (!isAgent) {
@@ -516,6 +539,8 @@ const AgentSearchTravelRequestsScreen = () => {
       )}
 
       <FlatList
+        key={numColumns} 
+        numColumns={numColumns}
         data={requestsWithDetails}
         renderItem={renderTravelRequest}
         keyExtractor={item => item.id.toString()}
@@ -580,6 +605,7 @@ const styles = StyleSheet.create({
     marginRight: theme.spacing.sm,
     flex: 1,
     minWidth: screenSize.isXSmall ? '100%' : 120,
+    maxWidth: screenSize.isXSmall ? '100%' : undefined,
     backgroundColor: theme.colors.backgroundWhite,
     marginBottom: screenSize.isXSmall ? theme.spacing.sm : 0,
   },
@@ -614,12 +640,17 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
    
   },
+  columnWrapper: {
+  justifyContent: 'flex-start',
+  paddingHorizontal: theme.spacing.sm,
+},
   requestCard: {
     backgroundColor: theme.colors.backgroundWhite,
     padding: theme.responsiveSpacing.lg,
     borderRadius: theme.borderRadius.md,
     marginBottom: theme.responsiveSpacing.md,
     ...theme.shadows.md,
+     flex: 1,
  
   },
   dataRow: {
