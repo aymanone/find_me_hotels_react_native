@@ -682,7 +682,7 @@ export const commonStyles = {
  offerGridContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-  justifyContent: 'flex-start',  
+  justifyContent: 'center',  
   alignItems: 'flex-start',
     gap: theme.responsiveComponents.offerGrid.gap,
     marginHorizontal: screenSize.isXSmall || screenSize.isSmall ? 0 : -theme.spacing.xs,

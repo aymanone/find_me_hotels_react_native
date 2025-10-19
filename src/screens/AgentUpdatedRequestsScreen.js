@@ -15,7 +15,7 @@ import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser, signOut } from '../utils/auth';
 import { format } from 'date-fns';
 import {showAlert} from "../components/ShowAlert";
-import { theme, commonStyles, responsive, screenSize } from '../styles/theme';
+import { theme, commonStyles, responsive, screenSize,breakpoints } from '../styles/theme';
 import { useTranslation } from '../config/localization';
 
 const AgentUpdatedRequestsScreen = ({ navigation }) => {
@@ -81,14 +81,14 @@ useEffect(() => {
 // Helper to calculate grid item width dynamically
 const getGridItemWidth = () => {
   const width = windowDimensions.width;
-  
-  if (width < 768) {
-    return '100%';           // 1 column - mobile/tablet portrait
-  } else if (width < 1200) {
-    return '48%';            // 2 columns - tablet landscape/small desktop
+   if (width < breakpoints.md) {
+    return 1; // Mobile: 1 column (< 414px)
+  } else if (width < breakpoints.xl) {
+    return 2; // Tablet: 2 columns (414px - 1024px)
   } else {
-    return '32%';            // 3 columns - desktop
+    return 3; // Desktop: 3 columns (> 1024px)
   }
+  
 };
   const onRefresh = () => {
     setRefreshing(true);

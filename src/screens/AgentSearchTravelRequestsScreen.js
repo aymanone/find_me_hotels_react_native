@@ -12,14 +12,15 @@ import { theme, commonStyles, screenSize, responsive ,breakpoints} from '../styl
 // Function to calculate number of columns based on current screen width
 const getNumColumns = () => {
   const { width } = Dimensions.get('window');
-  
-  if (width < breakpoints.md) {
-    return 1; // Mobile: 1 column
+   if (width < breakpoints.md) {
+    return 1; // Mobile: 1 column (< 414px)
   } else if (width < breakpoints.xl) {
-    return 2; // Tablet: 2 columns
+    return 2; // Tablet: 2 columns (414px - 1024px)
   } else {
-    return 3; // Desktop: 3 columns
+    return 3; // Desktop: 3 columns (> 1024px)
   }
+ 
+  
 };
 const AgentSearchTravelRequestsScreen = () => {
   const navigation = useNavigation();
@@ -36,7 +37,7 @@ const AgentSearchTravelRequestsScreen = () => {
   const [requestsWithDetails, setRequestsWithDetails] = useState([]);
   const [numColumns, setNumColumns] = useState(getNumColumns());
   const LIMIT=400;
-  const scrollViewRef = useRef(null);
+  const flatListRef = useRef(null); // Changed from scrollViewRef
   const requestOptions = [
     { label: t('AgentSearchTravelRequestsScreen', 'preferredRequests'), value: 'preferred requests' },
     { label: t('AgentSearchTravelRequestsScreen', 'allRequests'), value: 'all requests' },
@@ -454,119 +455,120 @@ const AgentSearchTravelRequestsScreen = () => {
       </TouchableOpacity>
     );
   };
+return (
+  <>
+    <FlatList
+      ref={flatListRef} 
+      key={numColumns}
+      numColumns={numColumns}
+      data={requestsWithDetails}
+      nestedScrollEnabled={true}
+      renderItem={renderTravelRequest}
+      keyExtractor={item => item.id.toString()}
+      contentContainerStyle={styles.requestsList}
+      columnWrapperStyle={numColumns > 1 ? styles.columnWrapper : null}
+      ListHeaderComponent={() => (
+        <View>
+          <View style={styles.searchController}>
+            <View style={styles.row}>
+              <Dropdown
+                style={styles.dropdown}
+                data={requestOptions}
+                labelField="label"
+                valueField="value"
+                placeholder={t('AgentSearchTravelRequestsScreen', 'requestType')}
+                value={requestOption}
+                onChange={item => setRequestOption(item.value)}
+              />
 
-  return (
-    <>
-    <ScrollView
-      ref={scrollViewRef}
-     style={styles.container} contentContainerStyle={styles.scrollContent}>
-      <View style={styles.searchController}>
-        <View style={styles.row}>
-          <Dropdown
-            style={styles.dropdown}
-            data={requestOptions}
-            labelField="label"
-            valueField="value"
-            placeholder={t('AgentSearchTravelRequestsScreen', 'requestType')}
-            value={requestOption}
-            onChange={item => setRequestOption(item.value)}
-          />
+              <Dropdown
+                style={styles.dropdown}
+                data={countries}
+                labelField="label"
+                valueField="value"
+                placeholder={searchType === 'destination' ? t('AgentSearchTravelRequestsScreen', 'selectCountry') : t('AgentSearchTravelRequestsScreen', 'selectNationality')}
+                value={selectedCountry}
+                search
+                maxHeight={300}
+                onChange={item => setSelectedCountry(item.value)}
+              />
 
-          <Dropdown
-            style={styles.dropdown}
-            data={countries}
-            labelField="label"
-            valueField="value"
-            placeholder={searchType === 'destination' ? t('AgentSearchTravelRequestsScreen', 'selectCountry') : t('AgentSearchTravelRequestsScreen', 'selectNationality')}
-            value={selectedCountry}
-            search
-            maxHeight={300}
-            onChange={item => setSelectedCountry(item.value)}
-          />
+              <Button
+                onPress={handleSearch}
+                buttonStyle={styles.searchButton}
+                icon={{
+                  name: 'search',
+                  type: 'font-awesome',
+                  size: theme.responsiveComponents.icon.medium,
+                  color: theme.colors.textWhite
+                }}
+              />
+            </View>
+          </View>
 
-          <Button
-            onPress={handleSearch}
-            buttonStyle={styles.searchButton}
-         icon={{
-            name: 'search',
-            type: 'font-awesome',
-            size: theme.responsiveComponents.icon.medium,
-            color: theme.colors.textWhite
-}}
-          />
-        </View>
-      </View>
+          <View style={styles.localSearchRow}>
+            <Text style={styles.maxOffersInfo}>{t('AgentSearchTravelRequestsScreen', 'maxOffersInfo', { maxOffers: MAXIMUM_OFFERS })}</Text>
+            <Text style={styles.searchTypeLabel}>{t('AgentSearchTravelRequestsScreen', 'searchBy')}</Text>
+            <Dropdown
+              style={styles.searchTypeDropdown}
+              data={searchTypeOptions}
+              labelField="label"
+              valueField="value"
+              placeholder={t('AgentSearchTravelRequestsScreen', 'selectSearchType')}
+              value={searchType}
+              onChange={item => setSearchType(item.value)}
+            />
+          </View>
 
-      <View style={styles.localSearchRow}>
-        <Text style={styles.maxOffersInfo}>{t('AgentSearchTravelRequestsScreen', 'maxOffersInfo', { maxOffers: MAXIMUM_OFFERS })}</Text>
-        <Text style={styles.searchTypeLabel}>{t('AgentSearchTravelRequestsScreen', 'searchBy')}</Text>
-        <Dropdown
-          style={styles.searchTypeDropdown}
-          data={searchTypeOptions}
-          labelField="label"
-          valueField="value"
-          placeholder={t('AgentSearchTravelRequestsScreen', 'selectSearchType')}
-          value={searchType}
-          onChange={item => setSearchType(item.value)}
-        />
-      </View>
+          {showSortOptions && (
+            <View style={styles.row}>
+              <Dropdown
+                style={styles.dropdown}
+                data={sortFieldOptions}
+                labelField="label"
+                valueField="value"
+                placeholder={t('AgentSearchTravelRequestsScreen', 'sortBy')}
+                value={sortField}
+                onChange={item => {
+                  setSortField(item.value);
+                  setTimeout(handleSort, 100);
+                }}
+              />
 
-      {showSortOptions && (
-        <View style={styles.row}>
-          <Dropdown
-            style={styles.dropdown}
-            data={sortFieldOptions}
-            labelField="label"
-            valueField="value"
-            placeholder={t('AgentSearchTravelRequestsScreen', 'sortBy')}
-            value={sortField}
-            onChange={item => {
-              setSortField(item.value);
-              setTimeout(handleSort, 100);
-            }}
-          />
+              <Dropdown
+                style={styles.dropdown}
+                data={sortOptions}
+                labelField="label"
+                valueField="value"
+                placeholder={t('AgentSearchTravelRequestsScreen', 'sortOrder')}
+                value={sortOption}
+                onChange={item => {
+                  setSortOption(item.value);
+                  setTimeout(handleSort, 100);
+                }}
+              />
 
-          <Dropdown
-            style={styles.dropdown}
-            data={sortOptions}
-            labelField="label"
-            valueField="value"
-            placeholder={t('AgentSearchTravelRequestsScreen', 'sortOrder')}
-            value={sortOption}
-            onChange={item => {
-              setSortOption(item.value);
-              setTimeout(handleSort, 100);
-            }}
-          />
-
-          <Button
-            title={t('AgentSearchTravelRequestsScreen', 'sort')}
-            onPress={handleSort}
-            buttonStyle={styles.sortButton}
-          />
+              <Button
+                title={t('AgentSearchTravelRequestsScreen', 'sort')}
+                onPress={handleSort}
+                buttonStyle={styles.sortButton}
+              />
+            </View>
+          )}
         </View>
       )}
-
-      <FlatList
-        key={numColumns} 
-        numColumns={numColumns}
-        data={requestsWithDetails}
-        renderItem={renderTravelRequest}
-        keyExtractor={item => item.id.toString()}
-        contentContainerStyle={styles.requestsList}
-        
-        ListEmptyComponent={
-          <Text style={styles.emptyText}>
-            {t('AgentSearchTravelRequestsScreen', 'noRequestsFound')}
-          </Text>
-        }
-      />
-    </ScrollView>
+      ListEmptyComponent={
+        <Text style={styles.emptyText}>
+          {t('AgentSearchTravelRequestsScreen', 'noRequestsFound')}
+        </Text>
+      }
+      style={styles.container}
+    />
     {requestsWithDetails.length > 0 && (
       <TouchableOpacity
         style={styles.scrollToTopButton}
         onPress={() => {
-          scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+          flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
         }}
       >
         <Icon 
@@ -577,8 +579,9 @@ const AgentSearchTravelRequestsScreen = () => {
         />
       </TouchableOpacity>
     )}
-    </>
-  );
+  </>
+);
+  
 };
 
 const styles = StyleSheet.create({
@@ -724,10 +727,7 @@ const styles = StyleSheet.create({
     color: theme.colors.error,
     fontWeight: theme.typography.fontWeight.bold,
   },
-  scrollContent: {
-  flexGrow: 1,
-  paddingBottom: 20,
-},
+ 
 scrollToTopButton: {
   position: 'absolute',
   bottom: 5,
