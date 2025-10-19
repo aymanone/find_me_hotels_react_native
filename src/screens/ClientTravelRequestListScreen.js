@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, RefreshControl } from 'react-native';
+import { View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, RefreshControl, Dimensions} from 'react-native';
 import { Text, Button, ButtonGroup, Card, Icon, Badge } from 'react-native-elements';
 import { useFocusEffect } from '@react-navigation/native';
 import { format } from 'date-fns';
@@ -8,7 +8,7 @@ import { checkUserRole, signOut, getCurrentUser } from '../utils/auth';
 import { unsubscribeChannels } from '../utils/channelUtils';
 import {earliestDate} from '../utils/dateUtils'; // Import earliestDate function
 import {showAlert} from "../components/ShowAlert";
-import { theme, commonStyles, screenSize, responsive } from '../styles//theme';
+import { theme, commonStyles, screenSize, responsive,breakpoints } from '../styles//theme';
 import { useTranslation } from '../config/localization';
 
 export default function ClientTravelRequestList({ navigation }) {
@@ -20,6 +20,7 @@ export default function ClientTravelRequestList({ navigation }) {
   const [refreshing, setRefreshing] = useState(false); // For pull-to-refresh
   const [filterIndex, setFilterIndex] = useState(0); // 0: Active, 1: All
   const [highlightedRequests, setHighlightedRequests] = useState({});
+  const [windowDimensions, setWindowDimensions] = useState(Dimensions.get('window'));
   const subscriptionRef = useRef([]);
 
   // Check if user is a client
@@ -67,6 +68,33 @@ useFocusEffect(
     };
   }, [])
 );
+// Handle window resize for responsive grid
+useEffect(() => {
+  const subscription = Dimensions.addEventListener('change', ({ window }) => {
+    setWindowDimensions(window);
+  });
+
+  return () => subscription?.remove();
+}, []);
+// Helper to calculate number of columns based on screen width
+const getNumColumns = () => {
+  const width = windowDimensions.width;
+   if (width < breakpoints.md) {
+    return 1; // Mobile: 1 column
+  } else if (width < breakpoints.xl) {
+    return 2; // Tablet: 2 columns
+  } else {
+    return 3; // Desktop: 3 columns
+  }
+};
+
+const numColumns = getNumColumns();
+// Calculate card width as percentage based on number of columns
+const getCardWidthPercentage = () => {
+  if (numColumns === 1) return '100%';
+  if (numColumns === 2) return '48%';  // Leaves 4% for spacing
+  return '32%';  // Leaves 4% for spacing (3 columns)
+};
 const fetchTravelRequests = async () => {
   try {
     setLoading(true);
@@ -231,6 +259,7 @@ const fetchTravelRequests = async () => {
     const requestKey = `${item.id}+${item.offers_number}+${item.status}`;
     const isHighlighted = highlightedRequests[requestKey];
       return (
+        <View style={{ width: getCardWidthPercentage() }}>
     <TouchableOpacity onPress={() => handleRequestPress(item)}>
       <Card containerStyle={getCardStyle(item)}>
         {/* Card Header with Delete Button */}
@@ -296,6 +325,7 @@ const fetchTravelRequests = async () => {
         </View>
       </Card>
     </TouchableOpacity>
+    </View>
   );
   
   };
@@ -358,22 +388,23 @@ const fetchTravelRequests = async () => {
           />
         </View>
       ) : (
-        <>
-          <FlatList
-            data={filteredRequests}
-            renderItem={renderTravelRequest}
-            keyExtractor={item => `${item.id}+${item.offers_number}+${item.status}`}
-            contentContainerStyle={styles.listContainer}
-            showsVerticalScrollIndicator={false}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={handleRefresh}
-                colors={[theme.colors.primary]}
-              />
-            }
-          />
-        </>
+       <FlatList
+    data={filteredRequests}
+    renderItem={renderTravelRequest}
+    keyExtractor={item => `${item.id}+${item.offers_number}+${item.status}`}
+    contentContainerStyle={styles.listContainer}
+    showsVerticalScrollIndicator={false}
+    numColumns={numColumns}
+    key={numColumns}
+    columnWrapperStyle={numColumns > 1 ? styles.columnWrapper : null}
+    refreshControl={
+      <RefreshControl
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
+        colors={[theme.colors.primary]}
+      />
+    }
+  />
       )}
     </View>
   );
@@ -400,10 +431,12 @@ const styles = StyleSheet.create({
     paddingBottom: 80,
   },
   card: {
-    borderRadius: theme.borderRadius.md,
-    marginBottom: theme.responsiveSpacing.md,
-    padding: theme.responsiveSpacing.md,
-    ...theme.shadows.md,
+  borderRadius: theme.borderRadius.md,
+  marginBottom: theme.responsiveSpacing.md,
+  padding: theme.responsiveSpacing.md,
+  width: '100%', // Take full width of the wrapper View
+  margin: 0, // Remove any default margins
+  ...theme.shadows.md,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -526,5 +559,9 @@ const styles = StyleSheet.create({
   spacer: {
     flex: 1,
   },
+  columnWrapper: {
+  justifyContent: 'flex-start',
+  gap: theme.spacing.sm,
+},
 });
 
