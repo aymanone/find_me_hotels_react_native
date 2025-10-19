@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Platform , Dimensions } from 'react-native';
-import { Button } from 'react-native-elements';
+import React, { useState, useEffect,useRef  } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Platform , Dimensions, ScrollView } from 'react-native';
+import { Button , Icon} from 'react-native-elements';
 import { Dropdown } from 'react-native-element-dropdown';
 import { checkUserRole, getCurrentUser } from '../utils/auth';
 import supabase from '../config/supabase';
@@ -36,7 +36,7 @@ const AgentSearchTravelRequestsScreen = () => {
   const [requestsWithDetails, setRequestsWithDetails] = useState([]);
   const [numColumns, setNumColumns] = useState(getNumColumns());
   const LIMIT=400;
- 
+  const scrollViewRef = useRef(null);
   const requestOptions = [
     { label: t('AgentSearchTravelRequestsScreen', 'preferredRequests'), value: 'preferred requests' },
     { label: t('AgentSearchTravelRequestsScreen', 'allRequests'), value: 'all requests' },
@@ -456,7 +456,10 @@ const AgentSearchTravelRequestsScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <>
+    <ScrollView
+      ref={scrollViewRef}
+     style={styles.container} contentContainerStyle={styles.scrollContent}>
       <View style={styles.searchController}>
         <View style={styles.row}>
           <Dropdown
@@ -551,19 +554,36 @@ const AgentSearchTravelRequestsScreen = () => {
         renderItem={renderTravelRequest}
         keyExtractor={item => item.id.toString()}
         contentContainerStyle={styles.requestsList}
+         scrollEnabled={false}
         ListEmptyComponent={
           <Text style={styles.emptyText}>
             {t('AgentSearchTravelRequestsScreen', 'noRequestsFound')}
           </Text>
         }
       />
-    </View>
+    </ScrollView>
+    {requestsWithDetails.length > 0 && (
+      <TouchableOpacity
+        style={styles.scrollToTopButton}
+        onPress={() => {
+          scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+        }}
+      >
+        <Icon 
+          name="arrow-up" 
+          type="font-awesome" 
+          size={theme.responsiveComponents.icon.medium} 
+          color={theme.colors.textWhite} 
+        />
+      </TouchableOpacity>
+    )}
+    </>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    
     padding: theme.responsiveSpacing.lg,
     backgroundColor: theme.colors.background,
   },
@@ -704,6 +724,23 @@ const styles = StyleSheet.create({
     color: theme.colors.error,
     fontWeight: theme.typography.fontWeight.bold,
   },
+  scrollContent: {
+  flexGrow: 1,
+  paddingBottom: 20,
+},
+scrollToTopButton: {
+  position: 'absolute',
+  bottom: 5,
+  right: 20,
+  backgroundColor: theme.colors.primary,
+  width: responsive(35, 40, 40, 40, 40),
+  height: responsive(35, 40, 40, 40, 40),
+  borderRadius: 25,
+  justifyContent: 'center',
+  alignItems: 'center',
+  zIndex: 999,
+  ...theme.shadows.lg,
+},
 });
 
 export default AgentSearchTravelRequestsScreen;

@@ -1885,6 +1885,7 @@ export const ScreenTranslations = {
       accessDenied: 'You do not have permission to access this page',
       loadError: 'Failed to load companies',
       userNotFound: 'User not found. Please log in again.',
+      updateCompanies:"update Companies",
     },
     ar: {
       title: 'شركاتك',
@@ -1898,6 +1899,7 @@ export const ScreenTranslations = {
       accessDenied: 'ليس لديك صلاحية للوصول إلى هذه الصفحة',
       loadError: 'فشل في تحميل الشركات',
       userNotFound: 'لم يتم العثور على المستخدم. يرجى تسجيل الدخول مرة أخرى.',
+      updateCompanies:"حدث الشركات",
     }
   },
   ClientOfferDetailsScreen: {
