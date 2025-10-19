@@ -554,7 +554,7 @@ const AgentSearchTravelRequestsScreen = () => {
         renderItem={renderTravelRequest}
         keyExtractor={item => item.id.toString()}
         contentContainerStyle={styles.requestsList}
-         scrollEnabled={false}
+        
         ListEmptyComponent={
           <Text style={styles.emptyText}>
             {t('AgentSearchTravelRequestsScreen', 'noRequestsFound')}
@@ -583,7 +583,7 @@ const AgentSearchTravelRequestsScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    
+    flex: 1,
     padding: theme.responsiveSpacing.lg,
     backgroundColor: theme.colors.background,
   },
