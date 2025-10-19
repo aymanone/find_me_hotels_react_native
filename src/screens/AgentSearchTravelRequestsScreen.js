@@ -55,6 +55,7 @@ const AgentSearchTravelRequestsScreen = () => {
   const sortFieldOptions = [
     { label: t('AgentSearchTravelRequestsScreen', 'minBudget'), value: 'min_budget' },
     { label: t('AgentSearchTravelRequestsScreen', 'maxBudget'), value: 'max_budget' },
+      { label: t('AgentSearchTravelRequestsScreen', 'numberOfOffers'), value: 'offers_number' },
     { label: t('AgentSearchTravelRequestsScreen', 'duration'), value: 'duration' },
     { label: t('AgentSearchTravelRequestsScreen', 'country'), value: 'request_country_name' },
     { label: t('AgentSearchTravelRequestsScreen', 'nationality'), value: 'travelers_nationality_name' },
@@ -350,6 +351,11 @@ const AgentSearchTravelRequestsScreen = () => {
         } else {
           return valueB.localeCompare(valueA);
         }
+
+       } else if (sortField === 'offers_number') {
+      valueA = a.offers_number || 0;
+      valueB = b.offers_number || 0;
+    
       } else {
         valueA = a[sortField] || 0;
         valueB = b[sortField] || 0;
