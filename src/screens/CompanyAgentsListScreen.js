@@ -4,7 +4,8 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
-  TouchableOpacity
+  TouchableOpacity,
+  Dimensions ,
 } from 'react-native';
 import {
   Text,
@@ -27,7 +28,7 @@ const CompanyAgentsListScreen = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
   const [user, setUser] = useState(null);
-
+  const [windowDimensions, setWindowDimensions] = useState(Dimensions.get('window'));
   const fetchAgents = async () => {
     try {
       setRefreshing(true);
@@ -99,6 +100,27 @@ const CompanyAgentsListScreen = ({ navigation }) => {
 
     checkUserAndFetchAgents();
   }, [navigation]);
+  // Handle window resize for responsive grid
+useEffect(() => {
+  const subscription = Dimensions.addEventListener('change', ({ window }) => {
+    setWindowDimensions(window);
+  });
+
+  return () => subscription?.remove();
+}, []);
+
+// Helper to calculate grid item width dynamically
+const getGridItemWidth = () => {
+  const width = windowDimensions.width;
+  
+  if (width < 768) {
+    return '100%';           // 1 column - mobile/tablet portrait
+  } else if (width < 1200) {
+    return '48%';            // 2 columns - tablet landscape/small desktop
+  } else {
+    return '32%';            // 3 columns - desktop
+  }
+};
 
   const updateSearch = (text) => {
     setSearch(text);
@@ -209,7 +231,15 @@ const CompanyAgentsListScreen = ({ navigation }) => {
             <Text style={styles.noAgentsText}>{t('CompanyAgentsListScreen', 'noAgents')}</Text>
           </Card>
         ) : (
-          filteredAgents.map(agent => (
+          <View style={commonStyles.offerGridContainer}>
+          {filteredAgents.map(agent => (
+             <View 
+                key={agent.id}
+                style={[
+                  commonStyles.offerGridItem,
+                  { width: getGridItemWidth() }
+                ]}
+              >
             <Card key={agent.id} containerStyle={styles.agentCard}>
               <View style={styles.agentHeader}>
                 
@@ -239,7 +269,9 @@ const CompanyAgentsListScreen = ({ navigation }) => {
                 />
               </View>
             </Card>
-          ))
+            </View>
+          ))}
+          </View>
         )}
       </ScrollView>
     </View>
