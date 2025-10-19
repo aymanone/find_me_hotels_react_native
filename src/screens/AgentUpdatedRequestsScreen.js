@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   RefreshControl,
+   Dimensions,
   
 } from 'react-native';
 import { Text, Card, Button, Icon, Badge } from 'react-native-elements';
@@ -22,7 +23,7 @@ const AgentUpdatedRequestsScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [updatedRequests, setUpdatedRequests] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
-  
+  const [windowDimensions, setWindowDimensions] = useState(Dimensions.get('window'));
 
   const fetchUpdatedRequests = async () => {
     try {
@@ -68,7 +69,27 @@ const AgentUpdatedRequestsScreen = ({ navigation }) => {
       fetchUpdatedRequests();
     }, [])
   );
+ // Handle window resize for responsive grid
+useEffect(() => {
+  const subscription = Dimensions.addEventListener('change', ({ window }) => {
+    setWindowDimensions(window);
+  });
 
+  return () => subscription?.remove();
+}, []);
+
+// Helper to calculate grid item width dynamically
+const getGridItemWidth = () => {
+  const width = windowDimensions.width;
+  
+  if (width < 768) {
+    return '100%';           // 1 column - mobile/tablet portrait
+  } else if (width < 1200) {
+    return '48%';            // 2 columns - tablet landscape/small desktop
+  } else {
+    return '32%';            // 3 columns - desktop
+  }
+};
   const onRefresh = () => {
     setRefreshing(true);
     fetchUpdatedRequests();
@@ -134,7 +155,15 @@ const AgentUpdatedRequestsScreen = ({ navigation }) => {
             <Text style={styles.emptyText}>{t('AgentUpdatedRequestsScreen', 'noUpdatedRequests')}</Text>
           </View>
         ) : (
-          updatedRequests.map((item, index) => (
+         <View style={commonStyles.offerGridContainer}>
+         {updatedRequests.map((item, index) => (
+          <View 
+                key={item.request_id}
+                style={[
+                  commonStyles.offerGridItem,
+                  { width: getGridItemWidth() }
+                ]}
+              >
             <Card key={item.request_id} containerStyle={styles.card}>
               <View style={styles.cardHeader}>
                 <View style={styles.requestInfo}>
@@ -200,7 +229,9 @@ const AgentUpdatedRequestsScreen = ({ navigation }) => {
                 onPress={() => handleViewRequest(item.request_id, item.offer_id)}
               />
             </Card>
-          ))
+            </View>
+          ))}
+          </View>
         )}
       </ScrollView>
     </View>
