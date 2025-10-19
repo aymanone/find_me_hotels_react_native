@@ -6,12 +6,14 @@ import {
   ActivityIndicator, 
   TouchableOpacity, 
   RefreshControl,
+  Dimensions,
   
 } from 'react-native';
 import { Text, Card, Divider, Icon } from 'react-native-elements';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser, signOut } from '../utils/auth';
+
 import { theme, commonStyles, screenSize, responsive } from '../styles//theme';
 import {showAlert} from "../components/ShowAlert";
 import { useTranslation} from '../config/localization';
@@ -22,6 +24,7 @@ export default function AgentAgentOffersScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [isPermittedToWork, setIsPermittedToWork] = useState(true);
+  const [windowDimensions, setWindowDimensions] = useState(Dimensions.get('window'));
   const navigation = useNavigation();
 
   const fetchOffers = async () => {
@@ -95,6 +98,27 @@ export default function AgentAgentOffersScreen() {
       fetchOffers();
     }, [])
   );
+  // Handle window resize for responsive grid
+useEffect(() => {
+  const subscription = Dimensions.addEventListener('change', ({ window }) => {
+    setWindowDimensions(window);
+  });
+
+  return () => subscription?.remove();
+}, []);
+
+// Helper to calculate grid item width dynamically
+const getGridItemWidth = () => {
+  const width = windowDimensions.width;
+  
+  if (width < 768) {
+    return '100%';           // 1 column - mobile/tablet portrait
+  } else if (width < 1200) {
+    return '48%';            // 2 columns - tablet landscape/small desktop
+  } else {
+    return '32%';            // 3 columns - desktop
+  }
+};
 
   const formatDate = (dateString) => {
     if (!dateString) return t('AgentAgentOffersScreen', 'na');
@@ -176,9 +200,17 @@ const getStatusColor = (status) => {
           <Text style={styles.noOffersText}>{t('AgentAgentOffersScreen', 'noOffersYet')}</Text>
         </Card>
       ) : (
-        offers.map((offer) => {
+       <View style={commonStyles.offerGridContainer}>
+        {offers.map((offer) => {
           const outdated = isOfferOutdated(offer.travel_requests?.start_date);
           return (
+           <View 
+          key={offer.id}
+          style={[
+            commonStyles.offerGridItem,
+            { width: getGridItemWidth() }
+          ]}
+        >
             <Card 
               key={offer.id} 
               containerStyle={[
@@ -250,8 +282,10 @@ const getStatusColor = (status) => {
                 <Icon name="arrow-right" type="font-awesome" size={theme.responsiveComponents.icon.small} color={theme.colors.textWhite} />
               </TouchableOpacity>
             </Card>
+            </View>
           );
-        })
+        })}
+        </View>
       )}
     </ScrollView>
   );
