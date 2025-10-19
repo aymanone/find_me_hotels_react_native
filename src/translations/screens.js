@@ -531,6 +531,7 @@ export const ScreenTranslations = {
     newUpdates: 'new updates',
     upToDate: 'up to date',
     notViewed: 'not viewed',
+    viewed:"viewed",
     // Alert messages
     error: 'Error',
     success: 'Success',
@@ -625,6 +626,7 @@ export const ScreenTranslations = {
     newUpdates: 'تحديثات جديدة',
     upToDate: 'محدث',
     notViewed: 'لم يتم عرضه',
+    viewed:"تم العرض",
     // Alert messages
     error: 'خطأ',
     success: 'نجح',

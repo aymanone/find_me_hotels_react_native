@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Share, Platform } from 'react-native';
+import { View, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Share, Platform , Dimensions} from 'react-native';
 import { Text, Card, Button, Divider, Icon } from 'react-native-elements';
 import { format } from 'date-fns';
 import supabase from '../config/supabase';
@@ -20,7 +20,7 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
   const [offersSectionExpanded, setOffersSectionExpanded] = useState(false);
   const [refreshingOffers, setRefreshingOffers] = useState(false);
   const [visitedOffers, setVisitedOffers] = useState({});  // Using an object
-
+   const [windowDimensions, setWindowDimensions] = useState(Dimensions.get('window'));
   
   // Add sort state variables
   const [sortField, setSortField] = useState('created_at');
@@ -167,6 +167,27 @@ export default function ClientTravelRequestDetailsScreen({ route, navigation }) 
 
     fetchRequestDetails();
   }, [id]);
+  // Handle window resize for responsive grid
+  useEffect(() => {
+    const subscription = Dimensions.addEventListener('change', ({ window }) => {
+      setWindowDimensions(window);
+    });
+
+    return () => subscription?.remove();
+  }, []);
+  
+  // Helper to calculate grid item width dynamically
+  const getGridItemWidth = () => {
+    const width = windowDimensions.width;
+     
+  if (width < 768) {
+    return '100%';           // 1 column - mobile/tablet portrait
+  } else if (width < 1200) {
+    return '48%';            // 2 columns - tablet landscape/small desktop
+  } else {
+    return '31%';            // 3 columns - desktop
+  }
+  };
 
   if (loading) {
     return (
@@ -589,14 +610,22 @@ ${requestUrl}`;
               </View>
             )}
             
-            {offers.length > 0 ? (
-              getSortedOffers().map((offer, index) => (
-                <Card key={index} containerStyle={styles.offerCard}>
-                  <View style={styles.offerHeader}>
+           {offers.length > 0 ? (
+  <View style={commonStyles.offerGridContainer}>
+    {getSortedOffers().map((offer, index) => (
+      <View 
+        key={index} 
+        style={[
+          commonStyles.offerGridItem,
+          { width: getGridItemWidth() }
+        ]}
+      >
+        <Card containerStyle={styles.offerCard}>
+            <View style={styles.offerHeader}>
                     <Text style={styles.offerTitle}>{t('ClientTravelRequestDetailsScreen', 'offer')} #{index + 1}</Text>
                     <View style={styles.statusContainer}>
                    <Text style={[styles.statusText, { color: offer.status === 'not viewed' ? theme.colors.warning : theme.colors.success }]}>
-                        {offerUpToDateState(offer)} {offer.status === 'not viewed' ? t('ClientTravelRequestDetailsScreen', 'notViewed') : offer.status}
+                        {offerUpToDateState(offer)} {offer.status === 'not viewed' ? t('ClientTravelRequestDetailsScreen', 'notViewed') : t('ClientTravelRequestDetailsScreen', 'viewed')}
                       </Text>
                     </View>
                   </View>
@@ -635,11 +664,13 @@ ${requestUrl}`;
                     ]}
                     onPress={() => viewOfferDetails(offer.id)}
                   />
-                </Card>
-              ))
-            ) : (
-              <Text style={styles.noOffersText}>{t('ClientTravelRequestDetailsScreen', 'noOffersYetForThisRequest')}</Text>
-            )}
+        </Card>
+      </View>
+    ))}
+  </View>
+) : (
+  <Text style={styles.noOffersText}>...</Text>
+)}
           </View>
         )}
       </Card>

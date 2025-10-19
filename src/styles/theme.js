@@ -591,6 +591,24 @@ warningIcon: {
   
   // Responsive component sizes
   responsiveComponents: {
+     offerGrid: {
+    gap: responsive(8, 12, 12, 12, 12),
+  },
+  
+  offerGridItem: {
+    // Calculate width based on number of columns per screen size
+    width: screenSize.isXSmall 
+      ? '100%'  // 1 column
+      : screenSize.isSmall 
+        ? '100%'  // 1 column
+        : screenSize.isMedium 
+          ? `${(100 - 2) / 2}%`  // 2 columns with gap
+          : screenSize.isLarge 
+            ? `${(100 - 2) / 2}%`  // 2 columns with gap
+            : `${(100 - 4) / 3}%`, // 3 columns with gap
+    minWidth: responsive(280, 300, 320, 340, 360),
+    marginBottom: responsive(12, 16, 16, 16, 16),
+  },
     confirmOverlay: {
   borderRadius: responsive(8, 10, 10, 10, 10),
   padding: responsive(16, 20, 20, 20, 20),
@@ -661,7 +679,18 @@ statItem: {
 // Common Styles - Ready-to-use component styles
 export const commonStyles = {
 
+ offerGridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  justifyContent: 'flex-start',  
+  alignItems: 'flex-start',
+    gap: theme.responsiveComponents.offerGrid.gap,
+    marginHorizontal: screenSize.isXSmall || screenSize.isSmall ? 0 : -theme.spacing.xs,
+  },
 
+  offerGridItem: {
+    ...theme.responsiveComponents.offerGridItem,
+  },
 
   absoluteTopRight: {
     position: 'absolute',
