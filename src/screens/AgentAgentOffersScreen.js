@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   View, 
   StyleSheet, 
@@ -26,7 +26,7 @@ export default function AgentAgentOffersScreen() {
   const [isPermittedToWork, setIsPermittedToWork] = useState(true);
   const [windowDimensions, setWindowDimensions] = useState(Dimensions.get('window'));
   const navigation = useNavigation();
-
+  const scrollViewRef = useRef(null);
   const fetchOffers = async () => {
     try {
       setLoading(true);
@@ -174,8 +174,10 @@ const getStatusColor = (status) => {
   };
 
   return (
+    <>
     <ScrollView 
       style={styles.container}
+      ref={scrollViewRef} 
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -288,6 +290,22 @@ const getStatusColor = (status) => {
         </View>
       )}
     </ScrollView>
+    {offers.length > 0 && (
+      <TouchableOpacity
+        style={styles.scrollToTopButton}
+        onPress={() => {
+          scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+        }}
+      >
+        <Icon 
+          name="arrow-up" 
+          type="font-awesome" 
+          size={theme.responsiveComponents.icon.medium} 
+          color={theme.colors.textWhite} 
+        />
+      </TouchableOpacity>
+    )}
+    </>
   );
 }
 
@@ -415,4 +433,17 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
     textAlign: 'center',
   },
+  scrollToTopButton: {
+  position: 'absolute',
+  bottom: 5,
+  right: 20,
+  backgroundColor: theme.colors.primary,
+  width: responsive(35, 40, 40, 40, 40),
+  height: responsive(35, 40, 40, 40, 40),
+  borderRadius: 25,
+  justifyContent: 'center',
+  alignItems: 'center',
+  zIndex: 999,
+  ...theme.shadows.lg,
+},
 });
