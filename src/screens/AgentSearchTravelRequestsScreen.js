@@ -1,5 +1,5 @@
 import React, { useState, useEffect,useRef  } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Platform , Dimensions, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity,  Platform , Dimensions, ScrollView } from 'react-native';
 import { Button , Icon} from 'react-native-elements';
 import { Dropdown } from 'react-native-element-dropdown';
 import { checkUserRole, getCurrentUser } from '../utils/auth';
@@ -546,21 +546,29 @@ const AgentSearchTravelRequestsScreen = () => {
           />
         </View>
       )}
-
-      <FlatList
-        key={numColumns} 
-        numColumns={numColumns}
-        data={requestsWithDetails}
-        renderItem={renderTravelRequest}
-        keyExtractor={item => item.id.toString()}
-        contentContainerStyle={styles.requestsList}
-         scrollEnabled={true}
-        ListEmptyComponent={
-          <Text style={styles.emptyText}>
-            {t('AgentSearchTravelRequestsScreen', 'noRequestsFound')}
-          </Text>
+    <View style={styles.gridContainer}>
+  {requestsWithDetails.map((item) => (
+    <View 
+      key={item.id.toString()} 
+      style={[
+        styles.cardWrapper,
+        {
+          width: numColumns === 1 ? '100%' : 
+                 numColumns === 2 ? '50%' : 
+                 '33.33%'
         }
-      />
+      ]}
+    >
+      {renderTravelRequest({ item })}
+    </View>
+  ))}
+</View>
+
+{requestsWithDetails.length === 0 && (
+  <Text style={styles.emptyText}>
+    {t('AgentSearchTravelRequestsScreen', 'noRequestsFound')}
+  </Text>
+)}
     </ScrollView>
     {requestsWithDetails.length > 0 && (
       <TouchableOpacity
@@ -726,7 +734,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
   flexGrow: 1,
-  paddingBottom: 20,
+  paddingBottom: 50,
 },
 scrollToTopButton: {
   position: 'absolute',
@@ -740,6 +748,16 @@ scrollToTopButton: {
   alignItems: 'center',
   zIndex: 999,
   ...theme.shadows.lg,
+},
+gridContainer: {
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  justifyContent: 'flex-start',
+  paddingHorizontal: theme.spacing.sm,
+},
+cardWrapper: {
+  
+  paddingHorizontal: theme.spacing.sm,
 },
 });
 
