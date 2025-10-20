@@ -1,5 +1,5 @@
 import React, { useState, useEffect,useRef  } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity,  Platform , Dimensions, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Platform , Dimensions, ScrollView } from 'react-native';
 import { Button , Icon} from 'react-native-elements';
 import { Dropdown } from 'react-native-element-dropdown';
 import { checkUserRole, getCurrentUser } from '../utils/auth';
@@ -12,14 +12,15 @@ import { theme, commonStyles, screenSize, responsive ,breakpoints} from '../styl
 // Function to calculate number of columns based on current screen width
 const getNumColumns = () => {
   const { width } = Dimensions.get('window');
-  
-  if (width < breakpoints.md) {
-    return 1; // Mobile: 1 column
+   if (width < breakpoints.md) {
+    return 1; // Mobile: 1 column (< 414px)
   } else if (width < breakpoints.xl) {
-    return 2; // Tablet: 2 columns
+    return 2; // Tablet: 2 columns (414px - 1024px)
   } else {
-    return 3; // Desktop: 3 columns
+    return 3; // Desktop: 3 columns (> 1024px)
   }
+ 
+  
 };
 const AgentSearchTravelRequestsScreen = () => {
   const navigation = useNavigation();
@@ -36,7 +37,7 @@ const AgentSearchTravelRequestsScreen = () => {
   const [requestsWithDetails, setRequestsWithDetails] = useState([]);
   const [numColumns, setNumColumns] = useState(getNumColumns());
   const LIMIT=400;
-  const scrollViewRef = useRef(null);
+  const topScreenRef = useRef(null); // Changed from scrollViewRef
   const requestOptions = [
     { label: t('AgentSearchTravelRequestsScreen', 'preferredRequests'), value: 'preferred requests' },
     { label: t('AgentSearchTravelRequestsScreen', 'allRequests'), value: 'all requests' },
@@ -454,13 +455,9 @@ const AgentSearchTravelRequestsScreen = () => {
       </TouchableOpacity>
     );
   };
-
-  return (
+   const searchAndSortHeader=(
     <>
-    <ScrollView
-      ref={scrollViewRef}
-     style={styles.container} contentContainerStyle={styles.scrollContent}>
-      <View style={styles.searchController}>
+     <View style={styles.searchController}>
         <View style={styles.row}>
           <Dropdown
             style={styles.dropdown}
@@ -546,52 +543,85 @@ const AgentSearchTravelRequestsScreen = () => {
           />
         </View>
       )}
-    <View style={styles.gridContainer}>
-  {requestsWithDetails.map((item) => (
-    <View 
-      key={item.id.toString()} 
-      style={[
-        styles.cardWrapper,
-        {
-          width: numColumns === 1 ? '100%' : 
-                 numColumns === 2 ? '50%' : 
-                 '33.33%'
-        }
-      ]}
-    >
-      {renderTravelRequest({ item })}
-    </View>
-  ))}
-</View>
-
-{requestsWithDetails.length === 0 && (
-  <Text style={styles.emptyText}>
-    {t('AgentSearchTravelRequestsScreen', 'noRequestsFound')}
-  </Text>
-)}
-    </ScrollView>
-    {requestsWithDetails.length > 0 && (
-      <TouchableOpacity
-        style={styles.scrollToTopButton}
-        onPress={() => {
-          scrollViewRef.current?.scrollTo({ y: 0, animated: true });
-        }}
-      >
-        <Icon 
-          name="arrow-up" 
-          type="font-awesome" 
-          size={theme.responsiveComponents.icon.medium} 
-          color={theme.colors.textWhite} 
-        />
-      </TouchableOpacity>
-    )}
     </>
-  );
+    );
+return (
+  <>
+   {Platform.OS === 'web' ? (
+        // WEB VERSION
+        <ScrollView ref={topScreenRef} style={styles.container} contentContainerStyle={styles.scrollContent}>
+          {searchAndSortHeader}
+          
+          <View style={styles.gridContainer}>
+            {requestsWithDetails.map((item) => (
+              <View 
+                key={item.id.toString()} 
+                style={[
+                  styles.cardWrapper,
+                  { width: numColumns === 1 ? '100%' : numColumns === 2 ? '50%' : '33.33%' }
+                ]}
+              >
+                {renderTravelRequest({ item })}
+              </View>
+            ))}
+          </View>
+
+          {requestsWithDetails.length === 0 && (
+            <Text style={styles.emptyText}>
+              {t('AgentSearchTravelRequestsScreen', 'noRequestsFound')}
+            </Text>
+          )}
+        </ScrollView>
+      ) : (
+        // MOBILE VERSION
+        <FlatList
+          ref={topScreenRef}
+          key={numColumns}
+          numColumns={numColumns}
+          data={requestsWithDetails}
+          renderItem={renderTravelRequest}
+          keyExtractor={item => item.id.toString()}
+          contentContainerStyle={styles.requestsList}
+          columnWrapperStyle={numColumns > 1 ? styles.columnWrapper : null}
+          ListHeaderComponent={() => searchAndSortHeader}
+          ListEmptyComponent={
+            <Text style={styles.emptyText}>
+              {t('AgentSearchTravelRequestsScreen', 'noRequestsFound')}
+            </Text>
+          }
+          style={styles.container}
+        />
+      )}
+
+      {requestsWithDetails.length > 0 && (
+        <TouchableOpacity
+          style={styles.scrollToTopButton}
+          onPress={() => {
+            
+              if (Platform.OS === 'web') {
+              topScreenRef.current?.scrollTo({ y: 0, animated: true });
+            } else {
+              topScreenRef.current?.scrollToOffset({ offset: 0, animated: true });
+            }
+             
+          }}
+        >
+          <Icon 
+            name="arrow-up" 
+            type="font-awesome" 
+            size={theme.responsiveComponents.icon.medium} 
+            color={theme.colors.textWhite} 
+          />
+        </TouchableOpacity>
+      )}
+  </>
+);
+  
 };
 
 const styles = StyleSheet.create({
   container: {
-    
+    flex: 1,
     padding: theme.responsiveSpacing.lg,
     backgroundColor: theme.colors.background,
   },
@@ -671,7 +701,7 @@ const styles = StyleSheet.create({
     marginBottom: screenSize.isXSmall ? theme.spacing.xs : 0,
   },
   requestsList: {
-    paddingBottom: 20,
+    paddingBottom: 40,
    
   },
   columnWrapper: {
@@ -732,10 +762,7 @@ const styles = StyleSheet.create({
     color: theme.colors.error,
     fontWeight: theme.typography.fontWeight.bold,
   },
-  scrollContent: {
-  flexGrow: 1,
-  paddingBottom: 50,
-},
+ 
 scrollToTopButton: {
   position: 'absolute',
   bottom: 5,
