@@ -5,13 +5,13 @@ import {
   ScrollView, 
   ActivityIndicator, 
   TouchableOpacity, 
-
+  Dimensions,
 } from 'react-native';
 import { Text, Card, Button, Icon,SearchBar  } from 'react-native-elements';
 import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser } from '../utils/auth';
 import {showAlert} from "../components/ShowAlert";
-import { theme, commonStyles, screenSize, responsive } from '../styles//theme';
+import { theme, commonStyles, screenSize, responsive,breakpoints } from '../styles//theme';
 import { useTranslation } from '../config/localization';
 
 export default function AdminCompaniesListScreen({ navigation }) {
@@ -21,6 +21,7 @@ export default function AdminCompaniesListScreen({ navigation }) {
   const [refreshing, setRefreshing] = useState(false);
   const [filteredCompanies, setFilteredCompanies] = useState([]);
   const [search, setSearch] = useState('');
+  const [windowDimensions, setWindowDimensions] = useState(Dimensions.get('window'));
   // Check if user is an admin
   useEffect(() => {
     const checkRole = async () => {
@@ -38,6 +39,13 @@ export default function AdminCompaniesListScreen({ navigation }) {
   useEffect(() => {
     fetchCompanies();
   }, []);
+  useEffect(() => {
+  const subscription = Dimensions.addEventListener('change', ({ window }) => {
+    setWindowDimensions(window);
+  });
+
+  return () => subscription?.remove();
+}, []);
 
   const fetchCompanies = async () => {
     try {
@@ -102,7 +110,16 @@ export default function AdminCompaniesListScreen({ navigation }) {
   const viewCompanyProfile = (companyId) => {
     navigation.navigate("Home",{screen:'AdminCompanyProfile', params:{ companyId }});
   };
-
+  const getGridItemWidth = () => {
+  const width = windowDimensions.width;
+  if (width < breakpoints.md) {
+    return 1; // Mobile: 1 column (< 414px)
+  } else if (width < breakpoints.xl) {
+    return 2; // Tablet: 2 columns (414px - 1024px)
+  } else {
+    return 3; // Desktop: 3 columns (> 1024px)
+  }
+};
   if (loading && !refreshing) {
     return (
       <View style={styles.loadingContainer}>
@@ -141,7 +158,15 @@ export default function AdminCompaniesListScreen({ navigation }) {
           <Text style={styles.noDataText}>{t('AdminCompaniesListScreen', 'noCompaniesFound')}</Text>
         </Card>
       ) : (
-        filteredCompanies.map((company) => (
+        <View style={commonStyles.offerGridContainer}>
+        {filteredCompanies.map((company) => (
+          <View 
+              key={company.id}
+              style={[
+                  commonStyles.offerGridItem,
+                  { width: getGridItemWidth() }
+               ]}
+        >
           <Card key={company.id} containerStyle={styles.card}>
             <Card.Title style={styles.cardTitle}>{company.company_name}</Card.Title>
             
@@ -171,7 +196,9 @@ export default function AdminCompaniesListScreen({ navigation }) {
               iconContainerStyle={styles.buttonIcon}
             />
           </Card>
-        ))
+          </View>
+        ))}
+        </View>
       )}
     </ScrollView>
   );
