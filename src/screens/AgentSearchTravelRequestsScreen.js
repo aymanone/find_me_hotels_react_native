@@ -554,7 +554,7 @@ const AgentSearchTravelRequestsScreen = () => {
         renderItem={renderTravelRequest}
         keyExtractor={item => item.id.toString()}
         contentContainerStyle={styles.requestsList}
-         scrollEnabled={false}
+         scrollEnabled={true}
         ListEmptyComponent={
           <Text style={styles.emptyText}>
             {t('AgentSearchTravelRequestsScreen', 'noRequestsFound')}
