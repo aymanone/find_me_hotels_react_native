@@ -443,9 +443,10 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
         {/* Delete Button */}
         <Button
           title={t('AdminCompanyProfileScreen', 'deleteCompany')}
-          icon={<Icon name="trash" type="ionicon"  color={theme.colors.textWhite} style={{ marginRight: theme.spacing.md }} />}
+          icon={<Icon name="trash" type="ionicon"  color={theme.colors.textWhite} />}
           buttonStyle={styles.deleteButton}
           containerStyle={styles.deleteButtonContainer}
+          iconContainerStyle={{ marginRight: theme.spacing.md }}
           onPress={() => setDeleteConfirmVisible(true)}
         />
         
@@ -556,16 +557,18 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
             
             <Button
               title={t('AdminCompanyProfileScreen', 'updateCompany')}
-              icon={<Icon name="save" type="ionicon"  color={theme.colors.textWhite} style={{ marginRight: theme.spacing.md }} />}
+              icon={<Icon name="save" type="ionicon"  color={theme.colors.textWhite}  />}
               buttonStyle={styles.updateButton}
+              iconContainerStyle={{ marginRight: theme.spacing.md }}
               onPress={handleUpdateCompany}
             />
             
             <Button
               title={t('AdminCompanyProfileScreen', 'cancel')}
               type="outline"
-              icon={<Icon name="close" type="ionicon"  color={theme.colors.primary} style={{ marginRight: theme.spacing.md }} />}
+              icon={<Icon name="close" type="ionicon"  color={theme.colors.primary}  />}
               buttonStyle={styles.cancelButton}
+              iconContainerStyle={{ marginRight: theme.spacing.md }}
               onPress={() => setEditMode(false)}
             />
           </ScrollView>
@@ -583,15 +586,17 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
             <Button
               title={t('AdminCompanyProfileScreen', 'cancel')}
               type="outline"
-              icon={<Icon name="close" type="ionicon"  color={theme.colors.primary} style={{ marginRight: theme.spacing.md }} />}
+              icon={<Icon name="close" type="ionicon"  color={theme.colors.primary}   />}
               buttonStyle={styles.cancelButton}
+              iconContainerStyle={{ marginRight: theme.spacing.md }}
               onPress={() => setDeleteConfirmVisible(false)}
             />
             <Button
               title={t('AdminCompanyProfileScreen', 'delete')}
-              icon={<Icon name="trash" type="ionicon"  color={theme.colors.textWhite} style={{ marginRight: theme.spacing.md }} />}
+              icon={<Icon name="trash" type="ionicon"  color={theme.colors.textWhite}  />}
               buttonStyle={styles.deleteConfirmButton}
               loading={deleteLoading}
+              iconContainerStyle={{ marginRight: theme.spacing.md }}
               onPress={handleDeleteCompany}
             />
           </View>

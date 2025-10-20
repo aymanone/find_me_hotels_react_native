@@ -381,7 +381,8 @@ export default function ClientClientProfileScreen({ navigation }) {
                 
                 <Button
                   title={t('ClientClientProfileScreen', 'editProfile')}
-                  icon={<Icon name="edit" type="material" color={theme.colors.textWhite} size={theme.responsiveComponents.icon.medium} style={styles.buttonIcon} />}
+                  icon={<Icon name="edit" type="material" color={theme.colors.textWhite} size={theme.responsiveComponents.icon.medium}  />}
+                  iconContainerStyle={styles.buttonIcon}
                   onPress={() => setIsEditing(true)}
                   containerStyle={styles.fullButtonContainer}
                 />
@@ -446,7 +447,8 @@ export default function ClientClientProfileScreen({ navigation }) {
             ) : (
               <Button
                 title={t('ClientClientProfileScreen', 'changePassword')}
-                icon={<Icon name="lock" type="material" color={theme.colors.textWhite} size={theme.responsiveComponents.icon.medium} style={styles.buttonIcon} />}
+                icon={<Icon name="lock" type="material" color={theme.colors.textWhite} size={theme.responsiveComponents.icon.medium}  />}
+                iconContainerStyle={styles.buttonIcon}
                 onPress={() => setIsChangingPassword(true)}
                 containerStyle={styles.fullButtonContainer}
               />
@@ -459,12 +461,13 @@ export default function ClientClientProfileScreen({ navigation }) {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t('ClientClientProfileScreen', 'dangerZone')}</Text>
             <Button
-              title={t('ClientClientProfileScreen', 'deleteAccount')}
-              icon={<Icon name="delete" type="material" color={theme.colors.textWhite} size={theme.responsiveComponents.icon.medium} style={styles.buttonIcon} />}
-              buttonStyle={styles.deleteButton}
-              onPress={confirmDeleteAccount}
-              containerStyle={styles.fullButtonContainer}
-            />
+            title={t('ClientClientProfileScreen', 'deleteAccount')}
+            icon={<Icon name="delete" type="material" color={theme.colors.textWhite} size={theme.responsiveComponents.icon.medium} />}
+            buttonStyle={styles.deleteButton}
+            onPress={confirmDeleteAccount}
+           containerStyle={styles.fullButtonContainer}
+           iconContainerStyle={styles.buttonIcon}
+         />
           </View>
         </Card>
       </ScrollView>

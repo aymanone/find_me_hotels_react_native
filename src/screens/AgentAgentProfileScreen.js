@@ -402,14 +402,15 @@ const updatePassword = async () => {
   <Text style={styles.sectionTitle}>{t('AgentAgentProfileScreen', 'security')}</Text>
   
   {!isChangingPassword ? (
-    <Button
-      title={t('AgentAgentProfileScreen', 'changePassword')}
-      icon={<Icon name="lock" type="material"  color={theme.colors.primary} size={theme.responsiveComponents.icon.medium} style={{ marginRight: theme.spacing.sm }} />}
-      type="outline"
-      buttonStyle={styles.securityButton}
-      containerStyle={styles.buttonContainer}
-      onPress={() => setIsChangingPassword(true)}
-    />
+     <Button
+         title={t('AgentAgentProfileScreen', 'changePassword')}
+         icon={<Icon name="lock" type="material"  color={theme.colors.primary} size={theme.responsiveComponents.icon.medium} />}
+         type="outline"
+         buttonStyle={styles.securityButton}
+         containerStyle={styles.buttonContainer}
+         iconContainerStyle={{ marginRight: theme.spacing.sm }}
+         onPress={() => setIsChangingPassword(true)}
+        />
   ) : (
     <>
       <Input

@@ -1886,6 +1886,7 @@ export const ScreenTranslations = {
       loadError: 'Failed to load companies',
       userNotFound: 'User not found. Please log in again.',
       updateCompanies:"update Companies",
+      searchCompaniesPlaceholder:"search",
     },
     ar: {
       title: 'شركاتك',
@@ -1900,6 +1901,7 @@ export const ScreenTranslations = {
       loadError: 'فشل في تحميل الشركات',
       userNotFound: 'لم يتم العثور على المستخدم. يرجى تسجيل الدخول مرة أخرى.',
       updateCompanies:"حدث الشركات",
+      searchCompaniesPlaceholder:"ابحث",
     }
   },
   ClientOfferDetailsScreen: {

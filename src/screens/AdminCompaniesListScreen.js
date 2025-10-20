@@ -7,7 +7,7 @@ import {
   TouchableOpacity, 
 
 } from 'react-native';
-import { Text, Card, Button, Icon } from 'react-native-elements';
+import { Text, Card, Button, Icon,SearchBar  } from 'react-native-elements';
 import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser } from '../utils/auth';
 import {showAlert} from "../components/ShowAlert";
@@ -19,7 +19,8 @@ export default function AdminCompaniesListScreen({ navigation }) {
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-
+  const [filteredCompanies, setFilteredCompanies] = useState([]);
+  const [search, setSearch] = useState('');
   // Check if user is an admin
   useEffect(() => {
     const checkRole = async () => {
@@ -65,6 +66,7 @@ export default function AdminCompaniesListScreen({ navigation }) {
       if (error) throw error;
       
       setCompanies(data || []);
+      setFilteredCompanies(data || []);
     } catch (error) {
       console.error('Error fetching companies:', error.message);
       showAlert(t('Alerts', 'error'), t('AdminCompaniesListScreen', 'loadError'));
@@ -73,6 +75,24 @@ export default function AdminCompaniesListScreen({ navigation }) {
       setRefreshing(false);
     }
   };
+  const updateSearch = (text) => {
+  setSearch(text);
+  
+  if (text.trim() === '') {
+    setFilteredCompanies(companies);
+    return;
+  }
+  
+  const filtered = companies.filter(company => {
+    const searchTerm = text.toLowerCase();
+    
+    return company.company_name?.toLowerCase().includes(searchTerm) || 
+           company.company_email?.toLowerCase().includes(searchTerm) ||
+           company.countries?.country_name?.toLowerCase().includes(searchTerm);
+  });
+  
+  setFilteredCompanies(filtered);
+};
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -107,13 +127,21 @@ export default function AdminCompaniesListScreen({ navigation }) {
           titleStyle={{ color: theme.colors.primary }}
         />
       </View>
-      
-      {companies.length === 0 ? (
+      <SearchBar
+  placeholder={t('AdminCompaniesListScreen', 'searchCompaniesPlaceholder')}
+  onChangeText={updateSearch}
+  value={search}
+  containerStyle={styles.searchBarContainer}
+  inputContainerStyle={styles.searchBarInputContainer}
+  lightTheme
+  round
+/>
+      {filteredCompanies.length === 0 ? (
         <Card containerStyle={styles.noDataCard}>
           <Text style={styles.noDataText}>{t('AdminCompaniesListScreen', 'noCompaniesFound')}</Text>
         </Card>
       ) : (
-        companies.map((company) => (
+        filteredCompanies.map((company) => (
           <Card key={company.id} containerStyle={styles.card}>
             <Card.Title style={styles.cardTitle}>{company.company_name}</Card.Title>
             
@@ -138,8 +166,9 @@ export default function AdminCompaniesListScreen({ navigation }) {
               title={t('AdminCompaniesListScreen', 'viewProfile')}
               onPress={() => viewCompanyProfile(company.id)}
               buttonStyle={styles.viewButton}
-              icon={<Icon name="arrow-forward" type="ionicon"  color={theme.colors.textWhite} size={theme.spacing.lg}  style={styles.buttonIcon} />}
+              icon={<Icon name="arrow-forward" type="ionicon"  color={theme.colors.textWhite} size={theme.spacing.lg} />}
               iconRight
+              iconContainerStyle={styles.buttonIcon}
             />
           </Card>
         ))
@@ -212,4 +241,14 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.fontSize.md,
     color: theme.colors.textSecondary,
   },
+  searchBarContainer: {
+  backgroundColor: 'transparent',
+  borderBottomColor: 'transparent',
+  borderTopColor: 'transparent',
+  paddingHorizontal: theme.spacing.md,
+  marginBottom: theme.spacing.md,
+},
+searchBarInputContainer: {
+  backgroundColor: theme.colors.backgroundGray,
+},
 });

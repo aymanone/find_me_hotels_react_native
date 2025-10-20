@@ -364,8 +364,9 @@ const CompanyCompanyProfileScreen = ({ navigation }) => {
         {!isChangingPassword ? (
           <Button
             title={t('CompanyCompanyProfileScreen', 'changePassword')}
-            icon={<Icon name="lock-closed-outline" type="ionicon" color={theme.colors.textWhite} size={theme.spacing.xl} style={styles.buttonIcon}  />}
+            icon={<Icon name="lock-closed-outline" type="ionicon" color={theme.colors.textWhite} size={theme.spacing.xl}  />}
             buttonStyle={styles.securityButton}
+            iconContainerStyle={styles.buttonIcon}
             onPress={() => setIsChangingPassword(true)}
           />
         ) : (
@@ -440,8 +441,9 @@ const CompanyCompanyProfileScreen = ({ navigation }) => {
         </Text>
         <Button
           title={t('CompanyCompanyProfileScreen', 'deleteAccount')}
-          icon={<Icon name="trash-outline" type="ionicon" color={theme.colors.textWhite} size={theme.spacing.xl} style={styles.buttonIcon}  />}
+          icon={<Icon name="trash-outline" type="ionicon" color={theme.colors.textWhite} size={theme.spacing.xl}   />}
           buttonStyle={styles.deleteButton}
+          iconContainerStyle={styles.buttonIcon}
           onPress={handleDeleteAccount}
         />
       </Card>

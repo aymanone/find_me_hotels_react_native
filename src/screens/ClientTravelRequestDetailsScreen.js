@@ -657,11 +657,12 @@ ${requestUrl}`;
 
                   <Button
                     title={t('ClientTravelRequestDetailsScreen', 'viewDetails')}
-                  icon={<Icon name="eye-outline" type="ionicon" color={theme.colors.textWhite} size={theme.responsiveComponents.icon.small} style={styles.buttonIcon} />}
+                  icon={<Icon name="eye-outline" type="ionicon" color={theme.colors.textWhite} size={theme.responsiveComponents.icon.small}  />}
                     buttonStyle={[
                       styles.viewDetailsButton,
                       visitedOffers[offer.id] && styles.visitedButton
                     ]}
+                    iconContainerStyle={styles.buttonIcon}
                     onPress={() => viewOfferDetails(offer.id)}
                   />
         </Card>
