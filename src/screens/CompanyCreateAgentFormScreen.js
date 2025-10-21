@@ -165,7 +165,7 @@ const CompanyCreateAgentFormScreen = ({ navigation }) => {
       first_name: firstName,
       second_name: secondName,
       agent_country: agentCountry,
-      agent_email: agentEmail,
+      agent_email: agentEmail.toLowerCase(),
       company_id: user.id
     };
     

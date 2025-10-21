@@ -184,7 +184,7 @@ const AdminCreateCompanyFormScreen = () => {
       const companyData = {
         company_name: companyName,
         company_country: companyCountry,
-        company_email: companyEmail,
+        company_email: companyEmail.toLowerCase(),
         address: address,
         admin_id: user.id,
         license_num:licenseNum

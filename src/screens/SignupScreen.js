@@ -190,6 +190,7 @@ export default function SignupScreen({ navigation }) {
       setLoading(true);
      
       // Sign up user with Supabase
+     
       const { error } = await supabase.auth.signUp({
         email,
         password,

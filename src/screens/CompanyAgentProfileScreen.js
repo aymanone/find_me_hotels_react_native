@@ -245,7 +245,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
 
       // Include email update only if agent hasn't signed up yet
       if (!agent.user_id) {
-        updateData.agent_email = editedAgent.agent_email;
+        updateData.agent_email = editedAgent.agent_email.toLowerCase();
       }
 
       // Update agent in database
@@ -263,7 +263,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
         second_name: editedAgent.second_name,
         agent_country: editedAgent.country_id,
         permitted_to_work: editedAgent.permitted_to_work,
-        ...(agent.user_id ? {} : { agent_email: editedAgent.agent_email }),
+        ...(agent.user_id ? {} : { agent_email: editedAgent.agent_email.toLowerCase() }),
         countries: countries.find(c => c.id === editedAgent.country_id)
       });
 

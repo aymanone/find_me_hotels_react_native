@@ -275,7 +275,7 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
           company_country: countryId,
           address: companyAddress,
           url: companyUrl,
-          company_email: companyEmail,
+          company_email: companyEmail.toLowerCase(),
           phone: companyPhone,
           permitted_to_work: permittedToWork,
           license_num: licenseNum
