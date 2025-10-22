@@ -177,14 +177,15 @@ const styles = StyleSheet.create({
   
   languageSelectorContainer: {
     position: 'absolute',
-    top: theme.spacing.lg,
-    right: theme.spacing.xl,
+    top: theme.spacing.xs,
+    right: -theme.spacing.xxl,
     zIndex: 1,
   },
   
   title: {
     textAlign: 'center',
     marginBottom: theme.spacing.sm,
+    top:-theme.spacing.lg,
     fontSize: theme.responsiveTypography.h3.fontSize,
     fontWeight: theme.typography.fontWeight.bold,
     color: theme.colors.text,
@@ -192,6 +193,7 @@ const styles = StyleSheet.create({
   
   subtitle: {
     textAlign: 'center',
+     top: theme.spacing.xxxl,
     marginBottom: theme.spacing.xxxl,
     fontSize: theme.responsiveTypography.fontSize.md,
     color: theme.colors.textSecondary,
