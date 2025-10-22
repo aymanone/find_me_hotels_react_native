@@ -61,7 +61,7 @@ export default function SignupScreen({ navigation }) {
     try {
       const isAllowed = await notAllowedAuthenticatedUser();
       if (!isAllowed) {
-        navigation.navigate('Dashboard');
+        console.log("an Authenticated User trying to access non auth screen");
       }
     } catch (error) {
       console.error('Auth check failed:', error);
@@ -190,9 +190,10 @@ export default function SignupScreen({ navigation }) {
       setLoading(true);
      
       // Sign up user with Supabase
+      loweredEmail= email.toLowerCase();
      
       const { error } = await supabase.auth.signUp({
-        email,
+       email: loweredEmail,
         password,
         options: {
           data: userData,

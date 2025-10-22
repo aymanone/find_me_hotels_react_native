@@ -1039,13 +1039,13 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
     fontWeight: '500',
     cursor: 'pointer',
-    outline: 'none',
+    outLine: 'none',
   },
   inputStyle: {
     fontSize: theme.responsiveTypography.fontSize.md,
     ...(Platform.OS === 'web' && {
-      outlineWidth: 0,
-      outline: 'none',
+      outLineWidth: 0,
+      outLine: 'none',
     }),
   },
   inputContainerWeb: Platform.OS === 'web' ? {

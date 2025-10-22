@@ -19,8 +19,9 @@ export default function LoginScreen({ navigation }) {
     
     try {
       setLoading(true);
+       loweredEmail= email.toLowerCase();
       const { error } = await supabase.auth.signInWithPassword({
-        email,
+        email:loweredEmail,
         password,
       });
 
@@ -41,7 +42,7 @@ useEffect(() => {
     try {
       const isAllowed = await notAllowedAuthenticatedUser();
       if (!isAllowed) {
-        navigation.navigate('Home');
+         console.log("an Authenticated User trying to access nn auth screen");
       }
     } catch (error) {
       console.error('Auth check failed:', error);

@@ -18,11 +18,7 @@ export const signOut = async (navigation, redirectTo = 'Signin') => {
     await supabase.auth.signOut({ scope: 'local' });
   }
   
-  // Always navigate (user expects to be signed out)
-  if (navigation) {
-    navigation.navigate(redirectTo);
-  }
-  
+ 
   return true;
 };
 /**
@@ -58,9 +54,7 @@ export const checkUserRole = async (requiredRole, navigation, redirectTo = "Sign
   // No user found at all
   if (!user) {
     console.log('No user found');
-    if (navigation) {
-      navigation.navigate(redirectTo);
-    }
+    await signOut(); 
     return false;
   }
   
@@ -68,12 +62,10 @@ export const checkUserRole = async (requiredRole, navigation, redirectTo = "Sign
   if (user.app_metadata?.role !== requiredRole) {
     const errorMessage = `This section is only for ${requiredRole}s.`;
     console.log(errorMessage);
-        await signOut(navigation, redirectTo);
+        await signOut();
         
     
-    if (navigation) {
-      navigation.navigate(redirectTo);
-    }
+    
     return false;
   }
   
@@ -132,7 +124,7 @@ export const notAllowedAuthenticatedUser = async()=>{
   const user= await getCurrentUser();
   if (user) {
     console.warn('Authenticated user attempted to access a restricted area');
-    const redirect = await checkUserRole(user?.app_metadata?.role);
+   
     return false; // User is authenticated, not allowed
   }
   return true;
