@@ -21,7 +21,7 @@ import {
 import { Dropdown } from 'react-native-element-dropdown';
 import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser, signOut } from '../utils/auth';
-import { validUrl, validEmail, validPhoneNumber } from '../utils/validation';
+import { validURL, validEmail, validPhoneNumber } from '../utils/validation';
 import { showAlert } from "../components/ShowAlert";
 import { theme, commonStyles, screenSize, responsive } from '../styles//theme';
 import {  useTranslation } from '../config/localization';
@@ -226,7 +226,7 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
     setPhoneError('');
     setLicenseError(''); 
     // Validate URL if provided
-    if (companyUrl && !validUrl(companyUrl)) {
+    if (companyUrl && !validURL(companyUrl)) {
       setUrlError(t('AdminCompanyProfileScreen', 'validUrlError'));
       isValid = false;
     }
@@ -456,7 +456,11 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
           onBackdropPress={() => setEditMode(false)}
           overlayStyle={styles.overlay}
         >
-          <ScrollView>
+        <KeyboardAvoidingView 
+                  behavior={Platform.OS === "ios" ? "padding" : "height"}
+                  style={{ maxHeight: '90%' }}
+            >
+          <ScrollView showsVerticalScrollIndicator={true} >
             <Text style={styles.overlayTitle}>{t('AdminCompanyProfileScreen', 'editCompany')}</Text>
             
             <Input
@@ -572,6 +576,7 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
               onPress={() => setEditMode(false)}
             />
           </ScrollView>
+          </KeyboardAvoidingView>
         </Overlay>
         
         {/* Delete Confirmation Overlay */}
@@ -695,6 +700,7 @@ const styles = StyleSheet.create({
     padding: theme.spacing.xl,
     width: theme.components.overlay.widthPercentage * 100 + '%',
     backgroundColor: theme.colors.backgroundWhite,
+    maxHeight:"95%",
   },
   overlayTitle: {
     fontSize: theme.typography.h3.fontSize,

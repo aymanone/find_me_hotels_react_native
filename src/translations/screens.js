@@ -2302,7 +2302,8 @@ export const ScreenTranslations = {
     messageSent: "Thank you! Your message has been prepared. Please send it from your email client.",
     emailClientError: "Could not open email client. Please contact us directly at ayman@mail.com",
     submitError: "Failed to send message. Please try again.",
-    linkError: "Could not open link"
+    linkError: "Could not open link",
+    backToApp:"back to Home",
   },
   ar: {
     title: "اتصل بنا",
@@ -2320,7 +2321,8 @@ export const ScreenTranslations = {
     messageSent: "شكراً! تم تحضير رسالتك. يرجى إرسالها من عميل البريد الإلكتروني الخاص بك.",
     emailClientError: "لا يمكن فتح عميل البريد الإلكتروني. يرجى التواصل معنا مباشرة على ayman@mail.com",
     submitError: "فشل في إرسال الرسالة. يرجى المحاولة مرة أخرى.",
-    linkError: "لا يمكن فتح الرابط"
+    linkError: "لا يمكن فتح الرابط",
+    backToApp:"الصفحة الرئيسية",
   }
 },
  AdminCompanyProfileScreen: {

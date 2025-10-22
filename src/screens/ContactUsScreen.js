@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Linking } from 'react-native';
+import { View, StyleSheet, Linking,ScrollView} from 'react-native';
 import { Button, Input, Text } from 'react-native-elements';
 import { showAlert } from "../components/ShowAlert";
 import { useTranslation } from '../config/localization';
 import LanguageSelector from '../components/LanguageSelector';
 import { theme, commonStyles, responsive, screenSize } from '../styles/theme';
 import { validEmail } from '../utils/validation';
-
+import supabase from '../config/supabase';
 export default function ContactUsScreen({ navigation }) {
   const { t, language } = useTranslation();
   const [name, setName] = useState('');
@@ -73,7 +73,7 @@ export default function ContactUsScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <View style={styles.languageSelectorContainer}>
         <LanguageSelector />
       </View>
@@ -148,15 +148,30 @@ export default function ContactUsScreen({ navigation }) {
           titleStyle={styles.blogLinkText}
         /> */}
       </View>
-    </View>
+      <View style={styles.navigationContainer}>
+  <Button
+    title={t('ContactUsScreen', 'backToApp') || 'Back to App'}
+    type="outline"
+    onPress={() => {
+  if (navigation.canGoBack()) {
+    navigation.goBack();
+  } else {
+    navigation.navigate('SignIn');
+  }
+}}
+    buttonStyle={styles.navigationButton}
+    titleStyle={styles.navigationButtonText}
+  />
+</View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     padding: theme.spacing.xl,
-    justifyContent: 'center',
+    paddingTop: theme.spacing.xxxl * 2, 
     backgroundColor: theme.colors.background,
   },
   
@@ -217,4 +232,22 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
     fontSize: theme.responsiveTypography.fontSize.sm,
   },
+  navigationContainer: {
+  marginTop: theme.spacing.xl,
+  alignItems: 'center',
+},
+
+navigationButton: {
+  borderColor: theme.colors.primary,
+  borderWidth: 2,
+  borderRadius: theme.borderRadius.md,
+  paddingHorizontal: theme.spacing.xxl,
+  paddingVertical: theme.spacing.md,
+},
+
+navigationButtonText: {
+  color: theme.colors.primary,
+  fontSize: theme.responsiveTypography.fontSize.md,
+  fontWeight: theme.typography.fontWeight.bold,
+},
 });
