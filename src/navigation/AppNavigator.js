@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { AppState, View, Text } from 'react-native';
+import { AppState, View, Text, ActivityIndicator, } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -47,6 +47,8 @@ import supabase from '../config/supabase';
 import { Linking } from 'react-native';
 import UpdatedRequestsBadge from '../components/UpdatedRequestsBadge';
 import ClientNewOffersBadge from '../components/ClientNewOffersBadge';
+
+
 // Create navigators - Move outside component to prevent recreation
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -741,6 +743,7 @@ export default function AppNavigator({navigationRef}) {
   const [session, setSession] = useState(null);
   const [userType, setUserType] = useState(null);
   const [appState, setAppState] = useState(AppState.currentState);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
   const channelsRef = useRef([]);
   const appStateRef = useRef(appState);
     const { isResettingPassword } = useAuth();
@@ -924,6 +927,7 @@ export default function AppNavigator({navigationRef}) {
       setSession(session);
       if (session?.user) {
         setUserType(session.user.app_metadata.role);
+        setIsAuthLoading(false); 
       }
       else{
         setUserType(null);
@@ -931,6 +935,7 @@ export default function AppNavigator({navigationRef}) {
             supabase.removeAllChannels();
             channelsRef.current = [];
         }
+         setIsAuthLoading(false); 
       }
     });
     return () => {
@@ -997,6 +1002,13 @@ export default function AppNavigator({navigationRef}) {
       />
     );
   }, [userType]);
+  if (isAuthLoading) {
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <ActivityIndicator size="large" />
+    </View>
+  );
+}
  
   return (
     <NavigationContainer ref={navigationRef} linking={linking}>
