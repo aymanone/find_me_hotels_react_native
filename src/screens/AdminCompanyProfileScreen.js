@@ -232,7 +232,7 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
     }
     
     // Validate email if provided
-    if (companyEmail && !validEmail(companyEmail)) {
+    if (companyEmail && !validEmail(companyEmail.trim())) {
       setEmailError(t('AdminCompanyProfileScreen', 'validEmailError'));
       isValid = false;
     }
@@ -275,7 +275,7 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
           company_country: countryId,
           address: companyAddress,
           url: companyUrl,
-          company_email: companyEmail.toLowerCase(),
+          company_email: companyEmail.toLowerCase().trim(),
           phone: companyPhone,
           permitted_to_work: permittedToWork,
           license_num: licenseNum

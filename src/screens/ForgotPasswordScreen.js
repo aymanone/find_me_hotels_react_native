@@ -35,7 +35,10 @@ useEffect(() => {
       showAlert(t('Alerts', 'error'), t('ForgotPasswordScreen', 'enterEmail'));
       return;
     }
-    
+     if (!validEmail(email.trim())) {
+      showAlert(t('ContactUsScreen', 'invalidEmail') || 'Please enter a valid email address');
+      return;
+    }
     try {
       setLoading(true);
       
@@ -75,7 +78,7 @@ useEffect(() => {
       }
       redirectTo="https://bucolic-banoffee-2f9450.netlify.app/supabase_redirect.html";
       // Send password reset email
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
         redirectTo: redirectTo,
       });
 

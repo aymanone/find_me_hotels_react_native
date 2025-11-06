@@ -19,7 +19,8 @@ export default function LoginScreen({ navigation }) {
     
     try {
       setLoading(true);
-       loweredEmail= email.toLowerCase();
+       const trimmedEmail=email.trim();
+       loweredEmail= trimmedEmail.toLowerCase();
       const { error } = await supabase.auth.signInWithPassword({
         email:loweredEmail,
         password,

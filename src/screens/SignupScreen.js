@@ -111,7 +111,7 @@ export default function SignupScreen({ navigation }) {
       }
 
       // Validate email format
-      if (!validEmail(email)) {
+      if (!validEmail(email.trim())) {
         throw new Error(t('SignupScreen', 'invalidEmail'));
       }
 
@@ -190,7 +190,8 @@ export default function SignupScreen({ navigation }) {
       setLoading(true);
      
       // Sign up user with Supabase
-      loweredEmail= email.toLowerCase();
+      const trimmedEmail=email.trim();
+      loweredEmail= trimmedEmail.toLowerCase();
      
       const { error } = await supabase.auth.signUp({
        email: loweredEmail,
