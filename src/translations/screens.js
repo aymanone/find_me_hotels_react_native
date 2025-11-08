@@ -155,6 +155,7 @@ export const ScreenTranslations = {
       forgotPassword: 'Forgot password',
       loginError: 'Login failed. Please check your credentials.',
       "contactUs":"contact us",
+        createTravelRequest: 'Create Travel Request',
     },
     ar: {
       title: 'الغرفة',
@@ -165,6 +166,7 @@ export const ScreenTranslations = {
       forgotPassword: 'نسيت كلمة المرور',
       loginError: 'فشل تسجيل الدخول. يرجى التحقق من بياناتك.',
       "contactUs":"اتصل بنا",
+       createTravelRequest: 'إنشاء طلب سفر',
     }
   },
   SignupScreen: {
@@ -756,7 +758,13 @@ export const ScreenTranslations = {
     failedToCheckRequestStatus: 'Failed to check request status.',
     // Missing keys that I found in the component
     starsLabel: '{value} stars',
-    yearsLabel: '{age} years'
+    yearsLabel: '{age} years',
+    authenticationRequired: 'Authentication Required',
+  pleaseSignInOrSignUpToSubmitRequest: 'Please sign in or create an account to submit your travel request',
+  signInOrSignUp: 'Sign In / Sign Up',
+  cancel: 'Cancel',
+  youAreNowLoggedIn: 'You are now logged in and can submit your request',
+    draftRestored: 'Draft Restored',
   },
   ar: {
     title: 'طلب سفر جديد',
@@ -855,7 +863,13 @@ export const ScreenTranslations = {
     failedToCheckRequestStatus: 'فشل في فحص حالة الطلب.',
     // Missing keys that I found in the component
     starsLabel: '{value} نجوم',
-    yearsLabel: '{age} سنوات'
+    yearsLabel: '{age} سنوات',
+     authenticationRequired: 'المصادقة مطلوبة',
+  pleaseSignInOrSignUpToSubmitRequest: 'يرجى تسجيل الدخول أو إنشاء حساب لتقديم طلب السفر',
+  signInOrSignUp: 'تسجيل الدخول / إنشاء حساب',
+  cancel: 'إلغاء',
+  youAreNowLoggedIn: 'أنت الآن مسجل دخولك ويمكنك تقديم طلبك',
+    draftRestored: 'تم استعادة المسودة',
   }
 }
   ,
@@ -2701,5 +2715,24 @@ CompanyCompanyProfileScreen: {
     ok: 'موافق',
     deleteProcessError: 'حدث خطأ غير متوقع أثناء الحذف',
   }
+},
+// English
+ClientAuthModal: {
+  en:{
+  title: 'Sign In or Sign Up',
+  signIn: 'Sign In',
+  signUp: 'Sign Up',
+  needAgentOrCompany: 'Need to sign up as Agent or Company?',
+  fullSignup: 'Full Signup Page',
+},
+
+// Arabic (if you need)
+ar: {
+  title: 'تسجيل الدخول أو إنشاء حساب',
+  signIn: 'تسجيل الدخول',
+  signUp: 'إنشاء حساب',
+  needAgentOrCompany: 'هل تريد التسجيل كوكيل أو شركة؟',
+  fullSignup: 'صفحة التسجيل الكاملة'
 }
+},
 }; 

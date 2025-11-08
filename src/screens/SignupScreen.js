@@ -28,7 +28,7 @@ const useDebounce = (value, delay) => {
   return debouncedValue;
 };
 
-export default function SignupScreen({ navigation }) {
+export default function SignupScreen({ navigation, isModal = false, onAuthSuccess }) {
   const { language,t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -53,6 +53,9 @@ export default function SignupScreen({ navigation }) {
     { label: t('SignupScreen', 'agent'), value: 'agent' },
     { label: t('SignupScreen', 'company'), value: 'company' },
     { label: t('SignupScreen', 'admin'), value: 'admin' }
+  ];
+   const modalRoles = [
+    { label: t('SignupScreen', 'client'), value: 'client' }
   ];
   const messaging_apps = MESSAGING_APPS.map(app => { return { label: app, value: app }});
  useEffect(() => {
@@ -206,6 +209,11 @@ export default function SignupScreen({ navigation }) {
       showAlert(t('SignupScreen', 'registrationSuccess'));
       
       // Wait for 5 seconds before navigating
+       if (isModal && onAuthSuccess) {
+        // Called from modal - DON'T sign out, notify parent
+        onAuthSuccess();
+      } 
+      else {
       setTimeout(async () => {
         try {
           await signOut(navigation, 'Signin');
@@ -215,6 +223,7 @@ export default function SignupScreen({ navigation }) {
           navigation.navigate('Signin');
         }
       }, 5000);
+    }
       
     } catch (error) {
       showAlert(error.message);
@@ -410,7 +419,7 @@ export default function SignupScreen({ navigation }) {
         )}
          <Text style={styles.label}>{t('SignupScreen', 'role')}:</Text>
         <Dropdown
-          data={roles}
+          data={isModal? modalRoles:roles}
           labelField="label"
           valueField="value"
           value={role}
@@ -427,11 +436,15 @@ export default function SignupScreen({ navigation }) {
           loading={loading}
           containerStyle={styles.signupButton}
         />
+        {!isModal && (
+          <>
         <Button
           title={t('SignupScreen', 'backToLogin')}
           type="clear"
           onPress={() => navigation.navigate("Signin")}
         />
+          </>
+        )}
          <Button
           title={t('SignupScreen', 'contactUs')}
           type="clear"

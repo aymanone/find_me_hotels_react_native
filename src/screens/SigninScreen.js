@@ -8,7 +8,7 @@ import { theme, commonStyles, responsive, screenSize } from '../styles/theme';
 import { useTranslation } from '../config/localization';
 import LanguageSelector from '../components/LanguageSelector';
 
-export default function LoginScreen({ navigation }) {
+export default function LoginScreen({ navigation,isModal = false, onAuthSuccess }) {
   const { t,language } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,6 +28,11 @@ export default function LoginScreen({ navigation }) {
 
       if (error) throw error;
       const { data: { user } } = await supabase.auth.getUser();
+          // Different behavior based on context
+      if (isModal && onAuthSuccess) {
+        // Called from modal - notify parent
+        onAuthSuccess();
+      }
    
       // The navigation will be handled automatically by our AppNavigator
     } catch (error) {
@@ -59,6 +64,14 @@ useEffect(() => {
         <LanguageSelector />
       </View>
       <Text  style={styles.title}>{t('SigninScreen', 'title')}</Text>
+      {!isModal && (
+        <Button
+          title={t('SigninScreen', 'createTravelRequest')}
+          type="outline"
+          onPress={() => navigation.navigate('PublicTravelRequest')}
+          containerStyle={{ marginTop: 20 }}
+        />
+      )}
       <Input
         placeholder={t('SigninScreen', 'email')}
         onChangeText={setEmail}
@@ -83,11 +96,15 @@ useEffect(() => {
         onPress={handleLogin}
         loading={loading}
       />
+      {!isModal && (
+        <>
       <Button
         title={t('SigninScreen', 'signup')}
         type="clear"
         onPress={() => navigation.navigate('Signup')}
       />
+         </>
+      )}
      <Button
         title={t('SigninScreen', 'forgotPassword')}
         type="clear"

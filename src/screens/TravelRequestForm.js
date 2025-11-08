@@ -11,12 +11,13 @@ import { showAlert } from "../components/ShowAlert";
 import { unsubscribeChannels } from '../utils/channelUtils.js';
 import { useTranslation } from '../config/localization';
 import { theme, commonStyles,screenSize, responsive } from '../styles/theme';
-
+import ClientAuthModal from '../components/ClientAuthModal';
+import storage from '../utils/storage';
 export default function TravelRequestForm({ navigation, route }) {
   const { t, language } = useTranslation();
 
   useEffect(() => {
-    checkUserRole("client", navigation, "Signin");
+   // checkUserRole("client", navigation, "Signin");
   }, [navigation]);
 
   const channelsRef = useRef([]);
@@ -28,7 +29,7 @@ export default function TravelRequestForm({ navigation, route }) {
   const [initialLoading, setInitialLoading] = useState(isEditing);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
-
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const countryDropdownRef = useRef(null);
   const areaDropdownRef = useRef(null);
   const nationalityDropdownRef = useRef(null);
@@ -193,6 +194,33 @@ export default function TravelRequestForm({ navigation, route }) {
 
     fetchAreas();
   }, [formData.requestCountry]);
+  // Restore pending request from storage
+useEffect(() => {
+  const loadPendingRequest = async () => {
+    const savedData = await storage.getItem('pendingTravelRequest');
+    if (savedData) {
+      try {
+        const parsedData = JSON.parse(savedData);
+         const restoredData = {
+          ...parsedData,
+          startDate: new Date(parsedData.startDate),
+          endDate: new Date(parsedData.endDate)
+        };
+        setFormData(restoredData);
+        showAlert(
+          t('TravelRequestForm', 'draftRestored')
+        );
+        await storage.removeItem('pendingTravelRequest');
+      } catch (error) {
+        console.error('Error parsing saved request:', error);
+        // Clear corrupted data
+        await storage.removeItem('pendingTravelRequest');
+      }
+    }
+  };
+  
+  loadPendingRequest();
+}, []); // Empty dependency array - only run once on mount
 
   const onStartDateChange = (event, selectedDate) => {
     setShowStartDatePicker(false);
@@ -272,6 +300,31 @@ export default function TravelRequestForm({ navigation, route }) {
 
   const handleSubmit = async () => {
 
+     // Check authentication FIRST
+    const user = await getCurrentUser();
+
+    if (!user) {
+      await storage.setItem('pendingTravelRequest', JSON.stringify({
+           ...formData,
+          startDate: formData.startDate.toISOString(),
+         endDate: formData.endDate.toISOString()
+         }));
+      showAlert(
+        t('TravelRequestForm', 'authenticationRequired'),
+        t('TravelRequestForm', 'pleaseSignInOrSignUpToSubmitRequest'),
+        [
+          {
+            text: t('TravelRequestForm', 'signInOrSignUp'),
+            onPress: () => setShowAuthModal(true)
+          },
+          {
+            text: t('TravelRequestForm', 'cancel'),
+            style: 'cancel'
+          }
+        ]
+      );
+      return;
+    }
     try {
       const today = new Date().setHours(0, 0, 0, 0);
       if (formData.startDate < new Date(today)) {
@@ -885,6 +938,18 @@ export default function TravelRequestForm({ navigation, route }) {
           />
         </View>
       </ScrollView>
+       <ClientAuthModal
+          visible={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          navigation={navigation}
+          onAuthSuccess={() => {
+            setShowAuthModal(false);
+            showAlert(
+              t('TravelRequestForm', 'success'),
+              t('TravelRequestForm', 'youAreNowLoggedIn')
+            );
+          }}
+        />
     </KeyboardAvoidingView>
   );
 }

@@ -768,6 +768,7 @@ export default function AppNavigator({navigationRef}) {
       ResetPassword: 'reset-password',
       ContactUs: 'contact-us', 
       TravelRequestRedirect: 'travel-request/:id',
+      PublicTravelRequest: 'new-travel-request', 
 
       // Client routes
       ClientApp: {
@@ -976,6 +977,11 @@ export default function AppNavigator({navigationRef}) {
      <Stack.Screen 
       name="TravelRequestRedirect" 
       component={TravelRequestRedirectScreen}
+      options={{ headerShown: false }}
+    />
+    <Stack.Screen 
+      name="PublicTravelRequest" 
+      component={TravelRequestForm}
       options={{ headerShown: false }}
     />
     </>
