@@ -661,6 +661,7 @@ useEffect(() => {
               selectedTextStyle={styles.selectedTextStyle}
               search
               searchPlaceholder={t('TravelRequestForm', 'searchCountry')}
+              inputSearchStyle={styles.dropdownSearchInput} 
             />
           </View>
 
@@ -687,6 +688,7 @@ useEffect(() => {
               selectedTextStyle={styles.selectedTextStyle}
               search
               searchPlaceholder={t('TravelRequestForm', 'searchArea')}
+              inputSearchStyle={styles.dropdownSearchInput} 
               disabled={!formData.requestCountry}
             />
           </View>
@@ -720,6 +722,7 @@ useEffect(() => {
               placeholder={t('TravelRequestForm', 'selectAge')}
               style={styles.dropdown}
               placeholderStyle={styles.placeholderStyle}
+              inputSearchStyle={styles.dropdownSearchInput} 
               selectedTextStyle={styles.selectedTextStyle}
             />
           </View>
@@ -760,6 +763,7 @@ useEffect(() => {
               placeholder={t('TravelRequestForm', 'selectRating')}
               style={styles.dropdown}
               placeholderStyle={styles.placeholderStyle}
+              inputSearchStyle={styles.dropdownSearchInput} 
               selectedTextStyle={styles.selectedTextStyle}
             />
           </View>
@@ -861,6 +865,7 @@ useEffect(() => {
               selectedTextStyle={styles.selectedTextStyle}
               search
               searchPlaceholder={t('TravelRequestForm', 'searchNationality')}
+              inputSearchStyle={styles.dropdownSearchInput} 
             />
           </View>
         </View>
@@ -887,6 +892,7 @@ useEffect(() => {
               ]}
               placeholderStyle={styles.placeholderStyle}
               selectedTextStyle={styles.selectedTextStyle}
+              inputSearchStyle={styles.dropdownSearchInput} 
               search
               searchPlaceholder={t('TravelRequestForm', 'searchCountry')}
               disable={formData.preferredAgentsCountries.length >= 2}
@@ -1106,11 +1112,24 @@ const styles = StyleSheet.create({
     cursor: 'pointer',
     outLine: 'none',
   },
+  dropdownSearchInput: {
+  height: 40,
+  fontSize: theme.responsiveTypography.fontSize.md,
+  borderColor: theme.colors.border,
+  ...(Platform.OS === 'web' && {
+    outline: 'none',
+    outlineWidth: 0,
+  }),
+},
   inputStyle: {
     fontSize: theme.responsiveTypography.fontSize.md,
     ...(Platform.OS === 'web' && {
-      outLineWidth: 0,
-      outLine: 'none',
+      outlineWidth: 0,
+      outline: 'none',
+      ':focus': {
+      borderColor: theme.colors.primary,
+      borderWidth: 2,
+    }
     }),
   },
   inputContainerWeb: Platform.OS === 'web' ? {

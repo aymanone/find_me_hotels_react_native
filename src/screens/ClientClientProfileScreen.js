@@ -327,6 +327,7 @@ export default function ClientClientProfileScreen({ navigation }) {
                   }}
                   search
                   searchPlaceholder={t('ClientClientProfileScreen', 'searchCountry')}
+                  inputSearchStyle={styles.dropdownSearchInput}
                   renderItem={item => (
                     <View style={styles.dropdownItem}>
                       <Text style={styles.textItem}>{item.label}</Text>
@@ -628,4 +629,12 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.error,
     borderRadius: theme.borderRadius.md,
   },
+  dropdownSearchInput: {
+  fontSize: theme.responsiveTypography.fontSize.md,
+  borderColor: theme.colors.border,
+  ...(Platform.OS === 'web' && {
+    outline: 'none',
+    outlineWidth: 0,
+  }),
+},
 });
