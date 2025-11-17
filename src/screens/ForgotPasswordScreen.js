@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: theme.spacing.xl,
-    backgroundColor: theme.colors.backgroundWhite,
+    backgroundColor: theme.colors.background,
     justifyContent: 'center',
   },
   

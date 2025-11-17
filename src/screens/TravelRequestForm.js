@@ -963,7 +963,7 @@ useEffect(() => {
 const styles = StyleSheet.create({
   container: {
     padding: theme.responsiveSpacing.lg,
-    backgroundColor: theme.colors.backgroundWhite,
+    backgroundColor: theme.colors.background,
     paddingBottom: 50,
   },
   title: {

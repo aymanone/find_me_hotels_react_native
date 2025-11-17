@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: theme.spacing.xl,
     justifyContent: 'center',
-    backgroundColor: theme.colors.backgroundWhite,
+    backgroundColor: theme.colors.background,
   },
   
   languageSelectorContainer: {

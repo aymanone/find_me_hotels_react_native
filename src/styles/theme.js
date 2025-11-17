@@ -41,24 +41,24 @@ export const responsive = (xs, sm, md, lg, xl) => {
 // Single source of truth for ALL colors
 // ========================================
 const palette = {
-  primary: {
-    900: '#1a6fb8',
-    500: '#2089dc',
-    100: '#e3f2fd',
-  },
   
-  secondary: {
-    900: '#218838',
-    500: '#28a745',
-    100: '#d4edda',
-  },
-  
-  accent: {
-    900: '#e0a800',
-    500: '#ffc107',
-    100: '#fff3cd',
-  },
-  
+primary: {
+  900: '#D94848',      
+  500: '#FF6B6B',      
+  100: '#FFE5E5',     
+},
+
+secondary: {
+  900: '#159A6E',      // was: '#218838'
+  500: '#20C997',      // was: '#28a745'
+  100: '#D4F4E8',      // was: '#d4edda'
+},
+
+accent: {
+  900: '#CC9200',      // was: '#e0a800'
+  500: '#FFB703',      // (keep same)
+  100: '#FFF8E1',      // was: '#fff3cd'
+},
   error: {
     500: '#dc3545',
     100: '#f8d7da',
@@ -187,6 +187,24 @@ const colors = {
   // Status indicator colors
   statusActive: palette.status.active,
   statusInactive: palette.status.inactive,
+};
+const gradients = {
+  primary: ['#FF6B6B', '#FF8C42'],
+  sunset: ['#FF6B6B', '#FFB703', '#FF8C42'],
+  ocean: ['#20C997', '#00B4D8'],
+  accent: ['#FFB703', '#FFA500'],
+};
+const travelColors = {
+  flight: '#00B4D8',
+  hotel: '#FF6B6B',
+  activity: '#FFB703',
+  transport: '#7B2CBF',
+  dining: '#20C997',
+};
+const animation = {
+  fast: 200,
+  normal: 300,
+  slow: 500,
 };
 export const theme = {
   // Color Palette - Professional & Easy on Eyes
@@ -1316,4 +1334,4 @@ responsiveInfoItem: {
 };
 
 // Export default for easy import
-export default { theme, commonStyles, screenSize, responsive, breakpoints };
+export default { theme, commonStyles, screenSize, responsive, breakpoints, gradients, travelColors, animation,};
