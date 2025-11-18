@@ -220,7 +220,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
 
       // Validate email if agent hasn't signed up yet
       if (!agent.user_id) {
-        if (!editedAgent.agent_email || !validEmail(editedAgent.agent_email)) {
+        if (!editedAgent.agent_email || !validEmail(editedAgent.agent_email.trim())) {
           showAlert(t('CompanyAgentProfileScreen', 'validationError'), t('CompanyAgentProfileScreen', 'validEmailRequired'));
           setSaving(false);
           return;
@@ -245,7 +245,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
 
       // Include email update only if agent hasn't signed up yet
       if (!agent.user_id) {
-        updateData.agent_email = editedAgent.agent_email.toLowerCase();
+        updateData.agent_email = editedAgent.agent_email.toLowerCase().trim();
       }
 
       // Update agent in database
@@ -263,7 +263,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
         second_name: editedAgent.second_name,
         agent_country: editedAgent.country_id,
         permitted_to_work: editedAgent.permitted_to_work,
-        ...(agent.user_id ? {} : { agent_email: editedAgent.agent_email.toLowerCase() }),
+        ...(agent.user_id ? {} : { agent_email: editedAgent.agent_email.toLowerCase().trim() }),
         countries: countries.find(c => c.id === editedAgent.country_id)
       });
 

@@ -114,7 +114,7 @@ const AdminCreateCompanyFormScreen = () => {
     if (!companyEmail.trim()) {
       newErrors.companyEmail = t('AdminCreateCompanyFormScreen', 'companyEmailRequired');
       isValid = false;
-    } else if (!validEmail(companyEmail)) {
+    } else if (!validEmail(companyEmail.trim())) {
       newErrors.companyEmail = t('AdminCreateCompanyFormScreen', 'companyEmailInvalid');
       isValid = false;
     }

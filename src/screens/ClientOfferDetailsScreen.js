@@ -55,7 +55,7 @@ const ClientOfferDetailsScreen = ({ route, navigation }) => {
       first_name, second_name, id, phone_number, messaging_app,
     
         countries!agents_agent_country_fkey(country_name),
-          companies!agents_company_id_fkey (company_name, url,license_num,
+          companies!agents_company_id_fkey (company_name, url,license_num, address,
           company_country:countries!companies_company_country_id_fkey(country_name)
           )
     )

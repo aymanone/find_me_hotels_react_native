@@ -101,7 +101,7 @@ const CompanyCreateAgentFormScreen = ({ navigation }) => {
     if (!agentEmail.trim()) {
       newErrors.agentEmail = t('CompanyCreateAgentFormScreen', 'agentEmailRequired');
       isValid = false;
-    } else if (!validEmail(agentEmail)) {
+    } else if (!validEmail(agentEmail.trim())) {
       newErrors.agentEmail = t('CompanyCreateAgentFormScreen', 'agentEmailInvalid');
       isValid = false;
     }
@@ -165,7 +165,7 @@ const CompanyCreateAgentFormScreen = ({ navigation }) => {
       first_name: firstName,
       second_name: secondName,
       agent_country: agentCountry,
-      agent_email: agentEmail.toLowerCase(),
+      agent_email: agentEmail.toLowerCase().trim(),
       company_id: user.id
     };
     

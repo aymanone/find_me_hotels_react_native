@@ -148,7 +148,7 @@ export default function SignupScreen({ navigation, isModal = false, onAuthSucces
           if (!first_name || !second_name || !company_email || !agent_phone || !messaging_app) {
             throw new Error(t('SignupScreen', 'validationError'));
           }
-          if (!validEmail(company_email)) {
+          if (!validEmail(company_email.trim())) {
             throw new Error(t('SignupScreen', 'invalidEmail'));
           }
           if (!validPhoneNumber(agent_phone)) {
@@ -158,7 +158,7 @@ export default function SignupScreen({ navigation, isModal = false, onAuthSucces
             ...userData,
             first_name,
             second_name,
-            company_email,
+            company_email:company_email.trim().toLowerCase(),
             phone_number: agent_phone,
             messaging_app
           };
@@ -179,13 +179,13 @@ export default function SignupScreen({ navigation, isModal = false, onAuthSucces
           if ( !admin_email) {
             throw new Error(t('SignupScreen', 'validationError'));
           }
-          if (!validEmail(admin_email)) {
+          if (!validEmail(admin_email.trim())) {
             throw new Error(t('SignupScreen', 'invalidEmail'));
           }
           userData = {
             ...userData,
             
-            admin_email
+            admin_email:admin_email.trim().toLowerCase()
           };
           break;
       }
@@ -194,7 +194,7 @@ export default function SignupScreen({ navigation, isModal = false, onAuthSucces
      
       // Sign up user with Supabase
       const trimmedEmail=email.trim();
-      loweredEmail= trimmedEmail.toLowerCase();
+      const loweredEmail= trimmedEmail.toLowerCase();
      
       const { error } = await supabase.auth.signUp({
        email: loweredEmail,
@@ -254,7 +254,7 @@ export default function SignupScreen({ navigation, isModal = false, onAuthSucces
           value={email}
           autoCapitalize="none"
           keyboardType="email-address"
-          errorMessage={email && !validEmail(email) ? t('SignupScreen', 'invalidEmail') : ''}
+          errorMessage={email && !validEmail(email.trim()) ? t('SignupScreen', 'invalidEmail') : ''}
         />
         
         <Input
@@ -371,7 +371,7 @@ export default function SignupScreen({ navigation, isModal = false, onAuthSucces
               keyboardType="email-address"
               autoCapitalize="none"
               errorMessage={company_email === '' ? t('SignupScreen', 'companyEmail') + ' is required' : 
-                (company_email && !validEmail(company_email)) ? t('SignupScreen', 'invalidEmail') : ''}
+                (company_email && !validEmail(company_email.trim())) ? t('SignupScreen', 'invalidEmail') : ''}
             />
             <>
             <Text style={styles.label}>{t('SignupScreen', 'messagingApp')} for Clients to contact you:</Text>
@@ -413,7 +413,7 @@ export default function SignupScreen({ navigation, isModal = false, onAuthSucces
               keyboardType="email-address"
               autoCapitalize="none"
               errorMessage={admin_email === '' ? t('SignupScreen', 'adminEmail') + ' is required' : 
-                (admin_email && !validEmail(admin_email)) ? t('SignupScreen', 'invalidEmail') : ''}
+                (admin_email && !validEmail(admin_email.trim())) ? t('SignupScreen', 'invalidEmail') : ''}
             />
           </>
         )}
