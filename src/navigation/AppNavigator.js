@@ -457,6 +457,8 @@ const AgentDrawer = React.memo(function AgentDrawer() {
     ),
   }}
 />
+ 
+
       <Drawer.Screen 
         name="SignOut" 
         component={MemoizedSignOutScreen}
@@ -796,6 +798,7 @@ export default function AppNavigator({navigationRef}) {
       // Agent routes
       AgentApp: {
         screens: {
+
           Home: {
             screens: {
               AgentTabs: {
@@ -1022,6 +1025,11 @@ export default function AppNavigator({navigationRef}) {
     <NavigationContainer ref={navigationRef} linking={linking}>
       <Stack.Navigator>
         {!session || isResettingPassword? authScreens : appScreens}
+         <Stack.Screen 
+        name="TravelRequestRedirect" 
+        component={TravelRequestRedirectScreen}
+        options={{ headerShown: false }}
+      />
       </Stack.Navigator>
     </NavigationContainer>
   );

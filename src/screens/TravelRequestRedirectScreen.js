@@ -22,7 +22,7 @@ export default function TravelRequestRedirect({ navigation, route }) {
 
         // Get user role
         const userRole = await getUserRole();
-         console.log(userRole);
+         
         // Redirect based on user role
         switch (userRole?.toLowerCase()) {
           case 'client':
