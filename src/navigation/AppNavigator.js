@@ -758,7 +758,9 @@ export default function AppNavigator({navigationRef}) {
   }, []);
   const linking = {
   prefixes: ['alghorfa://','exp://192.168.1.109:8081/--/', 'exp://','http://localhost:8081',
-'http://localhost:8081/','https://tiny-crepe-b758ab.netlify.app','https://alghorfa.net','https://www.alghorfa.net','http://alghorfa.net','http://www.alghorfa.net'] ,
+'http://localhost:8081/','https://tiny-crepe-b758ab.netlify.app','https://alghorfa.net','https://alghorfa.net/',
+'https://www.alghorfa.net', 'https://www.alghorfa.net/',
+'http://alghorfa.net', 'http://alghorfa.net/','http://www.alghorfa.net', 'http://www.alghorfa.net/', 'alghorfa.net/','alghorfa.net'] ,
   config: {
     screens: {
       // Auth screens

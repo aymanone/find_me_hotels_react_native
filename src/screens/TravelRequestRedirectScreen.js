@@ -16,13 +16,13 @@ export default function TravelRequestRedirect({ navigation, route }) {
         
         // If not authenticated, redirect to signup
         if (!user) {
-          navigation.navigate('Signup');
+          navigation.navigate('Signin');
           return;
         }
 
         // Get user role
         const userRole = await getUserRole();
-
+         console.log(userRole);
         // Redirect based on user role
         switch (userRole?.toLowerCase()) {
           case 'client':
@@ -36,6 +36,7 @@ export default function TravelRequestRedirect({ navigation, route }) {
             break;
             
           case 'agent':
+            
             navigation.navigate('AgentApp', {
               screen: 'Home',
               params: {
