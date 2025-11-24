@@ -979,11 +979,7 @@ export default function AppNavigator({navigationRef}) {
         component={ContactUsScreen}
         options={{ headerShown: false }}
     />
-     <Stack.Screen 
-      name="TravelRequestRedirect" 
-      component={TravelRequestRedirectScreen}
-      options={{ headerShown: false }}
-    />
+   
     <Stack.Screen 
       name="PublicTravelRequest" 
       component={TravelRequestForm}
