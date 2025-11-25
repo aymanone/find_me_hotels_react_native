@@ -16,7 +16,7 @@ export default function TravelRequestRedirect({ navigation, route }) {
         
         // If not authenticated, redirect to signup
         if (!user) {
-          navigation.navigate('Signin');
+          navigation.replace('Signin');
           return;
         }
 
@@ -26,7 +26,7 @@ export default function TravelRequestRedirect({ navigation, route }) {
         // Redirect based on user role
         switch (userRole?.toLowerCase()) {
           case 'client':
-            navigation.navigate('ClientApp', {
+            navigation.replace('ClientApp', {
               screen: 'Home',
               params: {
                 screen: 'ClientTravelRequestDetails',
@@ -37,7 +37,7 @@ export default function TravelRequestRedirect({ navigation, route }) {
             
           case 'agent':
             
-            navigation.navigate('AgentApp', {
+            navigation.replace('AgentApp', {
               screen: 'Home',
               params: {
                 screen: 'AgentTravelRequestDetails',
@@ -48,14 +48,14 @@ export default function TravelRequestRedirect({ navigation, route }) {
             
           case 'company':
             // Redirect to company home screen
-            navigation.navigate('CompanyApp', {
+            navigation.replace('CompanyApp', {
               screen: 'Home'
             });
             break;
             
           case 'admin':
             // Redirect to admin home screen
-            navigation.navigate('AdminApp', {
+            navigation.replace('AdminApp', {
               screen: 'Home'
             });
             break;
@@ -63,7 +63,7 @@ export default function TravelRequestRedirect({ navigation, route }) {
           default:
             // Fallback - redirect to signin if user role is unknown
             console.warn('Unknown user role:', userRole);
-            navigation.navigate('Signin');
+            navigation.replace('Signin');
         }
       } catch (error) {
         console.error('Error in TravelRequestRedirect:', error);

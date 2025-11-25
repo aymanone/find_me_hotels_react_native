@@ -2318,6 +2318,9 @@ export const ScreenTranslations = {
     submitError: "Failed to send message. Please try again.",
     linkError: "Could not open link",
     backToApp:"back to Home",
+     "contactWhatsApp": "Contact us on WhatsApp",
+  "whatsappMessage": "Hello, I would like to contact you regarding Alghorfa services.",
+  "whatsappError": "Could not open WhatsApp. Please try again.",
   },
   ar: {
     title: "اتصل بنا",
@@ -2337,6 +2340,9 @@ export const ScreenTranslations = {
     submitError: "فشل في إرسال الرسالة. يرجى المحاولة مرة أخرى.",
     linkError: "لا يمكن فتح الرابط",
     backToApp:"الصفحة الرئيسية",
+    "contactWhatsApp": "تواصل معنا عبر الواتساب",
+  "whatsappMessage": "مرحباً، أود التواصل معكم بخصوص خدمات الغرفة.",
+  "whatsappError": "تعذر فتح الواتساب. يرجى المحاولة مرة أخرى.",
   }
 },
  AdminCompanyProfileScreen: {

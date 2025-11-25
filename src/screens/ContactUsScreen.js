@@ -13,7 +13,7 @@ export default function ContactUsScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
-
+  const WHATSAPP_NUMBER = '+201147189170'; 
   const handleSubmit = async () => {
     // Validation
     if (!name.trim()) {
@@ -66,12 +66,22 @@ export default function ContactUsScreen({ navigation }) {
   };
 
   const handleBlogLink = () => {
+    return false;
     const blogUrl = 'https://www.google.com/search?q=error+suggestions+feedback';
     Linking.openURL(blogUrl).catch(() => {
       showAlert(t('ContactUsScreen', 'linkError') || 'Could not open link');
     });
   };
-
+  const handleWhatsAppContact = () => {
+  const whatsappMessage = encodeURIComponent(
+    t('ContactUsScreen', 'whatsappMessage') || 'Hello, I would like to contact you regarding Alghorfa services.'
+  );
+  const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${whatsappMessage}`;
+  
+  Linking.openURL(whatsappUrl).catch(() => {
+    showAlert(t('ContactUsScreen', 'whatsappError') || 'Could not open WhatsApp. Please try again.');
+  });
+};
   return (
     <ScrollView style={styles.container}>
       <View style={styles.languageSelectorContainer}>
@@ -136,7 +146,19 @@ export default function ContactUsScreen({ navigation }) {
         loading={loading}
         buttonStyle={styles.submitButton}
       />
-
+      <Button
+  title={t('ContactUsScreen', 'contactWhatsApp') || 'Contact us on WhatsApp'}
+  onPress={handleWhatsAppContact}
+  buttonStyle={styles.whatsappButton}
+  titleStyle={styles.whatsappButtonText}
+  icon={{
+    name: 'whatsapp',
+    type: 'font-awesome',
+    size: 20,
+    color: '#fff',
+  }}
+  iconPosition="left"
+/>
       <View style={styles.blogLinkContainer}>
         <Text style={styles.blogText}>
           {t('ContactUsScreen', 'blogText') || 'Need help with errors or have suggestions?'}
@@ -249,6 +271,19 @@ navigationButton: {
 
 navigationButtonText: {
   color: theme.colors.primary,
+  fontSize: theme.responsiveTypography.fontSize.md,
+  fontWeight: theme.typography.fontWeight.bold,
+},
+whatsappButton: {
+  backgroundColor: '#25D366', // WhatsApp green
+  marginTop: theme.spacing.lg,
+  borderRadius: theme.borderRadius.md,
+  paddingVertical: theme.spacing.md,
+},
+
+whatsappButtonText: {
+  color: '#fff',
+  marginLeft: theme.spacing.sm,
   fontSize: theme.responsiveTypography.fontSize.md,
   fontWeight: theme.typography.fontWeight.bold,
 },
