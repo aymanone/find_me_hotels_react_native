@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { AppState, View, Text, ActivityIndicator, } from 'react-native';
+import { AppState, View, Text, ActivityIndicator, Platform} from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -1018,7 +1018,16 @@ export default function AppNavigator({navigationRef}) {
 }
  
   return (
-    <NavigationContainer ref={navigationRef} linking={linking}>
+    <NavigationContainer ref={navigationRef}
+     onStateChange={() => {
+        if (Platform.OS === 'web' && typeof window !== 'undefined' && window.gtag) {
+          window.gtag('config', 'G-2WEP5WYXXW', {
+            page_path: window.location.pathname,
+          });
+        }
+      }}
+     linking={linking}>
+
       <Stack.Navigator>
         {!session || isResettingPassword? authScreens : appScreens}
          <Stack.Screen 

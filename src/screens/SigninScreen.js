@@ -70,6 +70,17 @@ useEffect(() => {
           type="outline"
           onPress={() => navigation.navigate('PublicTravelRequest')}
           containerStyle={{ marginTop: 20 }}
+            iconContainerStyle={{
+    position: 'absolute',
+    right: 15, // Adjust this value to move icon closer/farther from edge
+  }}
+           icon={{ 
+            type: 'font-awesome',
+            name: 'arrow-circle-right',
+            size: theme.responsiveComponents.icon.medium,
+            color: theme.colors.primary
+  }}
+         iconRight={true}
         />
       )}
       <Input
