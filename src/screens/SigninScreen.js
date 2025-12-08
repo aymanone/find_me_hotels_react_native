@@ -76,8 +76,8 @@ useEffect(() => {
   }}
            icon={{ 
             type: 'font-awesome',
-            name: 'arrow-circle-right',
-            size: theme.responsiveComponents.icon.medium,
+            name: 'arrow-circle-left',
+            size: theme.responsiveComponents.icon.large,
             color: theme.colors.primary
   }}
          iconRight={true}
