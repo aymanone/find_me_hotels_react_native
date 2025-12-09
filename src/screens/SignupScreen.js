@@ -133,13 +133,13 @@ export default function SignupScreen({ navigation, isModal = false, onAuthSucces
 
       switch (role) {
         case 'client':
-          if (!first_name || !second_name || !client_country) {
+          if ( !client_country) {
             throw new Error(t('SignupScreen', 'validationError'));
           }
           userData = {
             ...userData,
-            first_name,
-            second_name,
+            first_name: "Unknown",
+            second_name:"Unknown",
             country: client_country
           };
           break;
@@ -298,7 +298,7 @@ export default function SignupScreen({ navigation, isModal = false, onAuthSucces
        
 
         {/* Common fields for Client, Agent, and Admin */}
-        {['client', 'agent', 'admin'].includes(role) && (
+        {[ 'agent', 'admin'].includes(role) && (
           <>
             <Input
               placeholder={t('SignupScreen', 'firstName')}
