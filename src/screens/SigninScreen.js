@@ -65,23 +65,24 @@ useEffect(() => {
       </View>
       <Text  style={styles.title}>{t('SigninScreen', 'title')}</Text>
       {!isModal && (
-        <Button
-          title={t('SigninScreen', 'createTravelRequest')}
-          type="outline"
-          onPress={() => navigation.navigate('PublicTravelRequest')}
-          containerStyle={{ marginTop: 20 }}
-            iconContainerStyle={{
+   <Button
+  title={t('SigninScreen', 'createTravelRequest')}
+  // Remove type="outline"
+  buttonStyle={{ backgroundColor: theme.colors.primary }}
+  onPress={() => navigation.navigate('PublicTravelRequest')}
+  containerStyle={{ marginTop: 20, marginBottom: 20 }}
+  iconContainerStyle={{
     position: 'absolute',
-    right: 15, // Adjust this value to move icon closer/farther from edge
+    right: 15,
   }}
-           icon={{ 
-            type: 'font-awesome',
-            name: 'arrow-circle-left',
-            size: theme.responsiveComponents.icon.large,
-            color: theme.colors.primary
+  icon={{ 
+    type: 'font-awesome',
+    name: 'arrow-circle-right', // Changed to right arrow
+    size: theme.responsiveComponents.icon.large,
+    color: theme.colors.textWhite // White icon on red background
   }}
-         iconRight={true}
-        />
+  iconRight={true}
+/>
       )}
       <Input
         placeholder={t('SigninScreen', 'email')}

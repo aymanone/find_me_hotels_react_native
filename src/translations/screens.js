@@ -166,7 +166,7 @@ export const ScreenTranslations = {
       forgotPassword: 'نسيت كلمة المرور',
       loginError: 'فشل تسجيل الدخول. يرجى التحقق من بياناتك.',
       "contactUs":"اتصل بنا",
-       createTravelRequest: 'إنشاء طلب سفر',
+       createTravelRequest: 'جرب طلب السفر من هنا',
     }
   },
   SignupScreen: {
