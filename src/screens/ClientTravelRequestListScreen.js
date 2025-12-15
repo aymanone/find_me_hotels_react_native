@@ -383,7 +383,7 @@ const fetchTravelRequests = async () => {
           <Text style={styles.emptyText}>{t('ClientTravelRequestListScreen', 'noRequests')}</Text>
           <Button
             title={t('ClientTravelRequestListScreen', 'createNewRequest')}
-            onPress={() => navigation.navigate('TravelRequestForm')}
+            onPress={() => navigation.navigate('NewRequest')}
             containerStyle={styles.newRequestButton}
           />
         </View>
