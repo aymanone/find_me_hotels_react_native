@@ -155,7 +155,7 @@ export const ScreenTranslations = {
       forgotPassword: 'Forgot password',
       loginError: 'Login failed. Please check your credentials.',
       "contactUs":"contact us",
-        createTravelRequest: 'Create Travel Request',
+        createTravelRequest: 'Try Travel Request from here',
     },
     ar: {
       title: 'الغرفة',
