@@ -157,12 +157,15 @@ const colors = {
   // Neutral Colors - Easy on eyes
   background: palette.gray[50],
   backgroundWhite: palette.white,
+  
   backgroundGray: palette.gray[100],
+    inputBackground: palette.gray[100],
   
   // Text Colors
   text: palette.gray[900],
   textSecondary: palette.gray[700],
   textLight: palette.gray[500],
+      
   textWhite: palette.white,
   
   // Border Colors

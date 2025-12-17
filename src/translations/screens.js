@@ -767,6 +767,11 @@ export const ScreenTranslations = {
   cancel: 'Cancel',
   youAreNowLoggedIn: 'You are now logged in and can submit your request',
     draftRestored: 'Draft Restored',
+    fillDetailsDescription:"Get best Offers",
+    tripDetails:"Trip details",
+    guestsAndStay:"Guests and stay",
+    budgetAndNationality:"Budget and nationality",
+    additionalNotes: "additional Notes",
   },
   ar: {
     title: 'طلب سفر جديد',
@@ -872,6 +877,11 @@ export const ScreenTranslations = {
   cancel: 'إلغاء',
   youAreNowLoggedIn: 'أنت الآن مسجل دخولك ويمكنك تقديم طلبك',
     draftRestored: 'تم استعادة المسودة',
+    fillDetailsDescription:"أحصل على افضل العروض",
+    tripDetails:"تفاصيل الرحلة",
+    guestsAndStay:"الضيوف و اﻻقامة",
+    budgetAndNationality:"الميزانية و الجنسية",
+    additionalNotes: "ملاحظات",
   }
 }
   ,

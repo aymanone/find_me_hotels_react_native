@@ -1,7 +1,7 @@
-import { View, StyleSheet, ScrollView, Platform, Alert, KeyboardAvoidingView } from 'react-native';
+import { View, StyleSheet, ScrollView, Platform, Alert, KeyboardAvoidingView, TouchableOpacity } from 'react-native';
 import React, { useState, useEffect, useRef } from 'react';
 import supabase from '../config/supabase';
-import { Button, Input, Text, CheckBox } from 'react-native-elements';
+import { Button, Input, Text, CheckBox, Icon } from 'react-native-elements';
 import { Dropdown } from 'react-native-element-dropdown';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
@@ -10,9 +10,28 @@ import { removeFirstOccurrence } from '../utils/arrayUtils';
 import { showAlert } from "../components/ShowAlert";
 import { unsubscribeChannels } from '../utils/channelUtils.js';
 import { useTranslation } from '../config/localization';
-import { theme, commonStyles,screenSize, responsive } from '../styles/theme';
+import { theme, commonStyles, screenSize, responsive } from '../styles/theme';
 import ClientAuthModal from '../components/ClientAuthModal';
 import storage from '../utils/storage';
+
+ const SectionCard = ({ title, icon, children }) => (
+    <View style={styles.sectionCard}>
+      <View style={styles.sectionHeader}>
+       <Icon
+  type="font-awesome-5"
+  name={icon}
+  size={responsive(18)}
+  color={theme.colors.primary}
+  style={styles.sectionIcon}
+/>
+        <Text style={styles.sectionTitle}>{title}</Text>
+      </View>
+      <View style={styles.sectionContent}>
+        {children}
+      </View>
+    </View>
+  );
+
 export default function TravelRequestForm({ navigation, route }) {
   const { t, language } = useTranslation();
 
@@ -194,43 +213,51 @@ export default function TravelRequestForm({ navigation, route }) {
 
     fetchAreas();
   }, [formData.requestCountry]);
+
   // Restore pending request from storage
-useEffect(() => {
-  const loadPendingRequest = async () => {
-    const savedData = await storage.getItem('pendingTravelRequest');
-    if (savedData) {
-      try {
-        const parsedData = JSON.parse(savedData);
-         const restoredData = {
-          ...parsedData,
-          startDate: new Date(parsedData.startDate),
-          endDate: new Date(parsedData.endDate)
-        };
-        setFormData(restoredData);
-        showAlert(
-          t('TravelRequestForm', 'draftRestored')
-        );
-        await storage.removeItem('pendingTravelRequest');
-      } catch (error) {
-        console.error('Error parsing saved request:', error);
-        // Clear corrupted data
-        await storage.removeItem('pendingTravelRequest');
+  useEffect(() => {
+    const loadPendingRequest = async () => {
+      const savedData = await storage.getItem('pendingTravelRequest');
+      if (savedData) {
+        try {
+          const parsedData = JSON.parse(savedData);
+           const restoredData = {
+            ...parsedData,
+            startDate: new Date(parsedData.startDate),
+            endDate: new Date(parsedData.endDate)
+          };
+          setFormData(restoredData);
+          showAlert(
+            t('TravelRequestForm', 'draftRestored')
+          );
+          await storage.removeItem('pendingTravelRequest');
+        } catch (error) {
+          console.error('Error parsing saved request:', error);
+          // Clear corrupted data
+          await storage.removeItem('pendingTravelRequest');
+        }
       }
-    }
-  };
-  
-  loadPendingRequest();
-}, []); // Empty dependency array - only run once on mount
+    };
+
+    loadPendingRequest();
+  }, []); // Empty dependency array - only run once on mount
 
   const onStartDateChange = (event, selectedDate) => {
     setShowStartDatePicker(false);
     if (selectedDate) {
-      const currentEndDate = formData.endDate;
-      let newEndDate = currentEndDate;
+      // Ensure start date is not in the past (handled by minimumDate prop in DateTimePicker but good to enforce logic)
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      if (selectedDate < today) {
+          selectedDate = today;
+      }
 
-      if (currentEndDate <= selectedDate) {
-        const nextDay = new Date(selectedDate);
-        nextDay.setDate(nextDay.getDate() + 1);
+      // Logic: End date must be at least 1 day after start date
+      const nextDay = new Date(selectedDate);
+      nextDay.setDate(nextDay.getDate() + 1);
+
+      let newEndDate = formData.endDate;
+      if (formData.endDate <= selectedDate) {
         newEndDate = nextDay;
       }
 
@@ -535,6 +562,7 @@ useEffect(() => {
     }
   };
 
+ 
   if (initialLoading) {
     return (
       <View style={[styles.container, commonStyles.loadingContainer]}>
@@ -551,389 +579,412 @@ useEffect(() => {
     >
       <ScrollView style={styles.container}
         keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingBottom: 100 }}
       >
-        <Text h4 style={styles.title}>
-          {isEditing ? t('TravelRequestForm', 'editTravelRequest') : t('TravelRequestForm', 'newTravelRequest')}
-        </Text>
-
-        <View style={styles.row}>
-          {Platform.OS === 'web' ? (
-            <>
-              <View style={styles.halfWidth}>
-                <Text style={styles.label}>{t('TravelRequestForm', 'startDate')}</Text>
-                <input
-                  type="date"
-                  value={format(formData.startDate, 'yyyy-MM-dd')}
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      onStartDateChange(null, new Date(e.target.value));
-                    }
-                  }}
-                  min={format(new Date(), 'yyyy-MM-dd')}
-                  style={styles.webDateInput}
-                />
-              </View>
-
-              <View style={styles.halfWidth}>
-                <Text style={styles.label}>{t('TravelRequestForm', 'endDate')}</Text>
-                <input
-                  type="date"
-                  value={format(formData.endDate, 'yyyy-MM-dd')}
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      onEndDateChange(null, new Date(e.target.value));
-                    }
-                  }}
-                  min={format(new Date(formData.startDate.getTime() + 86400000), 'yyyy-MM-dd')}
-                  style={styles.webDateInput}
-                />
-              </View>
-            </>
-          ) : (
-            <>
-              <View style={styles.halfWidth}>
-                <Text style={styles.label}>{t('TravelRequestForm', 'startDate')}</Text>
-                <Button
-                  title={format(formData.startDate, 'yyyy-MM-dd')}
-                  onPress={() => setShowStartDatePicker(true)}
-                  type="outline"
-                  buttonStyle={styles.dateButton}
-                />
-                {showStartDatePicker && (
-                  <DateTimePicker
-                    value={formData.startDate}
-                    mode="date"
-                    display="default"
-                    onChange={onStartDateChange}
-                    minimumDate={new Date()}
-                    style={styles.datePickerContainer}
-                  />
-                )}
-              </View>
-
-              <View style={styles.halfWidth}>
-                <Text style={styles.label}>{t('TravelRequestForm', 'endDate')}</Text>
-                <Button
-                  title={format(formData.endDate, 'yyyy-MM-dd')}
-                  onPress={() => setShowEndDatePicker(true)}
-                  type="outline"
-                  buttonStyle={styles.dateButton}
-                />
-                {showEndDatePicker && (
-                  <DateTimePicker
-                    value={formData.endDate}
-                    mode="date"
-                    display="default"
-                    onChange={onEndDateChange}
-                    minimumDate={new Date(formData.startDate.getTime() + 86400000)}
-                    style={styles.datePickerContainer}
-                  />
-                )}
-              </View>
-            </>
-          )}
-        </View>
-
-        <View style={styles.row}>
-          <View style={styles.halfWidth}>
-            <Text style={styles.label}>{t('TravelRequestForm', 'destinationCountry')}</Text>
-            <Dropdown
-              ref={countryDropdownRef}
-              data={allCountries
-                .filter(country => country.can_visit)
-                .map(country => ({
-                  label: country.country_name,
-                  value: country.id
-                }))}
-              labelField="label"
-              valueField="value"
-              value={formData.requestCountry}
-              onChange={item => {
-                setFormData({
-                  ...formData,
-                  requestCountry: item.value,
-                  requestArea: null
-                });
-              }}
-              placeholder={t('TravelRequestForm', 'selectCountry')}
-              style={styles.dropdown}
-              placeholderStyle={styles.placeholderStyle}
-              selectedTextStyle={styles.selectedTextStyle}
-              search
-              searchPlaceholder={t('TravelRequestForm', 'searchCountry')}
-              inputSearchStyle={styles.dropdownSearchInput} 
-            />
-          </View>
-
-          <View style={styles.halfWidth}>
-            <Text style={styles.label}>{t('TravelRequestForm', 'destinationArea')}</Text>
-            <Dropdown
-              ref={areaDropdownRef}
-              data={areas.map(area => ({
-                label: area.area_name,
-                value: area.id
-              }))}
-              labelField="label"
-              valueField="value"
-              value={formData.requestArea}
-              onChange={item => {
-                setFormData({
-                  ...formData,
-                  requestArea: item.value
-                });
-              }}
-              placeholder={t('TravelRequestForm', 'selectArea')}
-              style={styles.dropdown}
-              placeholderStyle={styles.placeholderStyle}
-              selectedTextStyle={styles.selectedTextStyle}
-              search
-              searchPlaceholder={t('TravelRequestForm', 'searchArea')}
-              inputSearchStyle={styles.dropdownSearchInput} 
-              disabled={!formData.requestCountry}
-            />
-          </View>
-        </View>
-
-        <View style={styles.row}>
-          <View style={styles.halfWidth}>
-            <Text style={styles.label}>{t('TravelRequestForm', 'numberOfAdults')}</Text>
-            <Input
-              keyboardType="numeric"
-              value={formData.numOfAdults}
-              onChangeText={(text) => {
-                const value = text.replace(/[^0-9]/g, '');
-                if (value === '' || (parseInt(value) >= 1 && parseInt(value) <= 1000)) {
-                  setFormData({ ...formData, numOfAdults: value });
-                }
-              }}
-              containerStyle={styles.input}
-              inputContainerStyle={styles.inputContainerWeb}
-              inputStyle={styles.inputStyle}
-            />
-          </View>
-
-          <View style={styles.halfWidth}>
-            <Text style={styles.label}>{t('TravelRequestForm', 'addChild')}</Text>
-            <Dropdown
-              data={allChildrenAges}
-              labelField="label"
-              valueField="value"
-              onChange={item => addChild(item.value)}
-              placeholder={t('TravelRequestForm', 'selectAge')}
-              style={styles.dropdown}
-              placeholderStyle={styles.placeholderStyle}
-              inputSearchStyle={styles.dropdownSearchInput} 
-              selectedTextStyle={styles.selectedTextStyle}
-            />
-          </View>
-        </View>
-
-        {formData.requestChildren.length > 0 && (
-          <View style={styles.childrenContainer}>
-            <Text style={styles.label}>{t('TravelRequestForm', 'children')}</Text>
-            <View style={styles.childrenList}>
-              {formData.requestChildren.map((age, index) => (
-                <View key={`${age}-${index}`} style={styles.childTag}>
-                  <Text style={styles.childTagText}>{t('TravelRequestForm', 'yearsLabel', { age: age })}</Text>
-                  <Button
-                    icon={{ name: 'close', size: theme.responsiveComponents.icon.small, color: theme.colors.textWhite }}
-                    onPress={() => removeChild(age)}
-                    buttonStyle={styles.removeChildButton}
-                  />
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
-
-        <View style={styles.row}>
-          <View style={styles.halfWidth}>
-            <Text style={styles.label}>{t('TravelRequestForm', 'hotelRating')}</Text>
-            <Dropdown
-              data={hotelRatings}
-              labelField="label"
-              valueField="value"
-              value={formData.hotelRating}
-              onChange={item => {
-                setFormData({
-                  ...formData,
-                  hotelRating: item.value
-                });
-              }}
-              placeholder={t('TravelRequestForm', 'selectRating')}
-              style={styles.dropdown}
-              placeholderStyle={styles.placeholderStyle}
-              inputSearchStyle={styles.dropdownSearchInput} 
-              selectedTextStyle={styles.selectedTextStyle}
-            />
-          </View>
-
-          <View style={styles.halfWidth}>
-            <Text style={styles.label}>{t('TravelRequestForm', 'numberOfRooms')}</Text>
-            <Input
-              keyboardType="numeric"
-              value={formData.numOfRooms}
-              onChangeText={(text) => {
-                const value = text.replace(/[^0-9]/g, '');
-                if (value === '' || (parseInt(value) >= 1 && parseInt(value) <= 1000)) {
-                  setFormData({ ...formData, numOfRooms: value });
-                }
-              }}
-              containerStyle={styles.input}
-              inputContainerStyle={styles.inputContainerWeb}
-              inputStyle={styles.inputStyle}
-            />
-          </View>
-        </View>
-
-        <View style={styles.row}>
-          <View style={styles.fullWidth}>
-            <Text style={styles.label}>{t('TravelRequestForm', 'meals')}</Text>
-            <View style={styles.mealsContainer}>
-              {['breakfast', 'lunch', 'dinner'].map(meal => (
-                <CheckBox
-                  key={meal}
-                  title={t('TravelRequestForm', meal)}
-                  checked={formData.meals.includes(meal)}
-                  onPress={() => toggleMeal(meal)}
-                  containerStyle={styles.checkbox}
-                />
-              ))}
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.row}>
-          <View style={styles.halfWidth}>
-            <Text style={styles.label}>{t('TravelRequestForm', 'minimumBudget')}</Text>
-            <Input
-              keyboardType="numeric"
-              value={formData.minBudget || ''}
-              onChangeText={(text) => {
-                const value = text.replace(/[^0-9]/g, '');
-                if (value === '' || (parseInt(value) >= 0 && parseInt(value) <= 1000000)) {
-                  setFormData({ ...formData, minBudget: value });
-                }
-              }}
-              containerStyle={styles.input}
-              inputContainerStyle={styles.inputContainerWeb}
-              inputStyle={styles.inputStyle}
-            />
-          </View>
-
-          <View style={styles.halfWidth}>
-            <Text style={styles.label}>{t('TravelRequestForm', 'maximumBudget')}</Text>
-            <Input
-              keyboardType="numeric"
-              value={formData.maxBudget || ''}
-              onChangeText={(text) => {
-                const value = text.replace(/[^0-9]/g, '');
-                if (value === '' || (parseInt(value) >= 0 && parseInt(value) <= 1000000)) {
-                  setFormData({ ...formData, maxBudget: value });
-                }
-              }}
-              containerStyle={styles.input}
-              inputContainerStyle={styles.inputContainerWeb}
-              inputStyle={styles.inputStyle}
-            />
-          </View>
-        </View>
-
-        <View style={styles.row}>
-          <View style={styles.fullWidth}>
-            <Text style={styles.label}>{t('TravelRequestForm', 'travelersNationality')}</Text>
-            <Dropdown
-              ref={nationalityDropdownRef}
-              data={allCountries.
-                filter(country => country.citizens_can_travel)
-                .map(country => ({
-                  label: country.country_name,
-                  value: country.id
-                }))}
-              labelField="label"
-              valueField="value"
-              value={formData.travelersNationality}
-              onChange={item => {
-                setFormData({
-                  ...formData,
-                  travelersNationality: item.value
-                });
-              }}
-              placeholder={t('TravelRequestForm', 'selectNationality')}
-              style={styles.dropdown}
-              placeholderStyle={styles.placeholderStyle}
-              selectedTextStyle={styles.selectedTextStyle}
-              search
-              searchPlaceholder={t('TravelRequestForm', 'searchNationality')}
-              inputSearchStyle={styles.dropdownSearchInput} 
-            />
-          </View>
-        </View>
-
-        <View style={styles.row}>
-          <View style={styles.fullWidth}>
-            <Text style={styles.label}>{t('TravelRequestForm', 'countriesWhereYouCanPayAgents')}</Text>
-            <Dropdown
-              ref={preferredAgentsDropdownRef}
-              data={allCountries.map(country => ({
-                label: country.country_name,
-                value: country.id
-              }))}
-              labelField="label"
-              valueField="value"
-              onChange={item => {
-                addPreferredAgentCountry(item.value);
-              }}
-              showsVerticalScrollIndicator={true}
-              placeholder={t('TravelRequestForm', 'selectCountry')}
-              style={[
-                styles.dropdown,
-                formData.preferredAgentsCountries.length >= 2 ? styles.disabledDropdown : {}
-              ]}
-              placeholderStyle={styles.placeholderStyle}
-              selectedTextStyle={styles.selectedTextStyle}
-              inputSearchStyle={styles.dropdownSearchInput} 
-              search
-              searchPlaceholder={t('TravelRequestForm', 'searchCountry')}
-              disable={formData.preferredAgentsCountries.length >= 2}
-              excludeItems={formData.preferredAgentsCountries.map(id => ({ value: id }))}
-              excludeSearchItems={formData.preferredAgentsCountries.map(id => ({ value: id }))}
-            />
-
-            <View style={styles.agentCountriesContainer}>
-              {formData.preferredAgentsCountries.map(countryId => (
-                <View key={countryId} style={styles.agentCountryTag}>
-                  <Text style={styles.agentCountryTagText}>
-                    {allCountries.find(country => country.id === countryId)?.country_name}
-                  </Text>
-                  <Button
-                   icon={{ name: 'close', size: theme.responsiveComponents.icon.small, color: theme.colors.textWhite }}
-                    onPress={() => removePreferredAgentCountry(countryId)}
-                    buttonStyle={styles.removeAgentCountryButton}
-                  />
-                </View>
-              ))}
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.row}>
-          <View style={styles.fullWidth}>
-            <Text style={styles.label} numberOfLines={2}>
-              {t('TravelRequestForm', 'notesExamples')}
+        <View style={styles.header}>
+            <Text h4 style={styles.title}>
+            {isEditing ? t('TravelRequestForm', 'editTravelRequest') : t('TravelRequestForm', 'newTravelRequest')}
             </Text>
-            <Input
-              multiline
-              numberOfLines={10}
-              textAlignVertical='top'
-              value={formData.notes}
-              onChangeText={(text) => setFormData({ ...formData, notes: text })}
-              containerStyle={styles.input}
-              inputContainerStyle={styles.notesInputContainer}
-              inputStyle={styles.notesInput}
-            />
-          </View>
+            <Text style={styles.subtitle}>{t('TravelRequestForm', 'fillDetailsDescription') || 'Fill in the details to get the best offers'}</Text>
         </View>
+
+        {/* 1. Destination & Dates */}
+        <SectionCard title={t('TravelRequestForm', 'tripDetails') || 'Trip Details'} icon="map-marked-alt">
+             {/* Dates Row */}
+             <View style={styles.row}>
+                {Platform.OS === 'web' ? (
+                    <>
+                    <View style={styles.halfWidth}>
+                        <Text style={styles.label}>{t('TravelRequestForm', 'startDate')}</Text>
+                        <input
+                        type="date"
+                        value={format(formData.startDate, 'yyyy-MM-dd')}
+                        onChange={(e) => {
+                            if (e.target.value) {
+                            onStartDateChange(null, new Date(e.target.value));
+                            }
+                        }}
+                        min={format(new Date(), 'yyyy-MM-dd')}
+                        style={styles.webDateInput}
+                        />
+                    </View>
+                    <View style={styles.halfWidth}>
+                        <Text style={styles.label}>{t('TravelRequestForm', 'endDate')}</Text>
+                        <input
+                        type="date"
+                        value={format(formData.endDate, 'yyyy-MM-dd')}
+                        onChange={(e) => {
+                            if (e.target.value) {
+                            onEndDateChange(null, new Date(e.target.value));
+                            }
+                        }}
+                        min={format(new Date(formData.startDate.getTime() + 86400000), 'yyyy-MM-dd')}
+                        style={styles.webDateInput}
+                        />
+                    </View>
+                    </>
+                ) : (
+                    <>
+                    <View style={styles.halfWidth}>
+                        <Text style={styles.label}>{t('TravelRequestForm', 'startDate')}</Text>
+                        <TouchableOpacity onPress={() => setShowStartDatePicker(true)} style={styles.dateTouchable}>
+                         <Icon
+  name="calendar-alt"
+  type="font-awesome-5"
+  size={responsive(16)}
+  color={theme.colors.textSecondary}
+  style={{ marginRight: responsive(8) }}
+/>
+                            <Text style={styles.dateText}>{format(formData.startDate, 'MMM dd, yyyy')}</Text>
+                        </TouchableOpacity>
+                        {showStartDatePicker && (
+                        <DateTimePicker
+                            value={formData.startDate}
+                            mode="date"
+                            display="default"
+                            onChange={onStartDateChange}
+                            minimumDate={new Date()}
+                        />
+                        )}
+                    </View>
+
+                    <View style={styles.halfWidth}>
+                        <Text style={styles.label}>{t('TravelRequestForm', 'endDate')}</Text>
+                         <TouchableOpacity onPress={() => setShowEndDatePicker(true)} style={styles.dateTouchable}>
+                            <Icon name="calendar-alt" type="font-awesome-5" size={16} color={theme.colors.textSecondary} style={{ marginRight: 8 }} />
+                            <Text style={styles.dateText}>{format(formData.endDate, 'MMM dd, yyyy')}</Text>
+                        </TouchableOpacity>
+                        {showEndDatePicker && (
+                        <DateTimePicker
+                            value={formData.endDate}
+                            mode="date"
+                            display="default"
+                            onChange={onEndDateChange}
+                            minimumDate={new Date(formData.startDate.getTime() + 86400000)}
+                        />
+                        )}
+                    </View>
+                    </>
+                )}
+            </View>
+
+            {/* Location Row */}
+            <View style={styles.row}>
+                <View style={styles.halfWidth}>
+                    <Text style={styles.label}>{t('TravelRequestForm', 'destinationCountry')}</Text>
+                    <Dropdown
+                    ref={countryDropdownRef}
+                    data={allCountries
+                        .filter(country => country.can_visit)
+                        .map(country => ({
+                        label: country.country_name,
+                        value: country.id
+                        }))}
+                    labelField="label"
+                    valueField="value"
+                    value={formData.requestCountry}
+                    onChange={item => {
+                        setFormData({
+                        ...formData,
+                        requestCountry: item.value,
+                        requestArea: null
+                        });
+                    }}
+                    placeholder={t('TravelRequestForm', 'selectCountry')}
+                    style={styles.dropdown}
+                    inputSearchStyle={styles.dropdownSearchInput}
+                    placeholderStyle={styles.placeholderStyle}
+                    selectedTextStyle={styles.selectedTextStyle}
+                    search
+                    searchPlaceholder={t('TravelRequestForm', 'searchCountry')}
+                    />
+                </View>
+
+                <View style={styles.halfWidth}>
+                    <Text style={styles.label}>{t('TravelRequestForm', 'destinationArea')}</Text>
+                    <Dropdown
+                    ref={areaDropdownRef}
+                    data={areas.map(area => ({
+                        label: area.area_name,
+                        value: area.id
+                    }))}
+                    labelField="label"
+                    valueField="value"
+                    value={formData.requestArea}
+                    onChange={item => {
+                        setFormData({
+                        ...formData,
+                        requestArea: item.value
+                        });
+                    }}
+                    placeholder={t('TravelRequestForm', 'selectArea')}
+                    style={styles.dropdown}
+                    inputSearchStyle={styles.dropdownSearchInput}
+                    placeholderStyle={styles.placeholderStyle}
+                    selectedTextStyle={styles.selectedTextStyle}
+                    search
+                    searchPlaceholder={t('TravelRequestForm', 'searchArea')}
+                    disabled={!formData.requestCountry}
+                    />
+                </View>
+            </View>
+        </SectionCard>
+
+        {/* 2. Guests & Accommodation */}
+        <SectionCard title={t('TravelRequestForm', 'guestsAndStay') || 'Guests & Stay'} icon="user-friends">
+             <View style={styles.row}>
+                <View style={styles.halfWidth}>
+                    <Text style={styles.label}>{t('TravelRequestForm', 'numberOfAdults')}</Text>
+                    <Input
+                    keyboardType="numeric"
+                    value={formData.numOfAdults}
+                    onChangeText={(text) => {
+                        const value = text.replace(/[^0-9]/g, '');
+                        // Force at least 1, handle empty state briefly
+                        if (value === '' || (parseInt(value) >= 1 && parseInt(value) <= 1000)) {
+                        setFormData({ ...formData, numOfAdults: value });
+                        }
+                    }}
+                    containerStyle={styles.input}
+                    inputContainerStyle={styles.inputContainerStyle}
+                    inputStyle={styles.inputStyle}
+                    />
+                </View>
+
+                <View style={styles.halfWidth}>
+                    <Text style={styles.label}>{t('TravelRequestForm', 'numberOfRooms')}</Text>
+                     <Input
+                        keyboardType="numeric"
+                        value={formData.numOfRooms}
+                        onChangeText={(text) => {
+                            const value = text.replace(/[^0-9]/g, '');
+                            if (value === '' || (parseInt(value) >= 1 && parseInt(value) <= 1000)) {
+                            setFormData({ ...formData, numOfRooms: value });
+                            }
+                        }}
+                        containerStyle={styles.input}
+                        inputContainerStyle={styles.inputContainerStyle}
+                        inputStyle={styles.inputStyle}
+                        />
+                </View>
+            </View>
+
+             <View style={styles.row}>
+                <View style={styles.halfWidth}>
+                     <Text style={styles.label}>{t('TravelRequestForm', 'hotelRating')}</Text>
+                    <Dropdown
+                    data={hotelRatings}
+                    labelField="label"
+                    valueField="value"
+                    value={formData.hotelRating}
+                    onChange={item => {
+                        setFormData({
+                        ...formData,
+                        hotelRating: item.value
+                        });
+                    }}
+                    placeholder={t('TravelRequestForm', 'selectRating')}
+                    style={styles.dropdown}
+                    placeholderStyle={styles.placeholderStyle}
+                    selectedTextStyle={styles.selectedTextStyle}
+                    />
+                </View>
+                 <View style={styles.halfWidth}>
+                    <Text style={styles.label}>{t('TravelRequestForm', 'addChild')}</Text>
+                    <Dropdown
+                    data={allChildrenAges}
+                    labelField="label"
+                    valueField="value"
+                    onChange={item => addChild(item.value)}
+                    placeholder={t('TravelRequestForm', 'selectAge')}
+                    style={styles.dropdown}
+                    placeholderStyle={styles.placeholderStyle}
+                    selectedTextStyle={styles.selectedTextStyle}
+                    />
+                 </View>
+             </View>
+
+            {formData.requestChildren.length > 0 && (
+            <View style={styles.childrenContainer}>
+                <Text style={styles.label}>{t('TravelRequestForm', 'children')}</Text>
+                <View style={styles.childrenList}>
+                {formData.requestChildren.map((age, index) => (
+                    <View key={`${age}-${index}`} style={styles.childTag}>
+                    <Text style={styles.childTagText}>{t('TravelRequestForm', 'yearsLabel', { age: age })}</Text>
+                    <TouchableOpacity onPress={() => removeChild(age)} style={styles.removeIcon}>
+                        <Icon name="times" type="font-awesome-5" size={12} color={theme.colors.textWhite} />
+                    </TouchableOpacity>
+                    </View>
+                ))}
+                </View>
+            </View>
+            )}
+
+             <View style={styles.row}>
+                <View style={styles.fullWidth}>
+                    <Text style={styles.label}>{t('TravelRequestForm', 'meals')}</Text>
+                    <View style={styles.mealsContainer}>
+                    {['breakfast', 'lunch', 'dinner'].map(meal => (
+                        <TouchableOpacity
+                            key={meal}
+                            onPress={() => toggleMeal(meal)}
+                            style={[
+                                styles.mealChip,
+                                formData.meals.includes(meal) && styles.mealChipSelected
+                            ]}
+                        >
+                           <Icon
+  name={meal === 'breakfast' ? 'coffee' : meal === 'lunch' ? 'hamburger' : 'utensils'}
+  type="font-awesome-5"
+  size={responsive(14)}
+  color={formData.meals.includes(meal) ? theme.colors.textWhite : theme.colors.text}
+  style={{marginRight: responsive(6)}}
+/>
+                            <Text style={[styles.mealChipText, formData.meals.includes(meal) && styles.mealChipTextSelected]}>
+                                {t('TravelRequestForm', meal)}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                    </View>
+                </View>
+            </View>
+        </SectionCard>
+
+        {/* 3. Budget & Nationality */}
+        <SectionCard title={t('TravelRequestForm', 'budgetAndNationality') || 'Budget & Origin'} icon="wallet">
+            <View style={styles.row}>
+            <View style={styles.halfWidth}>
+                <Text style={styles.label}>{t('TravelRequestForm', 'minimumBudget')}</Text>
+                <Input
+                keyboardType="numeric"
+                value={formData.minBudget} // Default 0 set in initial state
+                onChangeText={(text) => {
+                    const value = text.replace(/[^0-9]/g, '');
+                    if (value === '' || (parseInt(value) >= 0 && parseInt(value) <= 1000000)) {
+                    setFormData({ ...formData, minBudget: value });
+                    }
+                }}
+                containerStyle={styles.input}
+                inputContainerStyle={styles.inputContainerStyle}
+                inputStyle={styles.inputStyle}
+                rightIcon={<Text style={styles.currencyText}>USD</Text>}
+                />
+            </View>
+
+            <View style={styles.halfWidth}>
+                <Text style={styles.label}>{t('TravelRequestForm', 'maximumBudget')}</Text>
+                <Input
+                keyboardType="numeric"
+                value={formData.maxBudget} // Default 10 set in initial state
+                onChangeText={(text) => {
+                    const value = text.replace(/[^0-9]/g, '');
+                    if (value === '' || (parseInt(value) >= 0 && parseInt(value) <= 1000000)) {
+                    setFormData({ ...formData, maxBudget: value });
+                    }
+                }}
+                containerStyle={styles.input}
+                inputContainerStyle={styles.inputContainerStyle}
+                inputStyle={styles.inputStyle}
+                 rightIcon={<Text style={styles.currencyText}>USD</Text>}
+                />
+            </View>
+            </View>
+
+             <View style={styles.row}>
+                <View style={styles.fullWidth}>
+                    <Text style={styles.label}>{t('TravelRequestForm', 'travelersNationality')}</Text>
+                    <Dropdown
+                    ref={nationalityDropdownRef}
+                    data={allCountries.
+                        filter(country => country.citizens_can_travel)
+                        .map(country => ({
+                        label: country.country_name,
+                        value: country.id
+                        }))}
+                    labelField="label"
+                    valueField="value"
+                    value={formData.travelersNationality}
+                    onChange={item => {
+                        setFormData({
+                        ...formData,
+                        travelersNationality: item.value
+                        });
+                    }}
+                    placeholder={t('TravelRequestForm', 'selectNationality')}
+                    style={styles.dropdown}
+                    inputSearchStyle={styles.dropdownSearchInput}
+                    placeholderStyle={styles.placeholderStyle}
+                    selectedTextStyle={styles.selectedTextStyle}
+                    search
+                    searchPlaceholder={t('TravelRequestForm', 'searchNationality')}
+                    />
+                </View>
+            </View>
+
+            <View style={styles.row}>
+                 <View style={styles.fullWidth}>
+                    <Text style={styles.label}>{t('TravelRequestForm', 'countriesWhereYouCanPayAgents')}</Text>
+                    <Dropdown
+                    ref={preferredAgentsDropdownRef}
+                    data={allCountries.map(country => ({
+                        label: country.country_name,
+                        value: country.id
+                    }))}
+                    labelField="label"
+                    valueField="value"
+                    onChange={item => {
+                        addPreferredAgentCountry(item.value);
+                    }}
+                    placeholder={t('TravelRequestForm', 'selectCountry')}
+                    style={[
+                        styles.dropdown,
+                        formData.preferredAgentsCountries.length >= 2 ? styles.disabledDropdown : {}
+                    ]}
+                    inputSearchStyle={styles.dropdownSearchInput}
+                    placeholderStyle={styles.placeholderStyle}
+                    selectedTextStyle={styles.selectedTextStyle}
+                    search
+                    searchPlaceholder={t('TravelRequestForm', 'searchCountry')}
+                    disable={formData.preferredAgentsCountries.length >= 2}
+                    />
+
+                    <View style={styles.agentCountriesContainer}>
+                    {formData.preferredAgentsCountries.map(countryId => (
+                        <View key={countryId} style={styles.agentCountryTag}>
+                        <Text style={styles.agentCountryTagText}>
+                            {allCountries.find(country => country.id === countryId)?.country_name}
+                        </Text>
+                         <TouchableOpacity onPress={() => removePreferredAgentCountry(countryId)} style={styles.removeIcon}>
+                            <Icon name="times" type="font-awesome-5" size={12} color={theme.colors.textWhite} />
+                        </TouchableOpacity>
+                        </View>
+                    ))}
+                    </View>
+                </View>
+            </View>
+        </SectionCard>
+
+         {/* 4. Notes */}
+        <SectionCard title={t('TravelRequestForm', 'additionalNotes') || 'Additional Notes'} icon="sticky-note">
+             <View style={styles.row}>
+                <View style={styles.fullWidth}>
+                     <Text style={styles.notesHelperText}>
+                        {t('TravelRequestForm', 'notesExamples')}
+                    </Text>
+                    <Input
+                    multiline
+                    numberOfLines={10}
+                    textAlignVertical='top'
+                    value={formData.notes}
+                    onChangeText={(text) => setFormData({ ...formData, notes: text })}
+                    containerStyle={styles.input}
+                    inputContainerStyle={styles.notesInputContainer}
+                    inputStyle={styles.notesInput}
+                    
+                    />
+                </View>
+            </View>
+        </SectionCard>
 
         <View style={styles.submitButtonContainer}>
           <Button
@@ -941,9 +992,12 @@ useEffect(() => {
             onPress={handleSubmit}
             loading={loading}
             disabled={loading}
+            buttonStyle={styles.submitButton}
+            titleStyle={styles.submitButtonText}
           />
         </View>
       </ScrollView>
+
        <ClientAuthModal
           visible={showAuthModal}
           onClose={() => setShowAuthModal(false)}
@@ -962,19 +1016,60 @@ useEffect(() => {
 
 const styles = StyleSheet.create({
   container: {
-    padding: theme.responsiveSpacing.lg,
     backgroundColor: theme.colors.background,
-    paddingBottom: 50,
+    flex: 1,
+  },
+  header: {
+    padding: theme.responsiveSpacing.lg,
+    paddingBottom: theme.spacing.md,
+    backgroundColor: theme.colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+    marginBottom: theme.spacing.md,
   },
   title: {
-    marginBottom: theme.responsiveSpacing.lg,
-    textAlign: 'center'
+    textAlign: 'left',
+    color: theme.colors.text,
+    fontWeight: 'bold',
+    marginBottom: responsive(4),
+  },
+  subtitle: {
+    color: theme.colors.textSecondary,
+    fontSize: responsive(14),
+  },
+  sectionCard: {
+    backgroundColor: theme.colors.surface,
+    marginHorizontal: 0,
+    marginBottom: theme.spacing.md,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.md,
+    
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: theme.spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+    paddingBottom: theme.spacing.sm,
+  },
+  sectionIcon: {
+    marginRight: responsive(10),
+    width: responsive(24),
+  },
+  sectionTitle: {
+    fontSize: responsive(16),
+    fontWeight: '600',
+    color: theme.colors.text,
+  },
+  sectionContent: {
+    marginTop: responsive(4),
   },
   row: {
     flexDirection: screenSize.isXSmall ? 'column' : 'row',
     justifyContent: 'space-between',
-    marginBottom: theme.responsiveSpacing.lg,
-    gap: theme.responsiveSpacing.md,
+    marginBottom: theme.spacing.sm,
+    gap: theme.spacing.md,
   },
   halfWidth: {
     width: screenSize.isXSmall ? '100%' : '48%',
@@ -984,157 +1079,227 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   label: {
-    ...theme.responsiveTypography.label,
+    fontSize: responsive(13),
+    fontWeight: '500',
+    color: theme.colors.text,
+    marginBottom: responsive(6),
+    marginLeft: responsive(2),
   },
   input: {
-    marginBottom: theme.responsiveSpacing.lg,
+    paddingHorizontal: 0,
+    marginBottom: 0,
+  },
+ inputContainerStyle: Platform.OS === 'web' ? {
+  borderWidth: 1,
+  borderColor: theme.colors.border,
+  borderRadius: theme.borderRadius.md,
+  paddingHorizontal: responsive(12),
+  height: responsive(48),
+  backgroundColor: theme.colors.inputBackground,
+} : {
+  // Let React Native Elements handle mobile styling
+  borderBottomWidth: 1,
+  borderColor: theme.colors.border,
+},
+  inputStyle: {
+    fontSize: responsive(15),
+    color: theme.colors.text,
+  },
+  currencyText: {
+    color: theme.colors.textTertiary,
+    fontSize: responsive(12),
+    fontWeight: '600',
   },
   dropdown: {
-    height: theme.responsiveComponents.input.height,
+    height: responsive(48),
     borderColor: theme.colors.border,
     borderWidth: 1,
     borderRadius: theme.borderRadius.md,
-    paddingHorizontal: theme.responsiveSpacing.sm,
-    marginBottom: theme.responsiveSpacing.lg,
-    backgroundColor: theme.colors.backgroundWhite,
+    paddingHorizontal: responsive(12),
+    marginBottom: responsive(16),
+    backgroundColor: theme.colors.inputBackground,
   },
   placeholderStyle: {
-    fontSize: theme.responsiveTypography.fontSize.md,
-    color: theme.colors.textLight,
+    fontSize: responsive(15),
+    color: theme.colors.textTertiary,
   },
   selectedTextStyle: {
-    fontSize: theme.responsiveTypography.fontSize.md,
+    fontSize: responsive(15),
     color: theme.colors.text,
+  },
+  dateTouchable: {
+    height: responsive(48),
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.borderRadius.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: responsive(12),
+    backgroundColor: theme.colors.inputBackground,
+    marginBottom: responsive(16),
+  },
+  dateText: {
+    fontSize: responsive(15),
+    color: theme.colors.text,
+  },
+  webDateInput: {
+    height: responsive(48),
+    width: '100%',
+    borderColor: theme.colors.border,
+    borderWidth: 1,
+    borderRadius: theme.borderRadius.md,
+    paddingHorizontal: responsive(12),
+    fontSize: responsive(15),
+    backgroundColor: theme.colors.inputBackground,
+    color: theme.colors.text,
+    outline: 'none',
   },
   mealsContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap'
+    flexWrap: 'wrap',
+    marginTop: responsive(4),
+    marginBottom: responsive(16),
+    gap: responsive(8),
   },
-  checkbox: {
-    margin: theme.spacing.xs,
-    backgroundColor: 'transparent',
-    borderWidth: 0
+  mealChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: responsive(8),
+    paddingHorizontal: responsive(16),
+    borderRadius: theme.borderRadius.full,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
+  },
+  mealChipSelected: {
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
+  },
+  mealChipText: {
+    fontSize: responsive(14),
+    color: theme.colors.textSecondary,
+    fontWeight: '500',
+  },
+  mealChipTextSelected: {
+    color: theme.colors.textWhite,
   },
   childrenContainer: {
-    marginBottom: theme.responsiveSpacing.lg
+    marginBottom: responsive(16),
   },
   childrenList: {
     flexDirection: 'row',
-    flexWrap: 'wrap'
+    flexWrap: 'wrap',
+    marginTop: responsive(4),
   },
   childTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.primary,
-    borderRadius: theme.borderRadius.round,
-    paddingVertical: theme.responsiveComponents.tag.paddingVertical,
-    paddingHorizontal: theme.responsiveComponents.tag.paddingHorizontal,
-    marginRight: theme.spacing.sm,
-    marginBottom: theme.spacing.sm
+    backgroundColor: theme.colors.primaryLight,
+    borderColor: theme.colors.primary + '40',
+    borderWidth: 1,
+    borderRadius: theme.borderRadius.full,
+    paddingVertical: responsive(6),
+    paddingHorizontal: responsive(12),
+    marginRight: responsive(8),
+    marginBottom: responsive(8),
   },
   childTagText: {
-    color: theme.colors.textWhite,
-    fontSize: theme.responsiveTypography.fontSize.sm,
-    marginRight: theme.spacing.xs
+    color: theme.colors.primary,
+    fontSize: responsive(13),
+    marginRight: responsive(6),
+    fontWeight: '500',
   },
-  removeChildButton: {
-    backgroundColor: theme.colors.error,
-    padding: 2,
-    borderRadius: theme.borderRadius.md
+  removeIcon: {
+    backgroundColor: theme.colors.primary,
+    borderRadius: responsive(10),
+    width: responsive(18),
+    height: responsive(18),
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   agentCountriesContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginTop: theme.spacing.sm,
-    paddingBottom: 80,
+    marginTop: responsive(8),
+    marginBottom: responsive(16),
+  },
+  agentCountryTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.successLight,
+    borderColor: theme.colors.success + '40',
+    borderWidth: 1,
+    borderRadius: theme.borderRadius.full,
+    paddingVertical: responsive(6),
+    paddingHorizontal: responsive(12),
+    marginRight: responsive(8),
+    marginBottom: responsive(8),
+  },
+  agentCountryTagText: {
+    color: theme.colors.success,
+    fontSize: responsive(13),
+    marginRight: responsive(6),
+    fontWeight: '500',
   },
   notesInputContainer: {
     borderWidth: 1,
     borderColor: theme.colors.border,
     borderRadius: theme.borderRadius.md,
-    paddingHorizontal: 1,
-    minHeight: 120,
+    paddingHorizontal: responsive(1),
+    backgroundColor: theme.colors.inputBackground,
+    minHeight: responsive(120),
+    
   },
   notesInput: {
-    minHeight: 100,
+    minHeight: responsive(100),
     textAlignVertical: 'top',
-    paddingTop: theme.spacing.sm,
-    fontSize: theme.responsiveTypography.fontSize.md,
+    fontSize: responsive(15),
+    color: theme.colors.text,
+     paddingTop: theme.spacing.sm,
+  },
+  notesHelperText: {
+    fontSize: responsive(12),
+    color: theme.colors.textSecondary,
+    marginBottom: responsive(8),
+    lineHeight: responsive(18),
+    marginLeft: responsive(2),
   },
   disabledDropdown: {
     backgroundColor: theme.colors.disabled,
-    borderColor: theme.colors.borderLight,
     opacity: 0.7
   },
-  agentCountryTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.secondary,
-    borderRadius: theme.borderRadius.round,
-    paddingVertical: theme.responsiveComponents.tag.paddingVertical,
-    paddingHorizontal: theme.responsiveComponents.tag.paddingHorizontal,
-    marginRight: theme.spacing.sm,
-    marginBottom: theme.spacing.sm
-  },
-  agentCountryTagText: {
-    color: theme.colors.textWhite,
-    fontSize: theme.responsiveTypography.fontSize.sm,
-    marginRight: theme.spacing.xs
-  },
-  removeAgentCountryButton: {
-    backgroundColor: theme.colors.error,
-    padding: 2,
-    borderRadius: theme.borderRadius.md
-  },
   submitButtonContainer: {
-    marginTop: theme.responsiveSpacing.lg,
-    alignItems: 'center',
-    marginBottom: theme.spacing.xxxl,
+    padding: theme.responsiveSpacing.lg,
+    paddingBottom: responsive(40),
   },
-  dateButton: {
-    marginBottom: theme.spacing.sm,
+  submitButton: {
+    height: responsive(52),
+    borderRadius: theme.borderRadius.lg,
+    backgroundColor: theme.colors.primary,
+    ...theme.shadows.md,
   },
-  datePickerContainer: {
-    width: '100%',
-    alignItems: 'center',
+  submitButtonText: {
+    fontSize: responsive(16),
+    fontWeight: 'bold',
   },
-  webDateInput: {
-    height: theme.responsiveComponents.input.height,
-    width: '100%',
-    borderColor: theme.colors.primary,
-    borderWidth: 1,
-    borderRadius: theme.borderRadius.md,
-    paddingHorizontal: theme.responsiveSpacing.md,
-    fontSize: theme.responsiveTypography.fontSize.md,
-    backgroundColor: 'transparent',
-    color: theme.colors.primary,
-    fontWeight: '500',
-    cursor: 'pointer',
-    outLine: 'none',
-  },
-  dropdownSearchInput: {
+  // Add this to your styles object in other_request_form.js:
+
+inputStyle: {
+  fontSize: responsive(15),
+  color: theme.colors.text,
+  ...(Platform.OS === 'web' && {
+    outlineWidth: 0,
+    outline: 'none',
+  }),
+},
+
+dropdownSearchInput: {
   height: 40,
-  fontSize: theme.responsiveTypography.fontSize.md,
+  fontSize: responsive(14),
   borderColor: theme.colors.border,
   ...(Platform.OS === 'web' && {
     outline: 'none',
     outlineWidth: 0,
   }),
 },
-  inputStyle: {
-    fontSize: theme.responsiveTypography.fontSize.md,
-    ...(Platform.OS === 'web' && {
-      outlineWidth: 0,
-      outline: 'none',
-      ':focus': {
-      borderColor: theme.colors.primary,
-      borderWidth: 2,
-    }
-    }),
-  },
-  inputContainerWeb: Platform.OS === 'web' ? {
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.borderRadius.md,
-  } : {},
-  });
+});
