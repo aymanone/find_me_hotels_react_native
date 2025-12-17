@@ -156,6 +156,7 @@ export const ScreenTranslations = {
       loginError: 'Login failed. Please check your credentials.',
       "contactUs":"contact us",
         createTravelRequest: 'Try Travel Request from here',
+      subTitle:"Travel smarter"
     },
     ar: {
       title: 'الغرفة',
@@ -167,6 +168,7 @@ export const ScreenTranslations = {
       loginError: 'فشل تسجيل الدخول. يرجى التحقق من بياناتك.',
       "contactUs":"اتصل بنا",
        createTravelRequest: 'جرب طلب السفر من هنا',
+       subTitle:"سافر بذكاء"
     }
   },
   SignupScreen: {
