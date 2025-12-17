@@ -224,15 +224,19 @@ const styles = StyleSheet.create({
   },
   cardTextContainer: {
     justifyContent: 'center',
+      flex: 1, // Add this
+  marginRight: responsive(8, 12, 12, 12, 12), // Add this
+
   },
   cardTitle: {
     fontSize: responsive(15, 16, 16, 16, 16),
     fontWeight: '600',
-    color: theme.colors.text,
+    color: theme.colors.textWhite,
+    flexWrap:"wrap",
   },
   cardSubtitle: {
     fontSize: responsive(12, 13, 13, 13, 13),
-    color: theme.colors.textWhite,
+    color: theme.colors.text,
   },
   // Divider
   dividerContainer: {
