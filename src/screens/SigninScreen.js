@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
   headerContainer: {
     marginBottom: responsive(28, 32, 32, 32, 32),
     alignItems: 'center',
-    marginTop: responsive(20, 0, 0, 0, 0),
+    marginTop: responsive(100, 0, 0, 0, 0),
   },
   title: {
     fontSize: responsive(28, 32, 32, 32, 32),
