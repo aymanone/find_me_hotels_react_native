@@ -436,20 +436,31 @@ export default function SignupScreen({ navigation, isModal = false, onAuthSucces
           loading={loading}
           containerStyle={styles.signupButton}
         />
+        <View style={styles.footerContainer}>
+
         {!isModal && (
           <>
         <Button
           title={t('SignupScreen', 'backToLogin')}
           type="clear"
           onPress={() => navigation.navigate("Signin")}
+          buttonStyle={styles.footerButton}
+         titleStyle={styles.footerButtonTitle}
+         containerStyle={styles.footerButtonContainer}
         />
+
+      <Text style={styles.footerSeparator}>•</Text>
           </>
         )}
          <Button
           title={t('SignupScreen', 'contactUs')}
           type="clear"
           onPress={() => navigation.navigate("ContactUs")}
+          buttonStyle={styles.footerButton}
+         titleStyle={styles.footerButtonTitle}
+         containerStyle={styles.footerButtonContainer}
         />
+        </View>
       </View>
       </ScrollView>
        </KeyboardAvoidingView>
@@ -571,5 +582,36 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     marginBottom: theme.spacing.xl,
   },
+  footerContainer: {
+  flexDirection: 'row',
+  justifyContent: 'center',
+  alignItems: 'center',
+  marginTop: responsive(16, 20, 20, 20, 20),
+},
+
+footerButtonContainer: {
+  // Remove default margins from Button
+  margin: 0,
+  padding: 0,
+},
+
+footerButton: {
+  // Remove default padding from Button
+  paddingHorizontal: 0,
+  paddingVertical: 0,
+  backgroundColor: 'transparent',
+},
+
+footerButtonTitle: {
+  fontSize: responsive(13, 14, 14, 14, 14),
+  color: theme.colors.text,
+  fontWeight: '600',
+},
+
+footerSeparator: {
+  marginHorizontal: responsive(10, 12, 12, 12, 12),
+  color: theme.colors.borderDark,
+  fontSize: responsive(13, 14, 14, 14, 14),
+},
 });
 
