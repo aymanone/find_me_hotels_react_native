@@ -4,7 +4,7 @@ import supabase from '../config/supabase';
 import { Button, Input, Text, CheckBox, Icon } from 'react-native-elements';
 import { Dropdown } from 'react-native-element-dropdown';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { format } from 'date-fns';
+import format from 'date-fns/format';
 import { checkUserRole, getCurrentUser, signOut } from '../utils/auth';
 import { removeFirstOccurrence } from '../utils/arrayUtils';
 import { showAlert } from "../components/ShowAlert";

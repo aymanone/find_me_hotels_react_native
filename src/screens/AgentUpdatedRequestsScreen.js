@@ -13,7 +13,7 @@ import { Text, Card, Button, Icon, Badge } from 'react-native-elements';
 import { useFocusEffect } from '@react-navigation/native';
 import supabase from '../config/supabase';
 import { checkUserRole, getCurrentUser, signOut } from '../utils/auth';
-import { format } from 'date-fns';
+import format from 'date-fns/format';
 import {showAlert} from "../components/ShowAlert";
 import { theme, commonStyles, responsive, screenSize,breakpoints } from '../styles/theme';
 import { useTranslation } from '../config/localization';

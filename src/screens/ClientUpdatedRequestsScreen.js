@@ -12,7 +12,7 @@ import {
 import { Card, Button, Icon } from 'react-native-elements';
 import { checkUserRole, getCurrentUser } from '../utils/auth';
 import supabase from '../config/supabase';
-import { format } from 'date-fns';
+import format from 'date-fns/format';
 import {showAlert} from "../components/ShowAlert";
 import { theme, commonStyles, responsive } from '../styles/theme';
 import {  useTranslation } from '../config/localization';

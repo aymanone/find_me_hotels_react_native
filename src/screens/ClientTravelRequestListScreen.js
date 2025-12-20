@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, RefreshControl, Dimensions} from 'react-native';
 import { Text, Button, ButtonGroup, Card, Icon, Badge } from 'react-native-elements';
 import { useFocusEffect } from '@react-navigation/native';
-import { format } from 'date-fns';
+import format from 'date-fns/format';
 import supabase from '../config/supabase';
 import { checkUserRole, signOut, getCurrentUser } from '../utils/auth';
 import { unsubscribeChannels } from '../utils/channelUtils';

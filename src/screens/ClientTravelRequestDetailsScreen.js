@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Share, Platform , Dimensions} from 'react-native';
 import { Text, Card, Button, Divider, Icon } from 'react-native-elements';
-import { format } from 'date-fns';
+import format from 'date-fns/format';
 import supabase from '../config/supabase';
 import {inDateReq} from '../utils/dateUtils';
 import { checkUserRole, signOut, getCurrentUser } from '../utils/auth';
