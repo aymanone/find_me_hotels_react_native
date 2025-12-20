@@ -50,13 +50,16 @@ const styles = StyleSheet.create({
   },
   placeholderStyle: {
     fontSize: 16,
+     fontWeight: '700',
   },
   selectedTextStyle: {
     fontSize: 16,
+      fontWeight: '700',
   },
   inputSearchStyle: {
     height: 40,
     fontSize: 16,
+     fontWeight: '700',
   },
 });
 

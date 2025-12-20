@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ScrollView, Image,KeyboardAvoidingView,Platform } from 'react-native';
 import { Button, Input, Text, Icon } from 'react-native-elements';
 import supabase from '../config/supabase';
 import { notAllowedAuthenticatedUser } from '../utils/auth';
@@ -52,167 +52,273 @@ export default function LoginScreen({ navigation, isModal = false, onAuthSuccess
   }, [navigation]);
 
   return (
-    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+     <KeyboardAvoidingView
+     behavior={Platform.OS === "ios" ? "padding" : "height"}
+    keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+    style={{flex:1}}
+    >
+    <ScrollView 
+      contentContainerStyle={styles.container} 
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
+     <View style={styles.contentWrapper}>
+      {/* Language Selector */}
       <View style={styles.languageSelectorContainer}>
         <LanguageSelector />
       </View>
+   {/* Hero Section with Logo */}
+<View style={styles.heroSection}>
+  <View style={styles.logoContainer}>
+    <Image 
+      source={require('../../assets/logo.png')} 
+      style={styles.logo}
+      resizeMode="cover"
+    />
+  </View>
+   <Text style={styles.brandName}>
+    {t('SigninScreen', 'title')}
+  </Text>
+  <Text style={styles.mainHeadline}>
+    {t('SigninScreen', 'mainHeadline')}
+  </Text>
 
-      <View style={styles.headerContainer}>
-        <Text style={styles.title}>{t('SigninScreen', 'title') || 'Travel smarter'}</Text>
-      </View>
+  <View style={styles.keyBenefitsContainer}>
+    <View style={styles.benefitItem}>
+      <Icon 
+        type="font-awesome" 
+        name="eye-slash" 
+        size={responsive(14, 16, 16, 16, 16)} 
+        color={theme.colors.textWhite}
+      />
+      <Text style={styles.benefitText}>
+        {t('SigninScreen', 'hiddenIdentity')}
+      </Text>
+    </View>
+    
+    <View style={styles.benefitItem}>
+      <Icon 
+        type="font-awesome" 
+        name="tags" 
+        size={responsive(14, 16, 16, 16, 16)} 
+        color={theme.colors.textWhite}
+      />
+      <Text style={styles.benefitText}>
+        {t('SigninScreen', 'cheaperPrices')}
+      </Text>
+    </View>
+    
+    <View style={styles.benefitItem}>
+      <Icon 
+        type="font-awesome" 
+        name="check-circle" 
+        size={responsive(14, 16, 16, 16, 16)} 
+        color={theme.colors.textWhite}
+      />
+      <Text style={styles.benefitText}>
+        {t('SigninScreen', 'trustedAgencies')}
+      </Text>
+    </View>
+  </View>
+</View>
 
-      {/* Create Travel Request Card */}
-      {!isModal && (
-        <TouchableOpacity 
-          style={styles.createRequestCard}
-          onPress={() => navigation.navigate('PublicTravelRequest')}
-          activeOpacity={0.85}
-        >
-          <View style={styles.cardContent}>
-            <View style={styles.iconCircle}>
-              <Icon 
-                type="font-awesome" 
-                name="hotel" 
-                size={responsive(18, 20, 20, 20, 20)} 
-                color={theme.colors.textWhite}
-              />
-            </View>
-            <View style={styles.cardTextContainer}>
-              <Text style={styles.cardTitle}>{t('SigninScreen', 'createTravelRequest')}</Text>
-              <Text style={styles.cardSubtitle}> {t('SigninScreen', 'subTitle')} </Text>
-            </View>
-          </View>
-          <Icon 
-            type="font-awesome" 
-            name="chevron-right" 
-            size={responsive(16, 18, 18, 20, 20)} 
-            color={theme.colors.textWhite} 
+{/* Primary CTA */}
+{!isModal && (
+  <View style={styles.ctaWrapper}>
+    <TouchableOpacity 
+      style={styles.primaryCTA}
+      onPress={() => navigation.navigate('PublicTravelRequest')}
+      activeOpacity={0.85}
+    >
+      <Text style={styles.primaryCTAText}>
+        {t('SigninScreen', 'submitNow')}
+      </Text>
+      <Icon 
+        type="font-awesome" 
+        name="arrow-left" 
+        size={responsive(16, 18, 18, 20, 20)} 
+        color={theme.colors.textWhite} 
+      />
+    </TouchableOpacity>
+    
+    <Text style={styles.ctaSubtext}>
+      {t('SigninScreen', 'freeService')} {'\u2022'} {t('SigninScreen', 'noRegistrationNeeded')}
+    </Text>
+  </View>
+)}
+
+{/* Divider */}
+<View style={styles.dividerContainer}>
+  <View style={styles.dividerLine} />
+  <Text style={styles.dividerText}>
+    {t('SigninScreen', 'or')}
+  </Text>
+  <View style={styles.dividerLine} />
+</View>
+ 
+
+        {/* Login Form */}
+        <View style={styles.formContainer}>
+          <Input
+            placeholder={t('SigninScreen', 'email')}
+            onChangeText={setEmail}
+            value={email}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            inputContainerStyle={styles.inputContainer}
+            inputStyle={styles.inputText}
+            containerStyle={styles.inputWrapper}
+            placeholderTextColor={theme.colors.textLight}
           />
-        </TouchableOpacity>
-      )}
+          
+          <Input
+            placeholder={t('SigninScreen', 'password')}
+            onChangeText={setPassword}
+            value={password}
+            secureTextEntry={!showPassword}
+            inputContainerStyle={styles.inputContainer}
+            inputStyle={styles.inputText}
+            containerStyle={styles.inputWrapper}
+            placeholderTextColor={theme.colors.textLight}
+            rightIcon={{ 
+              type: 'font-awesome',
+              name: showPassword ? 'eye-slash' : 'eye',
+              size: responsive(16, 18, 18, 18, 18),
+              color: theme.colors.textSecondary,
+              onPress: () => setShowPassword(!showPassword)
+            }}
+          />
 
-      {/* Divider */}
-      <View style={styles.dividerContainer}>
-        <View style={styles.dividerLine} />
-        <Text style={styles.dividerText}>{t('SigninScreen', 'login') || 'Login'}</Text>
-        <View style={styles.dividerLine} />
-      </View>
-
-      {/* Login Form */}
-      <View style={styles.formContainer}>
-        <Input
-          placeholder={t('SigninScreen', 'email')}
-          onChangeText={setEmail}
-          value={email}
-          autoCapitalize="none"
-          inputContainerStyle={styles.inputContainer}
-          inputStyle={styles.inputText}
-          containerStyle={styles.inputWrapper}
-        />
-        
-        <Input
-          placeholder={t('SigninScreen', 'password')}
-          onChangeText={setPassword}
-          value={password}
-          secureTextEntry={!showPassword}
-          inputContainerStyle={styles.inputContainer}
-          inputStyle={styles.inputText}
-          containerStyle={styles.inputWrapper}
-          rightIcon={{ 
-            type: 'font-awesome',
-            name: showPassword ? 'eye-slash' : 'eye',
-            size: responsive(16, 18, 18, 18, 18),
-            color: theme.colors.textSecondary,
-            onPress: () => setShowPassword(!showPassword)
-          }}
-        />
-
-        <TouchableOpacity 
-          style={styles.forgotPasswordContainer}
-          onPress={() => navigation.navigate('ForgotPassword')}
-        >
-          <Text style={styles.forgotPasswordText}>{t('SigninScreen', 'forgotPassword')}</Text>
-        </TouchableOpacity>
-
-        <Button
-          title={t('SigninScreen', 'login')}
-          onPress={handleLogin}
-          loading={loading}
-          buttonStyle={styles.loginButton}
-          titleStyle={styles.loginButtonText}
-          containerStyle={styles.buttonContainer}
-        />
-      </View>
-
-      {/* Footer Actions (Signup & Contact) */}
-      <View style={styles.footerContainer}>
-        {!isModal && (
-          <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-            <Text style={styles.footerLink}>{t('SigninScreen', 'signup')}</Text>
+          <TouchableOpacity 
+            style={styles.forgotPasswordContainer}
+            onPress={() => navigation.navigate('ForgotPassword')}
+          >
+            <Text style={styles.forgotPasswordText}>
+              {t('SigninScreen', 'forgotPassword')}
+            </Text>
           </TouchableOpacity>
-        )}
-        
-        {!isModal && <Text style={styles.footerSeparator}>•</Text>}
 
-        <TouchableOpacity onPress={() => navigation.navigate('ContactUs')}>
-          <Text style={styles.footerLink}>{t('SigninScreen', 'contactUs')}</Text>
-        </TouchableOpacity>
+          <Button
+            title={t('SigninScreen', 'login')}
+            onPress={handleLogin}
+            loading={loading}
+            buttonStyle={styles.loginButton}
+            titleStyle={styles.loginButtonText}
+            containerStyle={styles.buttonContainer}
+          />
+        </View>
+
+        {/* Footer Actions */}
+        <View style={styles.footerContainer}>
+          {!isModal && (
+            <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+              <Text style={styles.footerLink}>
+                {t('SigninScreen', 'signup')}
+              </Text>
+            </TouchableOpacity>
+          )}
+          
+          {!isModal && <Text style={styles.footerSeparator}>•</Text>}
+
+          <TouchableOpacity onPress={() => navigation.navigate('ContactUs')}>
+            <Text style={styles.footerLink}>
+              {t('SigninScreen', 'contactUs')}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
+      
     </ScrollView>
+  </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    padding: responsive(20, 24, 24, 24, 24),
-    justifyContent: 'center',
-    backgroundColor: theme.colors.backgroundWhite,
+    backgroundColor: theme.colors.background,
+    alignItems:"center",
+    paddingBottom:40,
+
+  },
+    contentWrapper: {
+    width: '100%',
+    maxWidth:700,
+    alignSelf:"center",
   },
   languageSelectorContainer: {
     position: 'absolute',
     top: responsive(40, 50, 50, 50, 50),
     right: responsive(20, 24, 24, 24, 24),
-    zIndex: 1,
+    zIndex: 10,
   },
-  headerContainer: {
-    marginBottom: responsive(28, 32, 32, 32, 32),
+
+  // Hero Section with Gradient
+  heroSection: {
+    backgroundColor: theme.colors.primary,
+  paddingTop: responsive(100, 120, 120, 130, 130),
+  paddingBottom: responsive(40, 50, 50, 60, 60),
+  paddingHorizontal: responsive(20, 24, 24, 24, 24),
+  alignItems: 'center',
+  },
+
+  // Logo Styles
+  logoContainer: {
+    marginBottom: responsive(16, 20, 20, 24, 24),
+  },
+
+  logoPlaceholder: {
+    width: responsive(90, 100, 100, 110, 110),
+    height: responsive(90, 100, 100, 110, 110),
+    borderRadius: responsive(45, 50, 50, 55, 55),
+    backgroundColor: theme.colors.backgroundWhite,
     alignItems: 'center',
-    marginTop: responsive(100, 0, 0, 0, 0),
+    justifyContent: 'center',
+    ...theme.shadows.lg,
   },
-  title: {
-    fontSize: responsive(28, 32, 32, 32, 32),
-    fontWeight: '700',
-    color: theme.colors.text,
-    letterSpacing: -0.5,
-    textAlign: 'center',
+
+  // Uncomment when using actual logo image
+  logo: {
+      width: responsive(180, 200, 220, 240, 260),
+      height: responsive(45, 50, 55, 60, 65),
+     borderRadius: responsive(8, 10, 10, 12, 12),
+      
+    
   },
-  // Create Request Card - Styled with theme
+
+  brandName: {
+    fontSize: responsive(24, 26, 28, 30, 32),
+  fontWeight: '700',
+  color: theme.colors.textWhite,
+  letterSpacing: -0.5,
+  textAlign: 'center',
+ 
+  },
+
+  // Travel Card - Overlapping hero
+  cardWrapper: {
+    paddingHorizontal: responsive(20, 24, 24, 24, 24),
+    marginTop: responsive(-35, -40, -40, -45, -45),
+    zIndex: 5,
+  },
+
   createRequestCard: {
     backgroundColor: theme.colors.primary,
-    borderWidth: 1,
-    borderColor: theme.colors.borderLight,
     borderRadius: theme.borderRadius.lg,
     padding: responsive(18, 20, 20, 22, 22),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: responsive(24, 32, 32, 32, 32),
-    // Shadow for iOS
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    // Shadow for Android
-    elevation: 2,
+    ...theme.shadows.card,
   },
+
   cardContent: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: responsive(12, 16, 16, 16, 16),
     flex: 1,
-    justifyContent: 'center',
   },
+
   iconCircle: {
     width: responsive(36, 40, 40, 40, 40),
     height: responsive(36, 40, 40, 40, 40),
@@ -220,96 +326,202 @@ const styles = StyleSheet.create({
     borderRadius: responsive(18, 20, 20, 20, 20),
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: responsive(10, 12, 12, 12, 12),
   },
-  cardTextContainer: {
-    justifyContent: 'center',
-      flex: 1, // Add this
-  marginRight: responsive(8, 12, 12, 12, 12), // Add this
 
+  cardTextContainer: {
+    flex: 1,
+    marginLeft: responsive(8, 12, 12, 12, 12),
   },
+
   cardTitle: {
     fontSize: responsive(15, 16, 16, 16, 16),
     fontWeight: '600',
     color: theme.colors.textWhite,
-    flexWrap:"wrap",
+    marginBottom: 4,
   },
+
   cardSubtitle: {
     fontSize: responsive(12, 13, 13, 13, 13),
     color: theme.colors.text,
   },
+
+  // Form Section
+  formSection: {
+    flex: 1,
+    backgroundColor: theme.colors.backgroundWhite,
+    paddingHorizontal: responsive(20, 24, 24, 24, 24),
+    paddingTop: responsive(32, 40, 40, 40, 40),
+    paddingBottom: responsive(20, 24, 24, 24, 24),
+  },
+
   // Divider
   dividerContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: responsive(20, 24, 24, 24, 24),
+  alignItems: 'center',
+  marginBottom: responsive(24, 28, 28, 32, 32),
+  paddingHorizontal: responsive(20, 24, 24, 24, 24),
   },
+
   dividerLine: {
     flex: 1,
     height: 1,
     backgroundColor: theme.colors.borderLight,
   },
+
   dividerText: {
     marginHorizontal: responsive(12, 16, 16, 16, 16),
     fontSize: responsive(13, 14, 14, 14, 14),
     color: theme.colors.textLight,
     fontWeight: '500',
   },
+
   // Form
   formContainer: {
     marginBottom: responsive(20, 24, 24, 24, 24),
   },
+
   inputWrapper: {
-    marginBottom: responsive(12, 16, 16, 16, 16),
+    marginBottom: responsive(16, 20, 20, 20, 20),
   },
+
   inputContainer: {
     borderBottomWidth: 1,
     borderColor: theme.colors.border,
     paddingHorizontal: 0,
   },
+
   inputText: {
     fontSize: responsive(14, 16, 16, 16, 16),
     color: theme.colors.text,
   },
+
   forgotPasswordContainer: {
     alignItems: 'flex-end',
     marginBottom: responsive(20, 24, 24, 24, 24),
     marginTop: responsive(-8, -8, -8, -8, -8),
-    marginRight: theme.spacing.sm,
+     marginRight: responsive(8, 10, 10, 12, 12),
   },
+
   forgotPasswordText: {
-    color:theme.colors.text,
+    color: theme.colors.primary,
     fontSize: responsive(12, 13, 13, 14, 14),
     fontWeight: '600',
   },
+
   loginButton: {
     
     borderRadius: theme.borderRadius.md,
     paddingVertical: responsive(10, 12, 12, 12, 12),
     height: responsive(44, 48, 48, 48, 48),
   },
+
   loginButtonText: {
     fontSize: responsive(15, 16, 16, 16, 16),
     fontWeight: '700',
   },
+
   buttonContainer: {
     marginTop: theme.spacing.sm,
   },
+
   // Footer
   footerContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: responsive(12, 16, 16, 16, 16),
+    marginTop: responsive(16, 20, 20, 20, 20),
   },
+
   footerLink: {
     fontSize: responsive(13, 14, 14, 14, 14),
-    color: theme.colors.text,
+    color: theme.colors.primary,
     fontWeight: '600',
   },
+
   footerSeparator: {
     marginHorizontal: responsive(10, 12, 12, 12, 12),
     color: theme.colors.borderDark,
     fontSize: responsive(13, 14, 14, 14, 14),
   },
+
+
+// Main headline
+mainHeadline: {
+  fontSize: responsive(18, 20, 22, 24, 26),
+  fontWeight: '700',
+  color: theme.colors.textWhite,
+  textAlign: 'center',
+  marginTop: responsive(16, 20, 20, 24, 24),
+  lineHeight: responsive(26, 28, 30, 32, 34),
+  paddingHorizontal: responsive(10, 15, 20, 25, 30),
+},
+
+// Key benefits container
+keyBenefitsContainer: {
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  justifyContent: 'center',
+  marginTop: responsive(20, 24, 24, 28, 28),
+  gap: responsive(12, 16, 16, 20, 20),
+},
+
+benefitItem: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  paddingVertical: responsive(8, 10, 10, 12, 12),
+  paddingHorizontal: responsive(12, 14, 14, 16, 16),
+  borderRadius: responsive(20, 22, 22, 24, 24),
+  gap: responsive(6, 8, 8, 8, 8),
+},
+
+benefitText: {
+  fontSize: responsive(12, 13, 14, 14, 15),
+  fontWeight: '600',
+  color: theme.colors.textWhite,
+},
+
+// Primary CTA
+ctaWrapper: {
+  paddingHorizontal: responsive(20, 24, 24, 24, 24),
+  marginTop: responsive(-20, -25, -25, -30, -30),
+  marginBottom: responsive(24, 28, 28, 32, 32),
+  alignItems: 'center',
+  zIndex: 5,
+},
+
+primaryCTA: {
+  backgroundColor: theme.colors.secondary,
+  borderRadius: theme.borderRadius.lg,
+  padding: responsive(16, 18, 20, 22, 22),
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '100%',
+  gap: responsive(10, 12, 12, 12, 12),
+  ...theme.shadows.lg,
+},
+
+primaryCTAText: {
+  fontSize: responsive(16, 17, 18, 18, 19),
+  fontWeight: '700',
+  color: theme.colors.textWhite,
+},
+
+ctaSubtext: {
+  fontSize: responsive(12, 13, 13, 14, 14),
+  color: theme.colors.textSecondary,
+  marginTop: responsive(12, 14, 14, 16, 16),
+  textAlign: 'center',
+},
+
+// Login section title
+loginSectionTitle: {
+  fontSize: responsive(16, 17, 18, 18, 19),
+  fontWeight: '600',
+  color: theme.colors.text,
+  textAlign: 'center',
+  marginBottom: responsive(20, 24, 24, 24, 24),
+},
+
 });

@@ -156,7 +156,17 @@ export const ScreenTranslations = {
       loginError: 'Login failed. Please check your credentials.',
       "contactUs":"contact us",
         createTravelRequest: 'Try Travel Request from here',
-      subTitle:"Travel smarter"
+      subTitle:"Travel smarter",
+       "mainHeadline": "Submit one travel request to book hotels, get offers from multiple travel agencies",
+  "hiddenIdentity": "Hidden identity",
+  "cheaperPrices": "Cheaper prices",
+  "trustedAgencies": "Trusted agencies",
+  "multipleOffers": "Offers from multiple offices",
+  "submitNow": "Submit your request now",
+  "freeService": "Completely free",
+  "noRegistrationNeeded": "No commitment",
+  "or": "or",
+  "alreadyHaveAccount": "Already have an account?",
     },
     ar: {
       title: 'الغرفة',
@@ -168,7 +178,17 @@ export const ScreenTranslations = {
       loginError: 'فشل تسجيل الدخول. يرجى التحقق من بياناتك.',
       "contactUs":"اتصل بنا",
        createTravelRequest: 'جرب طلب السفر من هنا',
-       subTitle:"سافر بذكاء"
+       subTitle:"سافر بذكاء",
+        "mainHeadline": "قدم طلب سفر واحد لحجز الفندق، واحصل على عروض من وكالات سفر متعددة",
+  "hiddenIdentity": "هويتك مخفية",
+  "cheaperPrices": "أسعار أرخص",
+  "trustedAgencies": "وكالات موثوقة",
+  "multipleOffers": "عروض من مكاتب متعددة",
+  "submitNow": "قدم طلبك الآن",
+  "freeService": "مجاني تماماً",
+  "noRegistrationNeeded": " لا التزام",
+  "or": "أو",
+  "alreadyHaveAccount": "لديك حساب؟",
     }
   },
   SignupScreen: {
