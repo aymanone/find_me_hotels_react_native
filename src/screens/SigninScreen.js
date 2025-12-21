@@ -64,9 +64,11 @@ export default function LoginScreen({ navigation, isModal = false, onAuthSuccess
     >
      <View style={styles.contentWrapper}>
       {/* Language Selector */}
-      <View style={styles.languageSelectorContainer}>
+      <View style={[styles.languageSelectorContainer, isModal && { top: responsive(40, 50, 50, 50, 50) } ]}>
         <LanguageSelector />
       </View>
+  {!isModal && (
+    <View>
    {/* Hero Section with Logo */}
 <View style={styles.heroSection}>
   <View style={styles.logoContainer}>
@@ -123,7 +125,7 @@ export default function LoginScreen({ navigation, isModal = false, onAuthSuccess
 </View>
 
 {/* Primary CTA */}
-{!isModal && (
+
   <View style={styles.ctaWrapper}>
     <TouchableOpacity 
       style={styles.primaryCTA}
@@ -145,7 +147,7 @@ export default function LoginScreen({ navigation, isModal = false, onAuthSuccess
       {t('SigninScreen', 'freeService')} {'\u2022'} {t('SigninScreen', 'noRegistrationNeeded')}
     </Text>
   </View>
-)}
+
 
 {/* Divider */}
 <View style={styles.dividerContainer}>
@@ -155,10 +157,14 @@ export default function LoginScreen({ navigation, isModal = false, onAuthSuccess
   </Text>
   <View style={styles.dividerLine} />
 </View>
- 
+ </View>
+ )}
 
         {/* Login Form */}
-        <View style={styles.formContainer}>
+        <View style={[
+  styles.formContainer,
+  isModal && { marginTop: responsive(150, 150, 150, 150, 150) }
+]}>
           <Input
             placeholder={t('SigninScreen', 'email')}
             onChangeText={setEmail}
