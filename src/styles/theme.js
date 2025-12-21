@@ -41,7 +41,10 @@ export const responsive = (xs, sm, md, lg, xl) => {
 // Single source of truth for ALL colors
 // ========================================
 const palette = {
-  
+hero: {
+  500: '#90CAF9',      // Medium blue (if needed)
+  100: '#E3F2FD',      // Light blue for background
+},
 primary: {
   900: '#D94848',      
   500: '#FF6B6B',      
@@ -115,7 +118,7 @@ const colors = {
   dangerCard: palette.error[500],
   dangerTitle: palette.error[500],
   dangerText: palette.gray[600],
-  
+   heroBackground: palette.hero[100],
   // Label colors
   labelText: palette.gray[600],
   

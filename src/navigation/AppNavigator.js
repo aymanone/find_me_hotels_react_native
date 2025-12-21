@@ -954,6 +954,11 @@ export default function AppNavigator({navigationRef}) {
   // Memoized navigation components
   const authScreens = useMemo(() => (
     <>
+     <Stack.Screen 
+      name="PublicTravelRequest" 
+      component={TravelRequestForm}
+      options={{ headerShown: false }}
+    />
       <Stack.Screen 
         name="Signin" 
         component={SigninScreen}
@@ -980,11 +985,7 @@ export default function AppNavigator({navigationRef}) {
         options={{ headerShown: false }}
     />
    
-    <Stack.Screen 
-      name="PublicTravelRequest" 
-      component={TravelRequestForm}
-      options={{ headerShown: false }}
-    />
+   
     </>
   ), []);
 

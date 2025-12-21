@@ -1,4 +1,4 @@
-import { View, StyleSheet, ScrollView, Platform, Alert, KeyboardAvoidingView, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ScrollView, Platform, Alert, KeyboardAvoidingView, TouchableOpacity ,Image} from 'react-native';
 import React, { useState, useEffect, useRef } from 'react';
 import supabase from '../config/supabase';
 import { Button, Input, Text, CheckBox, Icon } from 'react-native-elements';
@@ -13,7 +13,7 @@ import { useTranslation } from '../config/localization';
 import { theme, commonStyles, screenSize, responsive } from '../styles/theme';
 import ClientAuthModal from '../components/ClientAuthModal';
 import storage from '../utils/storage';
-
+import LanguageSelector from '../components/LanguageSelector';
  const SectionCard = ({ title, icon, children }) => (
     <View style={styles.sectionCard}>
       <View style={styles.sectionHeader}>
@@ -49,6 +49,7 @@ export default function TravelRequestForm({ navigation, route }) {
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const countryDropdownRef = useRef(null);
   const areaDropdownRef = useRef(null);
   const nationalityDropdownRef = useRef(null);
@@ -85,7 +86,21 @@ export default function TravelRequestForm({ navigation, route }) {
     setIsEditing(false);
     setRequestId(null);
   }
-
+  useEffect(() => {
+  const checkAuth = async () => {
+    
+    
+    try {
+      // Lightweight: just check if session exists (no refresh, no network)
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session);
+    } catch {
+      setIsAuthenticated(false);
+    }
+  };
+  
+  checkAuth();
+}, []);
   useEffect(() => {
     const fetchRequestData = async () => {
       if (!isEditing) return;
@@ -241,6 +256,7 @@ export default function TravelRequestForm({ navigation, route }) {
 
     loadPendingRequest();
   }, []); // Empty dependency array - only run once on mount
+ 
 
   const onStartDateChange = (event, selectedDate) => {
     setShowStartDatePicker(false);
@@ -581,6 +597,91 @@ export default function TravelRequestForm({ navigation, route }) {
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: 100 }}
       >
+      {!isAuthenticated && (
+  <View>
+    {/* Language Selector & Login Button */}
+    <View style={styles.topBar}>
+     
+      <TouchableOpacity 
+        style={styles.signInButton}
+        onPress={() => navigation.navigate('Signin')}
+      >
+        <Icon 
+          type="font-awesome" 
+          name="sign-in" 
+          size={responsive(14, 16, 16, 16, 16)} 
+          color={theme.colors.primary}
+          style={{marginLeft: responsive(6, 8, 8, 8, 8)}}
+        />
+        <Text style={styles.signInButtonText}>
+          {t('SigninScreen', 'login')}
+        </Text>
+      </TouchableOpacity>
+       <LanguageSelector />
+    </View>
+
+    {/* Hero Section */}
+    <View style={styles.formHeroSection}>
+      {/* Logo */}
+      <View style={styles.formLogoContainer}>
+        <Image 
+          source={require('../../assets/logo.png')} 
+          style={styles.formLogo}
+          resizeMode="cover"
+        />
+      </View>
+
+      {/* Brand Name */}
+      <Text style={styles.formBrandName}>
+        {t('SigninScreen', 'title')}
+      </Text>
+
+      {/* Main Headline */}
+      <Text style={styles.formMainHeadline}>
+        {t('SigninScreen', 'mainHeadline')}
+      </Text>
+
+      {/* Key Benefits */}
+      <View style={styles.formBenefitsContainer}>
+        <View style={styles.formBenefitItem}>
+          <Icon 
+            type="font-awesome" 
+            name="eye-slash" 
+            size={responsive(12, 14, 14, 14, 14)} 
+            color={theme.colors.primary}
+          />
+          <Text style={styles.formBenefitText}>
+            {t('SigninScreen', 'hiddenIdentity')}
+          </Text>
+        </View>
+        
+        <View style={styles.formBenefitItem}>
+          <Icon 
+            type="font-awesome" 
+            name="tags" 
+            size={responsive(12, 14, 14, 14, 14)} 
+            color={theme.colors.primary}
+          />
+          <Text style={styles.formBenefitText}>
+            {t('SigninScreen', 'cheaperPrices')}
+          </Text>
+        </View>
+        
+        <View style={styles.formBenefitItem}>
+          <Icon 
+            type="font-awesome" 
+            name="check-circle" 
+            size={responsive(12, 14, 14, 14, 14)} 
+            color={theme.colors.primary}
+          />
+          <Text style={styles.formBenefitText}>
+            {t('SigninScreen', 'trustedAgencies')}
+          </Text>
+        </View>
+      </View>
+    </View>
+  </View>
+)}
         <View style={styles.header}>
             <Text h4 style={styles.title}>
             {isEditing ? t('TravelRequestForm', 'editTravelRequest') : t('TravelRequestForm', 'newTravelRequest')}
@@ -1301,5 +1402,97 @@ dropdownSearchInput: {
     outline: 'none',
     outlineWidth: 0,
   }),
+},
+// Add these to your existing styles object:
+
+topBar: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  paddingHorizontal: responsive(16, 20, 20, 20, 20),
+  paddingVertical: responsive(12, 16, 16, 16, 16),
+  backgroundColor: theme.colors.backgroundWhite,
+  borderBottomWidth: 1,
+  borderBottomColor: theme.colors.borderLight,
+},
+
+signInButton: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  paddingVertical: responsive(8, 10, 10, 10, 10),
+  paddingHorizontal: responsive(16, 18, 18, 18, 18),
+  borderRadius: theme.borderRadius.md,
+  borderWidth: 1,
+  borderColor: theme.colors.primary,
+  backgroundColor: theme.colors.backgroundWhite,
+},
+
+signInButtonText: {
+  fontSize: responsive(13, 14, 14, 14, 14),
+  fontWeight: '600',
+  color: theme.colors.primary,
+},
+
+formHeroSection: {
+  backgroundColor: theme.colors.primary,
+  paddingVertical: responsive(32, 40, 40, 48, 48),
+  paddingHorizontal: responsive(20, 24, 24, 24, 24),
+  alignItems: 'center',
+  borderBottomWidth: 1,
+  borderBottomColor: theme.colors.borderLight,
+},
+
+formLogoContainer: {
+  marginBottom: responsive(12, 16, 16, 20, 20),
+},
+
+formLogo: {
+  width: responsive(100, 120, 140, 160, 180),
+  height: responsive(50, 60, 70, 80, 90),
+  borderRadius: responsive(8, 10, 10, 12, 12),
+},
+
+formBrandName: {
+  fontSize: responsive(20, 22, 24, 26, 28),
+  fontWeight: '700',
+  color: theme.colors.text,
+  letterSpacing: -0.5,
+  textAlign: 'center',
+  marginBottom: responsive(8, 10, 10, 12, 12),
+},
+
+formMainHeadline: {
+  fontSize: responsive(14, 15, 16, 17, 18),
+  fontWeight: '600',
+  color: theme.colors.text,
+  textAlign: 'center',
+  lineHeight: responsive(20, 22, 24, 26, 28),
+  marginBottom: responsive(16, 20, 20, 24, 24),
+  paddingHorizontal: responsive(10, 15, 20, 25, 30),
+},
+
+formBenefitsContainer: {
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  justifyContent: 'center',
+  gap: responsive(8, 10, 10, 12, 12),
+},
+
+formBenefitItem: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  backgroundColor: theme.colors.backgroundWhite,
+  borderWidth: 1,
+  borderColor: theme.colors.primary + '30',
+  paddingVertical: responsive(6, 8, 8, 10, 10),
+  paddingHorizontal: responsive(10, 12, 12, 14, 14),
+  borderRadius: responsive(16, 18, 18, 20, 20),
+  gap: responsive(6, 6, 6, 8, 8),
+},
+
+formBenefitText: {
+  fontSize: responsive(11, 12, 12, 13, 13),
+  fontWeight: '600',
+  color: theme.colors.primary,
 },
 });
