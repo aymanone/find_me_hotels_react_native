@@ -648,7 +648,7 @@ export default function TravelRequestForm({ navigation, route }) {
             type="font-awesome" 
             name="eye-slash" 
             size={responsive(12, 14, 14, 14, 14)} 
-            color={theme.colors.primary}
+            color={theme.colors.textWhite}
           />
           <Text style={styles.formBenefitText}>
             {t('SigninScreen', 'hiddenIdentity')}
@@ -660,7 +660,7 @@ export default function TravelRequestForm({ navigation, route }) {
             type="font-awesome" 
             name="tags" 
             size={responsive(12, 14, 14, 14, 14)} 
-            color={theme.colors.primary}
+            color={theme.colors.textWhite}
           />
           <Text style={styles.formBenefitText}>
             {t('SigninScreen', 'cheaperPrices')}
@@ -672,7 +672,7 @@ export default function TravelRequestForm({ navigation, route }) {
             type="font-awesome" 
             name="check-circle" 
             size={responsive(12, 14, 14, 14, 14)} 
-            color={theme.colors.primary}
+            color={theme.colors.textWhite}
           />
           <Text style={styles.formBenefitText}>
             {t('SigninScreen', 'trustedAgencies')}
@@ -1455,7 +1455,7 @@ formLogo: {
 formBrandName: {
   fontSize: responsive(20, 22, 24, 26, 28),
   fontWeight: '700',
-  color: theme.colors.text,
+  color: theme.colors.textWhite,
   letterSpacing: -0.5,
   textAlign: 'center',
   marginBottom: responsive(8, 10, 10, 12, 12),
@@ -1464,7 +1464,7 @@ formBrandName: {
 formMainHeadline: {
   fontSize: responsive(14, 15, 16, 17, 18),
   fontWeight: '600',
-  color: theme.colors.text,
+  color: theme.colors.textWhite,
   textAlign: 'center',
   lineHeight: responsive(20, 22, 24, 26, 28),
   marginBottom: responsive(16, 20, 20, 24, 24),
@@ -1481,7 +1481,7 @@ formBenefitsContainer: {
 formBenefitItem: {
   flexDirection: 'row',
   alignItems: 'center',
-  backgroundColor: theme.colors.backgroundWhite,
+   backgroundColor: 'rgba(255, 255, 255, 0.2)',
   borderWidth: 1,
   borderColor: theme.colors.primary + '30',
   paddingVertical: responsive(6, 8, 8, 10, 10),
@@ -1492,7 +1492,7 @@ formBenefitItem: {
 
 formBenefitText: {
   fontSize: responsive(11, 12, 12, 13, 13),
-  fontWeight: '600',
-  color: theme.colors.primary,
+  fontWeight: '700',
+  color: theme.colors.textWhite,
 },
 });
