@@ -792,6 +792,8 @@ export const ScreenTranslations = {
     guestsAndStay:"Guests and stay",
     budgetAndNationality:"Budget and nationality",
     additionalNotes: "additional Notes",
+    "completePreviousSectionFirst": "Complete previous section first",
+    startRequest:"Start your Request now",
   },
   ar: {
     title: 'طلب سفر جديد',
@@ -902,6 +904,9 @@ export const ScreenTranslations = {
     guestsAndStay:"الضيوف و اﻻقامة",
     budgetAndNationality:"الميزانية و الجنسية",
     additionalNotes: "ملاحظات",
+    "completePreviousSectionFirst": "أكمل القسم السابق أولاً",
+    startRequest:"ابدا طلبك اﻻن"
+
   }
 }
   ,
