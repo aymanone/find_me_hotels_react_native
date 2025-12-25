@@ -14,62 +14,23 @@ import { theme, commonStyles, screenSize, responsive } from '../styles/theme';
 import ClientAuthModal from '../components/ClientAuthModal';
 import storage from '../utils/storage';
 import LanguageSelector from '../components/LanguageSelector';
-const SectionCard = ({ title, icon, children, status = 'active', t }) => {
-  const isLocked = status === 'locked';
-  const isComplete = status === 'complete';
-  
-  return (
-    <View style={[
-      styles.sectionCard,
-      isLocked && styles.sectionLocked,
-      isComplete && styles.sectionComplete
-    ]}>
+ const SectionCard = ({ title, icon, children }) => (
+    <View style={styles.sectionCard}>
       <View style={styles.sectionHeader}>
-        {isComplete && (
-          <Icon
-            type="font-awesome-5"
-            name="check-circle"
-            size={responsive(18)}
-            color={theme.colors.success}
-            style={styles.sectionIcon}
-          />
-        )}
-        {isLocked && (
-          <Icon
-            type="font-awesome-5"
-            name="lock"
-            size={responsive(18)}
-            color={theme.colors.textLight}
-            style={styles.sectionIcon}
-          />
-        )}
-        {!isComplete && !isLocked && (
-          <Icon
-            type="font-awesome-5"
-            name={icon}
-            size={responsive(18)}
-            color={theme.colors.primary}
-            style={styles.sectionIcon}
-          />
-        )}
-        <Text style={[styles.sectionTitle, isLocked && styles.sectionTitleLocked]}>
-          {title}
-        </Text>
+       <Icon
+  type="font-awesome-5"
+  name={icon}
+  size={responsive(18)}
+  color={theme.colors.primary}
+  style={styles.sectionIcon}
+/>
+        <Text style={styles.sectionTitle}>{title}</Text>
       </View>
-      {!isLocked ? (
-        <View style={styles.sectionContent}>
-          {children}
-        </View>
-      ) : (
-        <View style={styles.sectionContent}>
-          <Text style={styles.lockedMessage}>
-            {  t('TravelRequestForm', 'completePreviousSectionFirst') || 'Complete previous section first'}
-          </Text>
-        </View>
-      )}
+      <View style={styles.sectionContent}>
+        {children}
+      </View>
     </View>
   );
-};
 
 export default function TravelRequestForm({ navigation, route }) {
   const { t, language } = useTranslation();
@@ -110,12 +71,7 @@ export default function TravelRequestForm({ navigation, route }) {
     preferredAgentsCountries: [],
     notes: ''
   });
-  const [sectionStatus, setSectionStatus] = useState({
-  tripDetails: 'active',
-  guestsAndStay: 'locked',
-  budgetAndOrigin: 'locked',
-  notes: 'locked'
-});
+
   const hotelRatings = Array.from({ length: 8 }, (_, i) => ({
     label: t('TravelRequestForm', 'starsLabel', { value: i }),
     value: i
@@ -130,7 +86,6 @@ export default function TravelRequestForm({ navigation, route }) {
     setIsEditing(false);
     setRequestId(null);
   }
- 
   useEffect(() => {
   const checkAuth = async () => {
     
@@ -146,35 +101,6 @@ export default function TravelRequestForm({ navigation, route }) {
   
   checkAuth();
 }, []);
-useEffect(() => {
-  // Calculate all validations once
-  const tripComplete = formData.requestCountry && 
-                       formData.requestArea && 
-                       formData.startDate && 
-                       formData.endDate;
-  
-  const guestsComplete = tripComplete &&
-                         formData.numOfAdults && 
-                         parseInt(formData.numOfAdults) >= 1 &&
-                         formData.numOfRooms && 
-                         parseInt(formData.numOfRooms) >= 1 &&
-                         (formData.hotelRating !== null && formData.hotelRating !== undefined);
-  
-  const budgetComplete = guestsComplete &&
-                         formData.minBudget && 
-                         formData.maxBudget && 
-                         parseInt(formData.minBudget) <= parseInt(formData.maxBudget) &&
-                         formData.travelersNationality &&
-                         formData.preferredAgentsCountries.length > 0;
-  
-  // Update all section statuses at once
-  setSectionStatus({
-    tripDetails: tripComplete ? 'complete' : 'active',
-    guestsAndStay: guestsComplete ? 'complete' : (tripComplete ? 'active' : 'locked'),
-    budgetAndOrigin: budgetComplete ? 'complete' : (guestsComplete ? 'active' : 'locked'),
-    notes: budgetComplete ? 'active' : 'locked'
-  });
-}, [formData]);
   useEffect(() => {
     const fetchRequestData = async () => {
       if (!isEditing) return;
@@ -764,10 +690,7 @@ useEffect(() => {
         </View>
 
         {/* 1. Destination & Dates */}
-        <SectionCard title={t('TravelRequestForm', 'tripDetails') || 'Trip Details'} 
-        status={sectionStatus.tripDetails}
-        t={t}
-        icon="map-marked-alt">
+        <SectionCard title={t('TravelRequestForm', 'tripDetails') || 'Trip Details'} icon="map-marked-alt">
              {/* Dates Row */}
              <View style={styles.row}>
                 {Platform.OS === 'web' ? (
@@ -909,10 +832,7 @@ useEffect(() => {
         </SectionCard>
 
         {/* 2. Guests & Accommodation */}
-        <SectionCard title={t('TravelRequestForm', 'guestsAndStay') || 'Guests & Stay'}
-         status={sectionStatus.guestsAndStay}
-         t={t}
-         icon="user-friends">
+        <SectionCard title={t('TravelRequestForm', 'guestsAndStay') || 'Guests & Stay'} icon="user-friends">
              <View style={styles.row}>
                 <View style={styles.halfWidth}>
                     <Text style={styles.label}>{t('TravelRequestForm', 'numberOfAdults')}</Text>
@@ -1032,10 +952,7 @@ useEffect(() => {
         </SectionCard>
 
         {/* 3. Budget & Nationality */}
-        <SectionCard title={t('TravelRequestForm', 'budgetAndNationality') || 'Budget & Origin'}
-        status={sectionStatus.budgetAndOrigin}
-        t={t}
-        icon="wallet">
+        <SectionCard title={t('TravelRequestForm', 'budgetAndNationality') || 'Budget & Origin'} icon="wallet">
             <View style={styles.row}>
             <View style={styles.halfWidth}>
                 <Text style={styles.label}>{t('TravelRequestForm', 'minimumBudget')}</Text>
@@ -1146,14 +1063,10 @@ useEffect(() => {
                     </View>
                 </View>
             </View>
-        
         </SectionCard>
 
          {/* 4. Notes */}
-        <SectionCard title={t('TravelRequestForm', 'additionalNotes') || 'Additional Notes'} 
-        status={sectionStatus.notes}
-        t={t}
-        icon="sticky-note">
+        <SectionCard title={t('TravelRequestForm', 'additionalNotes') || 'Additional Notes'} icon="sticky-note">
              <View style={styles.row}>
                 <View style={styles.fullWidth}>
                      <Text style={styles.notesHelperText}>
@@ -1581,26 +1494,5 @@ formBenefitText: {
   fontSize: responsive(11, 12, 12, 13, 13),
   fontWeight: '700',
   color: theme.colors.textWhite,
-},
-sectionLocked: {
-  opacity: 0.6,
-  backgroundColor: theme.colors.backgroundGray,
-},
-
-sectionComplete: {
-  borderColor: theme.colors.success,
-  borderWidth: 1,
-},
-
-sectionTitleLocked: {
-  color: theme.colors.textLight,
-},
-
-lockedMessage: {
-  fontSize: responsive(13),
-  color: theme.colors.textSecondary,
-  textAlign: 'center',
-  padding: responsive(20),
-  fontStyle: 'italic',
 },
 });
