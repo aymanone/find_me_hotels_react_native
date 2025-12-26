@@ -1022,9 +1022,9 @@ export default function AppNavigator({navigationRef}) {
     <NavigationContainer ref={navigationRef}
      onStateChange={() => {
         if (Platform.OS === 'web' && typeof window !== 'undefined' && window.gtag) {
-          window.gtag('config', 'G-2WEP5WYXXW', {
-            page_path: window.location.pathname,
-          });
+          //window.gtag('config', 'G-2WEP5WYXXW', {
+           // page_path: window.location.pathname,
+         // });
         }
       }}
      linking={linking}>
