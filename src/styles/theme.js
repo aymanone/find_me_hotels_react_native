@@ -1,7 +1,7 @@
 // theme.js - Complete Design System for Travel App with Responsive Support
 // Import this file across all your screens for consistent styling
 
-import { Dimensions } from 'react-native';
+import { Dimensions,Platform } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
@@ -42,13 +42,13 @@ export const responsive = (xs, sm, md, lg, xl) => {
 // ========================================
 const palette = {
 hero: {
-  500: '#90CAF9',      // Medium blue (if needed)
-  100: '#E3F2FD',      // Light blue for background
+  500: '#5B9BD5',  // Change from light blue
+    100: '#E3F2FD',  // Keep or adjust
 },
 primary: {
-  900: '#D94848',      
-  500: '#FF6B6B',      
-  100: '#FFE5E5',     
+   900: '#2C5F8D',      // Changed from #D94848
+    500: '#4A90E2',      // Changed from #FF6B6B
+    100: '#E3F2FD',      // Changed from #FFE5E5
 },
 
 secondary: {
@@ -58,9 +58,9 @@ secondary: {
 },
 
 accent: {
-  900: '#CC9200',      // was: '#e0a800'
-  500: '#FFB703',      // (keep same)
-  100: '#FFF8E1',      // was: '#fff3cd'
+  900: '#D84315',      // Changed from #CC9200
+    500: '#FF6F3C',      // Changed from #FFB703
+    100: '#FFE5DB',      // Changed from #FFF8E1
 },
   error: {
     500: '#dc3545',
@@ -522,6 +522,18 @@ confirmMessage: {
   color: '#333',
   marginBottom: responsive(16, 20, 20, 20, 20),
   textAlign: 'center',
+},
+formMainHeadline: {
+  fontSize: responsive(14, 15, 16, 17, 18),
+  fontWeight: '600',
+  color: 'rgba(255, 255, 255, 0.95)',  // ← Softer white for hero
+  textAlign: 'center',
+  lineHeight: responsive(20, 22, 24, 26, 28),
+},
+formBenefitText: {
+  fontSize: responsive(11, 12, 12, 13, 13),
+  fontWeight: '700',
+  color: 'rgba(255, 255, 255, 0.95)',  // ← Softer white for hero
 },
     dangerTitle: {
   fontSize: responsive(16, 18, 18, 20, 20),
@@ -1338,6 +1350,32 @@ responsiveInfoItem: {
     borderWidth: 1,
   },
 };
+// Web hover styles for buttons
+export const webHoverStyles = Platform.OS === 'web' ? `
+  <style>
+    .cta-button:hover {
+      background-color: #E85D28 !important;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15) !important;
+      transform: translateY(-1px);
+      transition: all 0.2s ease;
+    }
+    
+    .cta-button:active {
+      transform: translateY(0px);
+    }
+    
+    .primary-button:hover {
+      background-color: #3A7BC8 !important;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15) !important;
+      transform: translateY(-1px);
+      transition: all 0.2s ease;
+    }
+    
+    .primary-button:active {
+      transform: translateY(0px);
+    }
+  </style>
+` : '';
 
 // Export default for easy import
 export default { theme, commonStyles, screenSize, responsive, breakpoints, gradients, travelColors, animation,};

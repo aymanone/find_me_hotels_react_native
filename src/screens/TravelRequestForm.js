@@ -10,7 +10,7 @@ import { removeFirstOccurrence } from '../utils/arrayUtils';
 import { showAlert } from "../components/ShowAlert";
 import { unsubscribeChannels } from '../utils/channelUtils.js';
 import { useTranslation } from '../config/localization';
-import { theme, commonStyles, screenSize, responsive } from '../styles/theme';
+import { theme, commonStyles, screenSize, responsive,webHoverStyles } from '../styles/theme';
 import ClientAuthModal from '../components/ClientAuthModal';
 import storage from '../utils/storage';
 import LanguageSelector from '../components/LanguageSelector';
@@ -70,6 +70,26 @@ const SectionCard = ({ title, icon, children, status = 'active', t }) => {
     </View>
   );
 };
+// Web-only: Inject CSS for button hover
+if (Platform.OS === 'web' && typeof document !== 'undefined') {
+  const style = document.createElement('style');
+  style.innerHTML = `
+    .cta-button button {
+      transition: all 0.2s ease;
+    }
+    
+    .cta-button:hover button {
+      background-color: #E85D28 !important;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15) !important;
+      transform: translateY(-1px);
+    }
+    
+    .cta-button:active button {
+      transform: translateY(0px);
+    }
+  `;
+  document.head.appendChild(style);
+}
 
 export default function TravelRequestForm({ navigation, route }) {
   const { t, language } = useTranslation();
@@ -666,6 +686,7 @@ useEffect(() => {
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 40}
+   
     >
       <ScrollView style={styles.container}
         keyboardShouldPersistTaps="handled"
@@ -1180,6 +1201,7 @@ useEffect(() => {
             onPress={handleSubmit}
             loading={loading}
             disabled={loading}
+             containerStyle={Platform.OS === 'web' ? { className: 'cta-button' } : {}}  
             buttonStyle={styles.submitButton}
             titleStyle={styles.submitButtonText}
           />
@@ -1463,8 +1485,11 @@ const styles = StyleSheet.create({
   submitButton: {
     height: responsive(52),
     borderRadius: theme.borderRadius.lg,
-    backgroundColor: theme.colors.primary,
+    backgroundColor: theme.colors.accent,
     ...theme.shadows.md,
+     ...(Platform.OS === 'web' && {
+    cursor: 'pointer',  // ← ADD THIS
+  }),
   },
   submitButtonText: {
     fontSize: responsive(16),
@@ -1512,6 +1537,7 @@ signInButton: {
   borderWidth: 1,
   borderColor: theme.colors.primary,
   backgroundColor: theme.colors.backgroundWhite,
+
 },
 
 signInButtonText: {
@@ -1549,11 +1575,7 @@ formBrandName: {
 },
 
 formMainHeadline: {
-  fontSize: responsive(14, 15, 16, 17, 18),
-  fontWeight: '600',
-  color: theme.colors.textWhite,
-  textAlign: 'center',
-  lineHeight: responsive(20, 22, 24, 26, 28),
+   ...theme.responsiveTypography.formMainHeadline, 
   marginBottom: responsive(16, 20, 20, 24, 24),
   paddingHorizontal: responsive(10, 15, 20, 25, 30),
 },
@@ -1578,9 +1600,7 @@ formBenefitItem: {
 },
 
 formBenefitText: {
-  fontSize: responsive(11, 12, 12, 13, 13),
-  fontWeight: '700',
-  color: theme.colors.textWhite,
+  ...theme.responsiveTypography.formBenefitText,
 },
 sectionLocked: {
   opacity: 0.6,

@@ -453,10 +453,7 @@ const styles = StyleSheet.create({
 
 // Main headline
 mainHeadline: {
-  fontSize: responsive(18, 20, 22, 24, 26),
-  fontWeight: '700',
-  color: theme.colors.textWhite,
-  textAlign: 'center',
+ ...theme.responsiveTypography.formMainHeadline,
   marginTop: responsive(16, 20, 20, 24, 24),
   lineHeight: responsive(26, 28, 30, 32, 34),
   paddingHorizontal: responsive(10, 15, 20, 25, 30),
@@ -482,9 +479,7 @@ benefitItem: {
 },
 
 benefitText: {
-  fontSize: responsive(12, 13, 14, 14, 15),
-  fontWeight: '600',
-  color: theme.colors.textWhite,
+ ...theme.responsiveTypography.formBenefitText,
 },
 
 // Primary CTA
