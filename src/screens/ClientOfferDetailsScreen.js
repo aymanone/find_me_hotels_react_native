@@ -50,7 +50,7 @@ const ClientOfferDetailsScreen = ({ route, navigation }) => {
       .from('offers')
   .select(`
     num_of_hotels, hotels,status, min_rating, max_rating, min_cost, max_cost,
-    updated_at, created_at,
+    updated_at, created_at,start_date,end_date,
     agents!offers_agent_id_fkey (
       first_name, second_name, id, phone_number, messaging_app,
     
