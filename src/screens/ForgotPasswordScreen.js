@@ -76,7 +76,7 @@ useEffect(() => {
       }
         
       }
-      redirectTo="https://bucolic-banoffee-2f9450.netlify.app/supabase_redirect.html";
+      redirectTo="https://supabase-handlers.vercel.app/";
       // Send password reset email
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
         redirectTo: redirectTo,
