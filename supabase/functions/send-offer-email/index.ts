@@ -47,7 +47,13 @@ Deno.serve(async (req) => {
     const fullName = `${client.first_name} ${client.second_name}`.trim()
     const location = `${requestInfo.area_name}, ${requestInfo.country_name}`
     const offerLink = `https://alghorfa.net/client/offer/${offer.id}`
+        // Offer summary fields
+    const numHotels = offer.num_of_hotels ?? null
+    const minCost = offer.min_cost ?? null
+    const maxCost = offer.max_cost ?? null
 
+    const hasHotelCount = numHotels !== null
+    const hasPriceRange = minCost !== null && maxCost !== null
     // 4. Build bilingual subject and body
     const subject = 'عرض جديد على طلبك! / New offer on your request!'
 
@@ -55,12 +61,16 @@ Deno.serve(async (req) => {
       <div lang="ar" dir="rtl" style="font-family: Arial, sans-serif; text-align: right; margin-bottom: 24px;">
         <p>مرحباً ${fullName}،</p>
         <p>تم تقديم عرض جديد على طلب رحلتك إلى <strong>${location}</strong>.</p>
+        ${hasHotelCount ? `<p>عدد الفنادق المعروضة: <strong>${numHotels}</strong></p>` : ''}
+        ${hasPriceRange ? `<p>نطاق السعر: <strong>${minCost} - ${maxCost}</strong></p>` : ''}
         <p><a href="${offerLink}" style="color: #1a73e8;">اضغط هنا لعرض التفاصيل</a></p>
       </div>
       <hr style="border: none; border-top: 1px solid #ddd;" />
       <div lang="en" dir="ltr" style="font-family: Arial, sans-serif; text-align: left; margin-top: 24px;">
         <p>Hi ${fullName},</p>
         <p>A new offer has been made on your travel request to <strong>${location}</strong>.</p>
+        ${hasHotelCount ? `<p>Hotels offered: <strong>${numHotels}</strong></p>` : ''}
+        ${hasPriceRange ? `<p>Price range: <strong>${minCost} - ${maxCost}</strong></p>` : ''}
         <p><a href="${offerLink}" style="color: #1a73e8;">Click here to view details</a></p>
       </div>
     `
