@@ -1,0 +1,94 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+Deno.serve(async (req) => {
+  try {
+    const payload = await req.json()
+    const offer = payload.record // newly inserted offer row
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    )
+
+    // 1. Get country/area name from the view, keyed by request_id
+    const { data: requestInfo, error: requestError } = await supabase
+      .from('travel_requests_agent')
+      .select('country_name, area_name')
+      .eq('id', offer.request_id)
+      .single()
+
+    if (requestError || !requestInfo) {
+      console.error('Could not find travel request info', requestError)
+      return new Response('Travel request not found', { status: 400 })
+    }
+
+    // 2. Get client name
+    const { data: client, error: clientError } = await supabase
+      .from('clients')
+      .select('first_name, second_name, user_id')
+      .eq('user_id', offer.request_creator)
+      .single()
+
+    if (clientError || !client) {
+      console.error('Could not find client', clientError)
+      return new Response('Client not found', { status: 400 })
+    }
+
+    // 3. Get email from auth.users
+    const { data: userData, error: userError } =
+      await supabase.auth.admin.getUserById(offer.request_creator)
+
+    if (userError || !userData?.user?.email) {
+      console.error('Could not find user email', userError)
+      return new Response('User email not found', { status: 400 })
+    }
+
+    const email = userData.user.email
+    const fullName = `${client.first_name} ${client.second_name}`.trim()
+    const location = `${requestInfo.area_name}, ${requestInfo.country_name}`
+    const offerLink = `https://alghorfa.net/client/offer/${offer.id}`
+
+    // 4. Build bilingual subject and body
+    const subject = 'عرض جديد على طلبك! / New offer on your request!'
+
+    const htmlContent = `
+      <div lang="ar" dir="rtl" style="font-family: Arial, sans-serif; text-align: right; margin-bottom: 24px;">
+        <p>مرحباً ${fullName}،</p>
+        <p>تم تقديم عرض جديد على طلب رحلتك إلى <strong>${location}</strong>.</p>
+        <p><a href="${offerLink}" style="color: #1a73e8;">اضغط هنا لعرض التفاصيل</a></p>
+      </div>
+      <hr style="border: none; border-top: 1px solid #ddd;" />
+      <div lang="en" dir="ltr" style="font-family: Arial, sans-serif; text-align: left; margin-top: 24px;">
+        <p>Hi ${fullName},</p>
+        <p>A new offer has been made on your travel request to <strong>${location}</strong>.</p>
+        <p><a href="${offerLink}" style="color: #1a73e8;">Click here to view details</a></p>
+      </div>
+    `
+
+    // 5. Send via Brevo
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'api-key': Deno.env.get('BREVO_API_KEY')!,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        sender: { name: 'Alghorfa', email: 'feedback@alghorfa.net' },
+        to: [{ email, name: fullName }],
+        subject,
+        htmlContent,
+      }),
+    })
+
+    if (!res.ok) {
+      const err = await res.text()
+      console.error('Brevo error', err)
+      return new Response('Failed to send email', { status: 500 })
+    }
+
+    return new Response('Email sent', { status: 200 })
+  } catch (err) {
+    console.error('Unexpected error', err)
+    return new Response('Internal error', { status: 500 })
+  }
+})
