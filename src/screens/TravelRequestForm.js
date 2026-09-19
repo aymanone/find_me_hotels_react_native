@@ -136,11 +136,6 @@ export default function TravelRequestForm({ navigation, route }) {
   budgetAndOrigin: 'locked',
   notes: 'locked'
 });
-  const hotelRatings = Array.from({ length: 8 }, (_, i) => ({
-    label: t('TravelRequestForm', 'starsLabel', { value: i }),
-    value: i
-  }));
-
   const allChildrenAges = Array.from({ length: 18 }, (_, i) => ({
     label: t('TravelRequestForm', 'yearsLabel', { age: i }),
     value: i
@@ -971,26 +966,8 @@ useEffect(() => {
                 </View>
             </View>
 
+            
              <View style={styles.row}>
-                <View style={styles.halfWidth}>
-                     <Text style={styles.label}>{t('TravelRequestForm', 'hotelRating')}</Text>
-                    <Dropdown
-                    data={hotelRatings}
-                    labelField="label"
-                    valueField="value"
-                    value={formData.hotelRating}
-                    onChange={item => {
-                        setFormData({
-                        ...formData,
-                        hotelRating: item.value
-                        });
-                    }}
-                    placeholder={t('TravelRequestForm', 'selectRating')}
-                    style={styles.dropdown}
-                    placeholderStyle={styles.placeholderStyle}
-                    selectedTextStyle={styles.selectedTextStyle}
-                    />
-                </View>
                  <View style={styles.halfWidth}>
                     <Text style={styles.label}>{t('TravelRequestForm', 'addChild')}</Text>
                     <Dropdown
@@ -1021,6 +998,40 @@ useEffect(() => {
                 </View>
             </View>
             )}
+             <View style={styles.row}>
+                <View style={styles.fullWidth}>
+                     <Text style={styles.label}>{t('TravelRequestForm', 'hotelRating')}</Text>
+                     <View style={styles.starRatingRow}>
+                        <TouchableOpacity
+                          onPress={() => setFormData({ ...formData, hotelRating: 0 })}
+                          style={[styles.anyRatingChip, formData.hotelRating === 0 && styles.anyRatingChipSelected]}
+                        >
+                          <Text style={[styles.anyRatingChipText, formData.hotelRating === 0 && styles.anyRatingChipTextSelected]}>
+                            {t('TravelRequestForm', 'starsLabel', { value: 0 }) || 'Any'}
+                          </Text>
+                        </TouchableOpacity>
+                        {[1, 2, 3, 4, 5, 6, 7].map(starValue => (
+                          <TouchableOpacity
+                            key={starValue}
+                            onPress={() => setFormData({ ...formData, hotelRating: starValue })}
+                            hitSlop={{ top: 6, bottom: 6, left: 3, right: 3 }}
+                          >
+                            <Text style={[
+                              styles.starIcon,
+                              formData.hotelRating >= starValue && styles.starIconFilled
+                            ]}>
+                              {formData.hotelRating >= starValue ? '\u2605' : '\u2606'}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                     </View>
+                     {(formData.hotelRating || formData.hotelRating === 0) && (
+                       <Text style={styles.selectedRatingLabel}>
+                         {t('TravelRequestForm', 'starsLabel', { value: formData.hotelRating })}
+                       </Text>
+                     )}
+                </View>
+            </View>
 
              <View style={styles.row}>
                 <View style={styles.fullWidth}>
@@ -1072,7 +1083,6 @@ useEffect(() => {
                 containerStyle={styles.input}
                 inputContainerStyle={styles.inputContainerStyle}
                 inputStyle={styles.inputStyle}
-                rightIcon={<Text style={styles.currencyText}>USD</Text>}
                 />
             </View>
 
@@ -1090,10 +1100,12 @@ useEffect(() => {
                 containerStyle={styles.input}
                 inputContainerStyle={styles.inputContainerStyle}
                 inputStyle={styles.inputStyle}
-                 rightIcon={<Text style={styles.currencyText}>USD</Text>}
                 />
             </View>
             </View>
+            <Text style={styles.budgetHint}>
+              {t('TravelRequestForm', 'budgetTripHint') || 'This is your total budget for the whole trip, in USD'}
+            </Text>
 
              <View style={styles.row}>
                 <View style={styles.fullWidth}>
@@ -1194,6 +1206,67 @@ useEffect(() => {
                 </View>
             </View>
         </SectionCard>
+
+        {sectionStatus.tripDetails === 'complete' && (
+          <View style={styles.previewCard}>
+            <Text style={styles.previewEyebrow}>
+              {t('TravelRequestForm', 'livePreview') || 'WHAT AGENCIES WILL SEE'}
+            </Text>
+            <View style={styles.previewRow}>
+              <Text style={styles.previewKey}>{t('TravelRequestForm', 'dates') || 'Dates'}</Text>
+              <Text style={styles.previewValue}>
+                {format(formData.startDate, 'MMM d')} – {format(formData.endDate, 'MMM d, yyyy')}
+              </Text>
+            </View>
+            <View style={styles.previewRow}>
+              <Text style={styles.previewKey}>{t('TravelRequestForm', 'destination') || 'Destination'}</Text>
+              <Text style={styles.previewValue}>
+                {areas.find(a => a.id === formData.requestArea)?.area_name || '—'}
+                {allCountries.find(c => c.id === formData.requestCountry)?.country_name
+                  ? `, ${allCountries.find(c => c.id === formData.requestCountry).country_name}`
+                  : ''}
+              </Text>
+            </View>
+            <View style={styles.previewRow}>
+              <Text style={styles.previewKey}>{t('TravelRequestForm', 'numberOfAdults') || 'Adults'}</Text>
+              <Text style={styles.previewValue}>{formData.numOfAdults}</Text>
+            </View>
+            <View style={styles.previewRow}>
+              <Text style={styles.previewKey}>{t('TravelRequestForm', 'numberOfRooms') || 'Rooms'}</Text>
+              <Text style={styles.previewValue}>{formData.numOfRooms}</Text>
+            </View>
+            {formData.requestChildren.length > 0 && (
+              <View style={styles.previewRow}>
+                <Text style={styles.previewKey}>{t('TravelRequestForm', 'children') || 'Children'}</Text>
+                <Text style={styles.previewValue}>{formData.requestChildren.length}</Text>
+              </View>
+            )}
+            <View style={styles.previewRow}>
+              <Text style={styles.previewKey}>{t('TravelRequestForm', 'hotelRating') || 'Hotel rating'}</Text>
+              <Text style={styles.previewValue}>
+                {formData.hotelRating ? '\u2605'.repeat(formData.hotelRating) : '—'}
+              </Text>
+            </View>
+            <View style={styles.previewRow}>
+              <Text style={styles.previewKey}>{t('TravelRequestForm', 'meals') || 'Meals'}</Text>
+              <Text style={styles.previewValue}>
+                {formData.meals.length > 0
+                  ? formData.meals.map(m => t('TravelRequestForm', m) || m).join(', ')
+                  : (t('TravelRequestForm', 'noMeals') || 'No meals')}
+              </Text>
+            </View>
+            <View style={styles.previewRow}>
+              <Text style={styles.previewKey}>{t('TravelRequestForm', 'budgetForTrip') || 'Budget for trip'}</Text>
+              <Text style={styles.previewValue}>{formData.minBudget || 0} – {formData.maxBudget || 0}</Text>
+            </View>
+            <View style={styles.previewFooter}>
+              <Icon type="font-awesome-5" name="shield-alt" size={responsive(12)} color={theme.colors.success} style={{ marginRight: responsive(6) }} />
+              <Text style={styles.previewFooterText}>
+                {t('TravelRequestForm', 'privacyReassurance') || 'Your name and contact details are never shared until you accept an offer.'}
+              </Text>
+            </View>
+          </View>
+        )}
 
         <View style={styles.submitButtonContainer}>
           <Button
@@ -1315,11 +1388,6 @@ const styles = StyleSheet.create({
     fontSize: responsive(15),
     color: theme.colors.text,
   },
-  currencyText: {
-    color: theme.colors.textTertiary,
-    fontSize: responsive(12),
-    fontWeight: '600',
-  },
   dropdown: {
     height: responsive(48),
     borderColor: theme.colors.border,
@@ -1363,6 +1431,54 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.inputBackground,
     color: theme.colors.text,
     outline: 'none',
+  },
+  budgetHint: {
+    fontSize: responsive(12),
+    color: theme.colors.textSecondary,
+    marginTop: responsive(-8),
+    marginBottom: responsive(16),
+    marginLeft: responsive(2),
+  },
+  starRatingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: responsive(6),
+    marginTop: responsive(4),
+  },
+  starIcon: {
+    fontSize: responsive(24),
+    color: theme.colors.border,
+  },
+  starIconFilled: {
+    color: theme.colors.accent,
+  },
+  anyRatingChip: {
+    paddingVertical: responsive(6),
+    paddingHorizontal: responsive(11),
+    borderRadius: theme.borderRadius.full,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.backgroundWhite,
+    marginRight: responsive(4),
+  },
+  anyRatingChipSelected: {
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
+  },
+  anyRatingChipText: {
+    fontSize: responsive(12.5),
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
+  },
+  anyRatingChipTextSelected: {
+    color: theme.colors.textWhite,
+  },
+  selectedRatingLabel: {
+    fontSize: responsive(12.5),
+    color: theme.colors.textSecondary,
+    marginTop: responsive(6),
+    marginBottom: responsive(16),
   },
   mealsContainer: {
     flexDirection: 'row',
@@ -1478,6 +1594,56 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.disabled,
     opacity: 0.7
   },
+  previewCard: {
+    backgroundColor: theme.colors.backgroundWhite,
+    borderRadius: theme.borderRadius.lg,
+    borderWidth: 1,
+    borderColor: theme.colors.borderLight,
+    marginHorizontal: theme.responsiveSpacing.lg,
+    marginTop: theme.spacing.md,
+    padding: theme.spacing.lg,
+    ...theme.shadows.sm,
+  },
+  previewEyebrow: {
+    fontSize: responsive(11),
+    fontWeight: '700',
+    color: theme.colors.textSecondary,
+    letterSpacing: 0.5,
+    marginBottom: responsive(12),
+  },
+  previewRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingVertical: responsive(7),
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.backgroundGray,
+  },
+  previewKey: {
+    fontSize: responsive(13.5),
+    color: theme.colors.textSecondary,
+    width: responsive(110),
+  },
+  previewValue: {
+    fontSize: responsive(13.5),
+    fontWeight: '600',
+    color: theme.colors.text,
+    flex: 1,
+  },
+  previewFooter: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginTop: responsive(12),
+    paddingTop: responsive(12),
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.borderLight,
+    borderStyle: 'dashed',
+  },
+  previewFooterText: {
+    flex: 1,
+    fontSize: responsive(11.5),
+    color: theme.colors.textSecondary,
+    lineHeight: responsive(16),
+  },
   submitButtonContainer: {
     padding: theme.responsiveSpacing.lg,
     paddingBottom: responsive(40),
@@ -1548,7 +1714,7 @@ signInButtonText: {
 
 formHeroSection: {
   backgroundColor: theme.colors.primary,
-  paddingVertical: responsive(32, 40, 40, 48, 48),
+  paddingVertical: responsive(18, 22, 22, 26, 26),
   paddingHorizontal: responsive(20, 24, 24, 24, 24),
   alignItems: 'center',
   borderBottomWidth: 1,
@@ -1556,13 +1722,13 @@ formHeroSection: {
 },
 
 formLogoContainer: {
-  marginBottom: responsive(12, 16, 16, 20, 20),
+  marginBottom: responsive(6, 8, 8, 10, 10),
 },
 
 formLogo: {
-  width: responsive(100, 120, 140, 160, 180),
-  height: responsive(50, 60, 70, 80, 90),
-  borderRadius: responsive(8, 10, 10, 12, 12),
+  width: responsive(64, 76, 84, 96, 100),
+  height: responsive(32, 38, 42, 48, 50),
+  borderRadius: responsive(6, 8, 8, 10, 10),
 },
 
 formBrandName: {
@@ -1576,7 +1742,7 @@ formBrandName: {
 
 formMainHeadline: {
    ...theme.responsiveTypography.formMainHeadline, 
-  marginBottom: responsive(16, 20, 20, 24, 24),
+  marginBottom: responsive(10, 12, 12, 14, 14),
   paddingHorizontal: responsive(10, 15, 20, 25, 30),
 },
 

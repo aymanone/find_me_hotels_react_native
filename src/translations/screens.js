@@ -771,8 +771,8 @@ export const ScreenTranslations = {
     somePreferredAgentCountriesNoLongerAvailable: 'Some preferred agent countries are no longer available. They have been removed from your selection.',
     failedValidateAreas: 'Failed to validate areas. Please try again.',
     selectedAreaNoLongerAvailable: 'The selected area is no longer available for visits. Please select another area.',
-    travelRequestUpdatedSuccessfully: 'Travel request updated successfully!',
-    travelRequestSubmittedSuccessfully: 'Travel request submitted successfully!',
+    travelRequestUpdatedSuccessfully: 'Travel request updated successfully!. Offers may take some time to arrive, you will receive an email as soon as a new offer is sent',
+    travelRequestSubmittedSuccessfully: 'Travel request submitted successfully!. Offers may take some time to arrive, you will receive an email as soon as a new offer is sent',
     anErrorHappenedPleaseTryAgain: 'An error happened please try again',
     breakfast: 'Breakfast',
     lunch: 'Lunch',
@@ -794,6 +794,11 @@ export const ScreenTranslations = {
     additionalNotes: "additional Notes",
     "completePreviousSectionFirst": "Complete previous section first",
     startRequest:"Start your Request now",
+    'livePreview':"Summary",
+    "dates":"dates",
+    "noMeals":"no Meals",
+    "budgetForTrip":"Budget for Trip",
+    "privacyReassurance":"Privacy Reassurance",
   },
   ar: {
     title: 'طلب سفر جديد',
@@ -883,8 +888,8 @@ export const ScreenTranslations = {
     somePreferredAgentCountriesNoLongerAvailable: 'بعض بلدان الوسطاء المفضلة لم تعد متاحة. تم إزالتها من اختيارك.',
     failedValidateAreas: 'فشل في التحقق من صحة المناطق. يرجى المحاولة مرة أخرى.',
     selectedAreaNoLongerAvailable: 'المنطقة المختارة لم تعد متاحة للزيارات. يرجى اختيار منطقة أخرى.',
-    travelRequestUpdatedSuccessfully: 'تم تحديث طلب السفر بنجاح!',
-    travelRequestSubmittedSuccessfully: 'تم إرسال طلب السفر بنجاح!',
+    travelRequestUpdatedSuccessfully: 'تم تحديث طلب رحلتك. قد تستغرق العروض بعض الوقت للوصول, ستصلك رسالة بريد إلكتروني فور إرسال عرض جديد',
+    travelRequestSubmittedSuccessfully: 'تم إرسال طلب رحلتك. قد تستغرق العروض بعض الوقت للوصول, ستصلك رسالة بريد إلكتروني فور إرسال عرض جديد',
     anErrorHappenedPleaseTryAgain: 'حدث خطأ يرجى المحاولة مرة أخرى',
     breakfast: 'فطار',
     lunch: 'غداء',
@@ -905,7 +910,12 @@ export const ScreenTranslations = {
     budgetAndNationality:"الميزانية و الجنسية",
     additionalNotes: "ملاحظات",
     "completePreviousSectionFirst": "أكمل القسم السابق أولاً",
-    startRequest:"ابدا طلبك اﻻن"
+    startRequest:"ابدا طلبك اﻻن",
+    "livePreview": "الملخص",
+"dates": "التواريخ",
+"noMeals": "بدون وجبات",
+"budgetForTrip": "ميزانية الرحلة",
+"privacyReassurance": "ضمان الخصوصية",
 
   }
 }
