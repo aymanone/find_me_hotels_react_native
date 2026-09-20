@@ -1614,6 +1614,7 @@ const styles = StyleSheet.create({
   previewRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
+      gap: responsive(12),    
     paddingVertical: responsive(7),
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.backgroundGray,
@@ -1622,6 +1623,7 @@ const styles = StyleSheet.create({
     fontSize: responsive(13.5),
     color: theme.colors.textSecondary,
     width: responsive(110),
+     flexShrink: 0,         
   },
   previewValue: {
     fontSize: responsive(13.5),
