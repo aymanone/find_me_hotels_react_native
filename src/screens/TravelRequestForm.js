@@ -1623,6 +1623,7 @@ const styles = StyleSheet.create({
     fontSize: responsive(13.5),
     color: theme.colors.textSecondary,
     width: responsive(110),
+      textAlign: 'left', 
      flexShrink: 0,         
   },
   previewValue: {
@@ -1630,6 +1631,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: theme.colors.text,
     flex: 1,
+      textAlign: 'left', 
   },
   previewFooter: {
     flexDirection: 'row',
