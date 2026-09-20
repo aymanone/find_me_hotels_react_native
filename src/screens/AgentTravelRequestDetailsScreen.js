@@ -249,7 +249,7 @@ ${requestUrl}`;
     setHotelRooms(hotel.rooms.toString());
     setHotelRoomSize(hotel.room_size.toString());
     setHotelRating(hotel.rating);
-    setHotelCost(hotel.cost.toString());
+    setHotelCost(Math.round(hotel.cost).toString());
     setHotelNotes(hotel.notes || '');
     
     // Set meals
@@ -281,17 +281,29 @@ ${requestUrl}`;
     setEditingHotelIndex(-1);
     setAddHotelSectionCollapsed(true);
   };
-
+  const validateHotelForm = () => {
+  if (!hotelName.trim() || !hotelAddress.trim() || hotelRating === null) {
+    return t('AgentTravelRequestDetailsScreen', 'fillAllRequiredFields');
+  }
+  if (!/^\d+$/.test(hotelRoomSize.trim()) || parseInt(hotelRoomSize, 10) < 1) {
+  return t('AgentTravelRequestDetailsScreen', 'invalidRoomSize');
+}
+  if (!/^\d+$/.test(hotelRooms.trim()) || parseInt(hotelRooms, 10) < 1) {
+    return t('AgentTravelRequestDetailsScreen', 'invalidRooms');
+  }
+  
+  if (!/^\d+$/.test(hotelCost.trim()) || parseInt(hotelCost, 10) < 1) {
+    return t('AgentTravelRequestDetailsScreen', 'invalidCost');
+  }
+  return null;
+};
   const updateHotel = () => {
     // Validate inputs
-    if (!hotelName || !hotelAddress || !hotelRooms || !hotelRoomSize || 
-        hotelRating === null || !hotelCost) {
-      showAlert(
-        t('AgentTravelRequestDetailsScreen', 'missingInformation'), 
-        t('AgentTravelRequestDetailsScreen', 'fillAllRequiredFields')
-      );
-      return;
-    }
+   const validationError = validateHotelForm();
+if (validationError) {
+  showAlert(t('AgentTravelRequestDetailsScreen', 'missingInformation'), validationError);
+  return;
+}
     
     // Create meals array
     const meals = [];
@@ -301,14 +313,14 @@ ${requestUrl}`;
     
     // Create updated hotel object
     const updatedHotel = {
-      name: hotelName,
-      address: hotelAddress,
-      rooms: parseInt(hotelRooms),
-      room_size: parseInt(hotelRoomSize),
+      name: hotelName.trim(),
+      address: hotelAddress.trim(),
+      rooms: parseInt(hotelRooms,10),
+      room_size: parseInt(hotelRoomSize,10),
       rating: hotelRating,
       meals: meals,
       notes: hotelNotes,
-      cost: parseFloat(hotelCost)
+      cost: parseInt(hotelCost,10)
     };
     
     // Update hotels array
@@ -330,14 +342,11 @@ ${requestUrl}`;
     }
     
     // Validate inputs
-    if (!hotelName || !hotelAddress || !hotelRooms || !hotelRoomSize || 
-        hotelRating === null || !hotelCost) {
-      showAlert(
-        t('AgentTravelRequestDetailsScreen', 'missingInformation'), 
-        t('AgentTravelRequestDetailsScreen', 'fillAllRequiredFields')
-      );
-      return;
-    }
+     const validationError = validateHotelForm();
+if (validationError) {
+  showAlert(t('AgentTravelRequestDetailsScreen', 'missingInformation'), validationError);
+  return;
+}
     
     // Create meals array
     const meals = [];
@@ -347,14 +356,14 @@ ${requestUrl}`;
     
     // Create new hotel object
     const newHotel = {
-      name: hotelName,
-      address: hotelAddress,
-      rooms: parseInt(hotelRooms),
-      room_size: parseInt(hotelRoomSize),
+      name: hotelName.trim(),
+      address: hotelAddress.trim(),
+      rooms: parseInt(hotelRooms,10),
+      room_size: parseInt(hotelRoomSize,10),
       rating: hotelRating,
       meals: meals,
       notes: hotelNotes,
-      cost: parseFloat(hotelCost)
+      cost: parseInt(hotelCost,10)
     };
     
     // Add to hotels array

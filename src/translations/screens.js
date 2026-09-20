@@ -1579,6 +1579,9 @@ export const ScreenTranslations = {
     notesColon: 'Notes:',
     
     // Validations and Alerts
+    invalidRooms: 'Number of rooms must be a whole number of at least 1',
+invalidRoomSize: 'Room size must be a whole number of at least 1',
+invalidCost: 'Total cost must be a whole number greater than 0',
     limitReached: 'Limit Reached',
     limitReachedMessage: 'You can only add up to {maxHotels} hotels per offer',
     missingInformation: 'Missing Information',
@@ -1687,6 +1690,9 @@ export const ScreenTranslations = {
     notesColon: 'الملاحظات:',
     
     // Validations and Alerts
+    invalidRooms: 'يجب أن يكون عدد الغرف رقمًا صحيحًا لا يقل عن 1',
+invalidRoomSize: 'يجب أن تكون مساحة الغرفة رقمًا صحيحًا لا يقل عن 1',
+invalidCost: 'يجب أن تكون التكلفة الإجمالية رقمًا صحيحًا أكبر من 0',
     limitReached: 'تم الوصول للحد الأقصى',
     limitReachedMessage: 'يمكنك إضافة {maxHotels} فنادق كحد أقصى لكل عرض',
     missingInformation: 'معلومات مفقودة',
@@ -2457,7 +2463,8 @@ export const ScreenTranslations = {
     addressLabel: 'Address',
     websiteUrlLabel: 'Website URL',
     emailLabel: 'Email',
-    phoneLabel: 'Phone Number'
+    phoneLabel: 'Phone Number',
+    totalOffers: 'Total Offers',
   },
   ar: {
     title: 'ملف الشركة',
@@ -2523,7 +2530,8 @@ export const ScreenTranslations = {
     addressLabel: 'العنوان',
     websiteUrlLabel: 'رابط الموقع',
     emailLabel: 'البريد الإلكتروني',
-    phoneLabel: 'رقم الهاتف'
+    phoneLabel: 'رقم الهاتف',
+    totalOffers: 'إجمالي العروض',
   }
 }
   ,

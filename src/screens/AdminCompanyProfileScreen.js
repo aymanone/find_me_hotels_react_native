@@ -54,6 +54,7 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
   const [agentsSummary, setAgentsSummary] = useState([]);
   const [summaryStats, setSummaryStats] = useState({
     totalAgents: 0,
+     totalOffers: 0,  
     notViewedOffers: 0,
     viewedOffers: 0,
     rejectedOffers: 0,
@@ -173,6 +174,7 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
         setAgentsSummary([]);
         setSummaryStats({
           totalAgents: 0,
+           totalOffers: 0,  
           notViewedOffers: 0,
           viewedOffers: 0,
           rejectedOffers: 0,
@@ -196,6 +198,7 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
         // Calculate summary statistics
         const stats = {
           totalAgents: data.length,
+          totalOffers: 0,
           notViewedOffers: 0,
           viewedOffers: 0,
           rejectedOffers: 0,
@@ -203,6 +206,7 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
         };
         
         data.forEach(agent => {
+          stats.totalOffers += agent.total_offers || 0;
           stats.notViewedOffers += agent.not_viewed_offers || 0;
           stats.viewedOffers += agent.viewed_offers || 0;
           stats.rejectedOffers += agent.rejected_offers || 0;
@@ -413,7 +417,11 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
               <Text style={styles.statValue}>{summaryStats.totalAgents}</Text>
               <Text style={styles.statLabel}>{t('AdminCompanyProfileScreen', 'totalAgents')}</Text>
             </View>
-            
+            <View style={styles.statItem}>
+  <Icon name="document-text" type="ionicon" color={theme.colors.primary} size={theme.spacing.xxl} />
+  <Text style={styles.statValue}>{summaryStats.totalOffers}</Text>
+  <Text style={styles.statLabel}>{t('AdminCompanyProfileScreen', 'totalOffers')}</Text>
+</View>
             <View style={styles.statItem}>
               <Icon name="eye-off" type="ionicon" color={theme.colors.accent} size={theme.spacing.xxl} />
               <Text style={styles.statValue}>{summaryStats.notViewedOffers}</Text>
