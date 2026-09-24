@@ -55,26 +55,25 @@ Deno.serve(async (req) => {
     const hasHotelCount = numHotels !== null
     const hasPriceRange = minCost !== null && maxCost !== null
     // 4. Build bilingual subject and body
-    const subject = 'عرض جديد على طلبك! / New offer on your request!'
+    const subject = `Alghorfa | ${requestInfo.area_name}: رد جديد / New reply`
 
     const htmlContent = `
-      <div lang="ar" dir="rtl" style="font-family: Arial, sans-serif; text-align: right; margin-bottom: 24px;">
-        <p>مرحباً ${fullName}،</p>
-        <p>تم تقديم عرض جديد على طلب رحلتك إلى <strong>${location}</strong>.</p>
-        ${hasHotelCount ? `<p>عدد الفنادق المعروضة: <strong>${numHotels}</strong></p>` : ''}
-        ${hasPriceRange ? `<p>نطاق السعر: <strong>${minCost} - ${maxCost}</strong></p>` : ''}
-        <p><a href="${offerLink}" style="color: #1a73e8;">اضغط هنا لعرض التفاصيل</a></p>
-      </div>
-      <hr style="border: none; border-top: 1px solid #ddd;" />
-      <div lang="en" dir="ltr" style="font-family: Arial, sans-serif; text-align: left; margin-top: 24px;">
-        <p>Hi ${fullName},</p>
-        <p>A new offer has been made on your travel request to <strong>${location}</strong>.</p>
-        ${hasHotelCount ? `<p>Hotels offered: <strong>${numHotels}</strong></p>` : ''}
-        ${hasPriceRange ? `<p>Price range: <strong>${minCost} - ${maxCost}</strong></p>` : ''}
-        <p><a href="${offerLink}" style="color: #1a73e8;">Click here to view details</a></p>
-      </div>
-    `
-
+  <div lang="ar" dir="rtl" style="font-family: Arial, sans-serif; text-align: right; margin-bottom: 24px;">
+    <p>مرحباً،</p>
+    <p>وصلك رد جديد على طلب رحلتك إلى <strong>${location}</strong>.</p>
+    ${hasHotelCount ? `<p>عدد الفنادق المعروضة: <strong>${numHotels}</strong></p>` : ''}
+    ${hasPriceRange ? `<p>نطاق السعر: <strong>${minCost} - ${maxCost}</strong></p>` : ''}
+    <p><a href="${offerLink}" style="color: #1a73e8;">يمكنك الاطلاع على التفاصيل</a></p>
+  </div>
+  <hr style="border: none; border-top: 1px solid #ddd;" />
+  <div lang="en" dir="ltr" style="font-family: Arial, sans-serif; text-align: left; margin-top: 24px;">
+    <p>Hello,</p>
+    <p>You have a new reply on your trip request to <strong>${location}</strong>.</p>
+    ${hasHotelCount ? `<p>Hotels offered: <strong>${numHotels}</strong></p>` : ''}
+    ${hasPriceRange ? `<p>Price range: <strong>${minCost} - ${maxCost}</strong></p>` : ''}
+    <p><a href="${offerLink}" style="color: #1a73e8;">You can see the details</a></p>
+  </div>
+`
     // 5. Send via Brevo
     const res = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
