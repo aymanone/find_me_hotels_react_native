@@ -21,7 +21,7 @@ const waitForRoute = async (navigation, name) => {
 };
 
 export default function OfferRedirectScreen({ navigation, route }) {
-  const { offerId, token_hash } = route.params ?? {};
+  const { offerId, k } = route.params ?? {};
 
   useEffect(() => {
     const goToRole = async (role) => {
@@ -56,19 +56,24 @@ export default function OfferRedirectScreen({ navigation, route }) {
         if (!user) {
           await storage.setItem('pendingOffer', JSON.stringify({ offerId }));
 
-          if (token_hash) {
-            const { data, error } = await withTimeout(
-              supabase.auth.verifyOtp({ token_hash, type: 'email' })
+          if (k) {
+            const { data: redeemed, error: redeemError } = await withTimeout(
+              supabase.functions.invoke('offer-link-redeem', { body: { offerId, k } })
             );
-            if (!error) {
-              const ok = await goToRole(data?.user?.app_metadata?.role);
-              if (ok) return;
-              navigation.replace('Signin');
-              return;
+            if (!redeemError && redeemed?.ok) {
+              const { data, error } = await withTimeout(
+                supabase.auth.verifyOtp({ token_hash: redeemed.token_hash, type: 'email' })
+              );
+              if (!error) {
+                const ok = await goToRole(data?.user?.app_metadata?.role);
+                if (ok) return;
+                navigation.replace('Signin');
+                return;
+              }
+              console.log('verifyOtp failed:', error.message);
             }
-            console.log('verifyOtp failed:', error.message);
           }
-          navigation.replace('Signin'); // expired, used, or no token
+          navigation.replace('Signin'); // expired, wrong, or no token
           return;
         }
 
@@ -81,7 +86,7 @@ export default function OfferRedirectScreen({ navigation, route }) {
       }
     };
     run();
-  }, [navigation, offerId, token_hash]);
+  }, [navigation, offerId, k]);
 
   return (
     <View style={styles.container}>

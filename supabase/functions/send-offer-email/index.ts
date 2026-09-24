@@ -1,4 +1,22 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+const LINK_DAYS = 7
+const enc = new TextEncoder()
+const b64u = (buf: ArrayBuffer | Uint8Array) =>
+  btoa(String.fromCharCode(...new Uint8Array(buf)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+
+const signToken = async (p: { o: string; u: string; e: number }) => {
+  const secret = Deno.env.get('OFFER_LINK_SECRET')
+  if (!secret || secret.length < 32) throw new Error('OFFER_LINK_SECRET missing or too short')
+
+  const key = await crypto.subtle.importKey(
+    'raw', enc.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+  )
+  const body = b64u(enc.encode(JSON.stringify(p)))
+  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(body))
+  return `${body}.${b64u(sig)}`
+}
 
 Deno.serve(async (req) => {
   try {
@@ -51,10 +69,21 @@ Deno.serve(async (req) => {
   email,
 })
 const tokenHash = linkData?.properties?.hashed_token
-
-const offerLink = !linkError && tokenHash
-  ? `https://alghorfa.net/offer/${offer.id}?token_hash=${encodeURIComponent(tokenHash)}`
-  : `https://alghorfa.net/offer/${offer.id}`
+    let offerLink = `https://alghorfa.net/offer/${offer.id}`
+    try {
+      const token = await signToken({
+        o: String(offer.id),
+        u: offer.request_creator,
+        e: Date.now() + LINK_DAYS * 24 * 3600 * 1000,
+      })
+      offerLink = `${offerLink}?k=${token}`
+    } catch (e) {
+      // The plain link still works: signin, then the offer. Log the message only.
+      console.error('Could not sign offer link:', (e as Error).message)
+    }
+//const offerLink = !linkError && tokenHash
+//  ? `https://alghorfa.net/offer/${offer.id}?token_hash=${encodeURIComponent(tokenHash)}`
+ // : `https://alghorfa.net/offer/${offer.id}`
    // const offerLink = `https://alghorfa.net/client/offer/${offer.id}`
         // Offer summary fields
     const numHotels = offer.num_of_hotels ?? null
