@@ -8,6 +8,8 @@ import { Icon, Button } from 'react-native-elements';
 import { CommonActions } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
 import {  useTranslation } from '../config/localization';
+import storage from '../utils/storage';
+import { StackActions } from '@react-navigation/native';
 // Import screens
 import SignupScreen from '../screens/SignupScreen';
 import SigninScreen from '../screens/SigninScreen';
@@ -36,6 +38,7 @@ import AdminAdminProfileScreen from '../screens/AdminAdminProfileScreen';
 import ClientUpdatedRequestsScreen from '../screens/ClientUpdatedRequestsScreen';
 import LanguageSettingsScreen from '../screens/LanguageSettingsScreen';
 import TravelRequestRedirectScreen from '../screens/TravelRequestRedirectScreen';
+import OfferRedirectScreen from '../screens/OfferRedirectScreen';
 import { signOut } from '../utils/auth';
 import { 
   setupClientChannels, 
@@ -772,6 +775,7 @@ export default function AppNavigator({navigationRef}) {
       ResetPassword: 'reset-password',
       ContactUs: 'contact-us', 
       TravelRequestRedirect: 'travel-request/:id',
+      OfferRedirect: 'offer/:offerId',
       PublicTravelRequest: 'new-travel-request', 
 
       // Client routes
@@ -888,7 +892,29 @@ export default function AppNavigator({navigationRef}) {
       });
       channelsRef.current = [];
     }
+     useEffect(() => {
+  if (isAuthLoading || !userType) return;
+  (async () => {
+    const raw = await storage.getItem('pendingOffer');
+    if (!raw) return;
+    const { offerId } = JSON.parse(raw);
+    const nav = navigationRef.current;
+    if (!nav?.isReady()) return;
 
+    if (userType === 'client') {
+      nav.dispatch(StackActions.replace('ClientApp', {
+        screen: 'Home',
+        params: { screen: 'ClientOfferDetails', params: { offerId } },
+      }));
+    } else if (userType === 'agent') {
+      nav.dispatch(StackActions.replace('AgentApp', {
+        screen: 'Home',
+        params: { screen: 'AgentTabs', params: { screen: 'MyOffers' } },
+      }));
+    }
+    await storage.removeItem('pendingOffer');
+  })();
+}, [userType, isAuthLoading]);
     // Create a sign out handler that uses the existing signOut function
     const handleSignOut = async () => {
       try {
@@ -1010,6 +1036,7 @@ export default function AppNavigator({navigationRef}) {
       />
     );
   }, [userType]);
+
   if (isAuthLoading) {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -1036,6 +1063,10 @@ export default function AppNavigator({navigationRef}) {
         component={TravelRequestRedirectScreen}
         options={{ headerShown: false }}
       />
+      <Stack.Screen
+       name="OfferRedirect" 
+      component={OfferRedirectScreen}
+       options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

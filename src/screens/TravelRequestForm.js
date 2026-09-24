@@ -162,6 +162,15 @@ export default function TravelRequestForm({ navigation, route }) {
   checkAuth();
 }, []);
 useEffect(() => {
+  (async () => {
+    const raw = await storage.getItem('pendingOffer');
+    if (!raw) return;
+    const { offerId } = JSON.parse(raw);
+    await storage.removeItem('pendingOffer');
+    navigation.navigate('ClientOfferDetails', { offerId });
+  })();
+}, []);
+useEffect(() => {
   // Calculate all validations once
   const tripComplete = formData.requestCountry && 
                        formData.requestArea && 

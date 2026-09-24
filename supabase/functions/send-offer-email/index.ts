@@ -46,7 +46,16 @@ Deno.serve(async (req) => {
     const email = userData.user.email
     const fullName = `${client.first_name} ${client.second_name}`.trim()
     const location = `${requestInfo.area_name}, ${requestInfo.country_name}`
-    const offerLink = `https://alghorfa.net/client/offer/${offer.id}`
+    const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+  type: 'magiclink',
+  email,
+})
+const tokenHash = linkData?.properties?.hashed_token
+
+const offerLink = !linkError && tokenHash
+  ? `https://alghorfa.net/offer/${offer.id}?token_hash=${encodeURIComponent(tokenHash)}`
+  : `https://alghorfa.net/offer/${offer.id}`
+   // const offerLink = `https://alghorfa.net/client/offer/${offer.id}`
         // Offer summary fields
     const numHotels = offer.num_of_hotels ?? null
     const minCost = offer.min_cost ?? null
