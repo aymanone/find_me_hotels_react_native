@@ -31,10 +31,25 @@ export default function OfferRedirectScreen({ navigation, route }) {
       if (role === 'client') {
         name = 'ClientApp';
         params = { screen: 'Home', params: { screen: 'ClientOfferDetails', params: { offerId } } };
-      } else if (role === 'agent') {
-        name = 'AgentApp';
-        params = { screen: 'Home', params: { screen: 'AgentTabs', params: { screen: 'MyOffers' } } };
-      } else if (role === 'company') {
+      }  else if (role === 'agent') {
+  const { data: offerRow } = await supabase
+    .from('offers')
+    .select('request_id')
+    .eq('id', offerId)
+    .single();
+
+  name = 'AgentApp';
+  params = offerRow?.request_id
+    ? {
+        screen: 'Home',
+        params: {
+          screen: 'AgentTravelRequestDetails',
+          params: { requestId: offerRow.request_id, offerId },
+        },
+      }
+    : { screen: 'Home' }; // couldn't find the request; land on the agent's home instead
+}
+       else if (role === 'company') {
         name = 'CompanyApp';
       } else if (role === 'admin') {
         name = 'AdminApp';
