@@ -8,6 +8,7 @@ import { MAXIMUM_OFFERS } from '../config/CONSTANTS';
 import { useNavigation } from '@react-navigation/native';
 import { showAlert } from "../components/ShowAlert";
 import { useTranslation } from '../config/localization';
+import storage from '../utils/storage';
 import { theme, commonStyles, screenSize, responsive ,breakpoints} from '../styles/theme';
 // Function to calculate number of columns based on current screen width
 const getNumColumns = () => {
@@ -63,7 +64,15 @@ const AgentSearchTravelRequestsScreen = () => {
     { label: t('AgentSearchTravelRequestsScreen', 'startDate'), value: 'start_date' },
     { label: t('AgentSearchTravelRequestsScreen', 'createdAt'), value: 'created_at' },
   ];
-
+  useEffect(() => {
+  (async () => {
+    const raw = await storage.getItem('pendingTravelRequest');
+    if (!raw) return;
+    const { id } = JSON.parse(raw);
+    await storage.removeItem('pendingTravelRequest');
+    navigation.navigate('AgentTravelRequestDetails', { requestId: id });
+  })();
+}, []);
   useEffect(() => {
     checkUserIsAgent();
     fetchCountries();

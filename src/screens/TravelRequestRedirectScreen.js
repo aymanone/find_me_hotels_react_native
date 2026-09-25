@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { getCurrentUser, getUserRole } from '../utils/auth';
+import storage from '../utils/storage';
 import { theme, commonStyles, responsive, screenSize } from '../styles/theme';
 export default function TravelRequestRedirect({ navigation, route }) {
   const [loading, setLoading] = useState(true);
-  const { id } = route.params;
+  const { id } = route.params?? {};
 
   useEffect(() => {
     const handleRedirect = async () => {
@@ -16,6 +17,7 @@ export default function TravelRequestRedirect({ navigation, route }) {
         
         // If not authenticated, redirect to signup
         if (!user) {
+          await storage.setItem('pendingTravelRequest', JSON.stringify({ id }));
           navigation.replace('Signin');
           return;
         }
