@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
     // 1. Get country/area name from the view, keyed by request_id
     const { data: requestInfo, error: requestError } = await supabase
       .from('travel_requests_agent')
-      .select('country_name, area_name')
+      .select('country_name, area_name, offers_number')
       .eq('id', offer.request_id)
       .single()
 
@@ -64,6 +64,7 @@ Deno.serve(async (req) => {
     const email = userData.user.email
     const fullName = `${client.first_name} ${client.second_name}`.trim()
     const location = `${requestInfo.area_name}, ${requestInfo.country_name}`
+    const totalOffers = requestInfo.offers_number
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
   type: 'magiclink',
   email,
@@ -99,17 +100,23 @@ const tokenHash = linkData?.properties?.hashed_token
   <div lang="ar" dir="rtl" style="font-family: Arial, sans-serif; text-align: right; margin-bottom: 24px;">
     <p>مرحباً،</p>
     <p>وصلك رد جديد على طلب رحلتك إلى <strong>${location}</strong>.</p>
+    <p>لديك الآن <strong>${totalOffers}</strong> ردود على طلبك.</p>
     ${hasHotelCount ? `<p>عدد الفنادق المعروضة: <strong>${numHotels}</strong></p>` : ''}
     ${hasPriceRange ? `<p>نطاق السعر: <strong>${minCost} - ${maxCost}</strong></p>` : ''}
-    <p><a href="${offerLink}" style="color: #1a73e8;">يمكنك الاطلاع على التفاصيل</a></p>
+    <p style="text-align: center; margin-top: 20px;">
+  <a href="${offerLink}" style="background-color: #1a73e8; color: #ffffff; padding: 12px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">يمكنك رؤية التفاصيل</a>
+</p>
   </div>
   <hr style="border: none; border-top: 1px solid #ddd;" />
   <div lang="en" dir="ltr" style="font-family: Arial, sans-serif; text-align: left; margin-top: 24px;">
     <p>Hello,</p>
     <p>You have a new reply on your trip request to <strong>${location}</strong>.</p>
+    <p>You now have <strong>${totalOffers}</strong> replies on your trip.</p>
     ${hasHotelCount ? `<p>Hotels offered: <strong>${numHotels}</strong></p>` : ''}
     ${hasPriceRange ? `<p>Price range: <strong>${minCost} - ${maxCost}</strong></p>` : ''}
-    <p><a href="${offerLink}" style="color: #1a73e8;">You can see the details</a></p>
+    <p style="text-align: center; margin-top: 20px;">
+  <a href="${offerLink}" style="background-color: #1a73e8; color: #ffffff; padding: 12px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">You can see the details</a>
+</p>
   </div>
 `
     // 5. Send via Brevo
