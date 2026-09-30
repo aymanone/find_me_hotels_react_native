@@ -861,7 +861,29 @@ export default function AppNavigator({navigationRef}) {
   },
 
 };
+      useEffect(() => {
+  if (isAuthLoading || !userType) return;
+  (async () => {
+    const raw = await storage.getItem('pendingOffer');
+    if (!raw) return;
+    const { offerId } = JSON.parse(raw);
+    const nav = navigationRef.current;
+    if (!nav?.isReady()) return;
 
+    if (userType === 'client') {
+      nav.dispatch(StackActions.replace('ClientApp', {
+        screen: 'Home',
+        params: { screen: 'ClientOfferDetails', params: { offerId } },
+      }));
+    } else if (userType === 'agent') {
+      nav.dispatch(StackActions.replace('AgentApp', {
+        screen: 'Home',
+        params: { screen: 'AgentTabs', params: { screen: 'AgentTravelRequestDetails' } },
+      }));
+    }
+    await storage.removeItem('pendingOffer');
+  })();
+}, [userType, isAuthLoading]);
   // Handle app state changes (foreground, background)
   useEffect(() => {
     const subscription = AppState.addEventListener('change', nextAppState => {
@@ -892,29 +914,7 @@ export default function AppNavigator({navigationRef}) {
       });
       channelsRef.current = [];
     }
-     useEffect(() => {
-  if (isAuthLoading || !userType) return;
-  (async () => {
-    const raw = await storage.getItem('pendingOffer');
-    if (!raw) return;
-    const { offerId } = JSON.parse(raw);
-    const nav = navigationRef.current;
-    if (!nav?.isReady()) return;
-
-    if (userType === 'client') {
-      nav.dispatch(StackActions.replace('ClientApp', {
-        screen: 'Home',
-        params: { screen: 'ClientOfferDetails', params: { offerId } },
-      }));
-    } else if (userType === 'agent') {
-      nav.dispatch(StackActions.replace('AgentApp', {
-        screen: 'Home',
-        params: { screen: 'AgentTabs', params: { screen: 'MyOffers' } },
-      }));
-    }
-    await storage.removeItem('pendingOffer');
-  })();
-}, [userType, isAuthLoading]);
+  
     // Create a sign out handler that uses the existing signOut function
     const handleSignOut = async () => {
       try {
