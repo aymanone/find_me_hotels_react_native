@@ -44,13 +44,23 @@ Deno.serve(async (req) => {
 
     const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
     const { data: u } = await admin.auth.admin.getUserById(p.u)
-    if (!u?.user?.email) return json({ ok: false }, 401)
+    if (!u?.user) return json({ ok: false }, 401)
 
-    // Fresh Supabase login, used by the app within seconds
-    const { data, error } = await admin.auth.admin.generateLink({ type: 'magiclink', email: u.user.email })
-    if (error || !data?.properties?.hashed_token) return json({ ok: false }, 500)
+    if (u.user.email) {
+      // Fresh Supabase login, used by the app within seconds
+      const { data, error } = await admin.auth.admin.generateLink({ type: 'magiclink', email: u.user.email })
+      if (error || !data?.properties?.hashed_token) return json({ ok: false }, 500)
+      return json({ ok: true, token_hash: data.properties.hashed_token })
+    }
 
-    return json({ ok: true, token_hash: data.properties.hashed_token })
+    if (u.user.phone) {
+      // No phone equivalent to a magic link exists in Supabase.
+      // The app signs this client in with a password instead, prefilled with this number.
+       const phone = u.user.phone.startsWith('+') ? u.user.phone : `+${u.user.phone}`
+      return json({ ok: true, phone: phone })
+    }
+
+    return json({ ok: false }, 401)
   } catch (e) {
     console.error('redeem error:', (e as Error).message)
     return json({ ok: false }, 500)
