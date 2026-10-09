@@ -66,8 +66,11 @@ Deno.serve(async (req) => {
 
     const requestInfo = reqRes.data
     const client = clientRes.data
-    const email: string | null = userRes.data?.user?.email ?? null
-
+    //const email: string | null = userRes.data?.user?.email ?? null
+    // Placeholder addresses are digits only: 201012345678@alghorfa.net
+   const rawEmail: string | null = userRes.data?.user?.email ?? null
+   const placeholder = `${offer.request_creator}@alghorfa.net`
+   const email: string | null = rawEmail && rawEmail.toLowerCase() !== placeholder ? rawEmail : null
     if (reqRes.error || !requestInfo) {
       console.error('Travel request not found', reqRes.error?.message)
       return new Response('Travel request not found', { status: 400 })

@@ -46,12 +46,28 @@ Deno.serve(async (req) => {
     const { data: u } = await admin.auth.admin.getUserById(p.u)
     if (!u?.user) return json({ ok: false }, 401)
 
-    if (u.user.email) {
-      // Fresh Supabase login, used by the app within seconds
-      const { data, error } = await admin.auth.admin.generateLink({ type: 'magiclink', email: u.user.email })
-      if (error || !data?.properties?.hashed_token) return json({ ok: false }, 500)
-      return json({ ok: true, token_hash: data.properties.hashed_token })
-    }
+   let email = u.user.email
+
+// Phone-only user: give them a placeholder email so they can get a magic link
+if (!email && u.user.phone) {
+  const candidate = `${u.user.id}@alghorfa.net`.toLowerCase()
+  const { error: upErr } = await admin.auth.admin.updateUserById(u.user.id, {
+    email: candidate,
+    email_confirm: true,
+  })
+  if (upErr) {
+    console.error('placeholder email:', upErr.message) // falls through to the phone branch below
+  } else {
+    email = candidate
+  }
+}
+
+if (email) {
+  // Fresh Supabase login, used by the app within seconds
+  const { data, error } = await admin.auth.admin.generateLink({ type: 'magiclink', email })
+  if (error || !data?.properties?.hashed_token) return json({ ok: false }, 500)
+  return json({ ok: true, token_hash: data.properties.hashed_token })
+}
 
     if (u.user.phone) {
       // No phone equivalent to a magic link exists in Supabase.
