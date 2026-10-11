@@ -14,6 +14,13 @@ export default function ContactUsScreen({ navigation }) {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const WHATSAPP_NUMBER = '+201147189170'; 
+  const PYTHONET_URL = 'https://www.facebook.com/share/1ByeeaNvRh/';
+
+const handlePythonetLink = () => {
+  Linking.openURL(PYTHONET_URL).catch(() => {
+    showAlert(t('ContactUsScreen', 'linkError') || 'Could not open link');
+  });
+};
   const handleSubmit = async () => {
     // Validation
     if (!name.trim()) {
@@ -55,7 +62,7 @@ export default function ContactUsScreen({ navigation }) {
         setEmail('');
         setMessage('');
       } else {
-        showAlert(t('ContactUsScreen', 'emailClientError') || 'Could not open email client. Please contact us directly at ayman@mail.com');
+        showAlert(t('ContactUsScreen', 'emailClientError') || 'Could not open email client. Please contact us directly at feedback@alghorfa.net');
       }
     } catch (error) {
       console.error('Contact form error:', error);
@@ -185,6 +192,14 @@ export default function ContactUsScreen({ navigation }) {
     titleStyle={styles.navigationButtonText}
   />
 </View>
+<View style={styles.poweredByContainer}>
+  <Text style={styles.poweredByText}>
+    {t('ContactUsScreen', 'poweredBy') || 'Powered by'}{' '}
+    <Text style={styles.poweredByLink} onPress={handlePythonetLink}>
+      {t('ContactUsScreen', 'pythonetName') || 'Pythonet for Information Technology'}
+    </Text>
+  </Text>
+</View>
     </ScrollView>
   );
 }
@@ -285,6 +300,20 @@ whatsappButtonText: {
   color: '#fff',
   marginLeft: theme.spacing.sm,
   fontSize: theme.responsiveTypography.fontSize.md,
+  fontWeight: theme.typography.fontWeight.bold,
+},
+poweredByContainer: {
+  marginTop: theme.spacing.xxl,
+  marginBottom: theme.spacing.xl,
+  alignItems: 'center',
+},
+poweredByText: {
+  fontSize: theme.responsiveTypography.fontSize.sm,
+  color: theme.colors.textSecondary,
+  textAlign: 'center',
+},
+poweredByLink: {
+  color: theme.colors.primary,
   fontWeight: theme.typography.fontWeight.bold,
 },
 });

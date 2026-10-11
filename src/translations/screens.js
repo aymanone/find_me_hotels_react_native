@@ -2374,6 +2374,10 @@ invalidCost: 'يجب أن تكون التكلفة الإجمالية رقمًا 
      "contactWhatsApp": "Contact us on WhatsApp",
   "whatsappMessage": "Hello, I would like to contact you regarding Alghorfa services.",
   "whatsappError": "Could not open WhatsApp. Please try again.",
+  poweredBy: 'Powered by',
+pythonetName: 'Pythonet for Information Technology',
+linkError: 'Could not open link',
+
   },
   ar: {
     title: "اتصل بنا",
@@ -2396,6 +2400,9 @@ invalidCost: 'يجب أن تكون التكلفة الإجمالية رقمًا 
     "contactWhatsApp": "تواصل معنا عبر الواتساب",
   "whatsappMessage": "مرحباً، أود التواصل معكم بخصوص خدمات الغرفة.",
   "whatsappError": "تعذر فتح الواتساب. يرجى المحاولة مرة أخرى.",
+  poweredBy: 'بدعم من',
+pythonetName: 'بايثونت لتكنولوجيا المعلومات',
+linkError: 'تعذر فتح الرابط',
   }
 },
  AdminCompanyProfileScreen: {
