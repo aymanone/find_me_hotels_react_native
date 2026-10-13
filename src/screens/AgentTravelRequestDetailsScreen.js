@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   View, 
   StyleSheet, 
   ScrollView, 
   ActivityIndicator, 
   TouchableOpacity, 
-  TextInput,
   KeyboardAvoidingView,
   Platform,
   Share,
@@ -15,9 +14,7 @@ import {
   Button, 
   Icon, 
   Card, 
-  Divider, 
-  Input, 
-  CheckBox 
+  Input 
 } from 'react-native-elements';
 import { Dropdown } from 'react-native-element-dropdown';
 import supabase from '../config/supabase';
@@ -59,6 +56,9 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
   const [hotelsSectionCollapsed,setHotelsSectionCollapsed]= useState(false);
   const [offerSummaryCollapsed, setOfferSummaryCollapsed] = useState(false);
   const [editingHotelIndex, setEditingHotelIndex] = useState(-1); // Track which hotel is being edited
+  const [submitting, setSubmitting] = useState(false);
+  const scrollRef = useRef(null);
+  const formY = useRef(0);
   
   // Rating dropdown data
   const ratingData = Array.from({ length: 8 }, (_, i) => ({
@@ -262,6 +262,7 @@ ${requestUrl}`;
     
     setEditingHotelIndex(index);
     setAddHotelSectionCollapsed(false);
+    scrollRef.current?.scrollTo({ y: formY.current, animated: true });
   };
 
   const cancelEditingHotel = () => {
@@ -382,7 +383,7 @@ if (validationError) {
       lunch: false,
       dinner: false
     });
-    setAddHotelSectionCollapsed(true); // Collapse the add hotel section
+      setAddHotelSectionCollapsed(true);
   };
 
   const deleteHotel = (hotelIndex) => {
@@ -408,6 +409,7 @@ if (validationError) {
     }
     
     try {
+      setSubmitting(true);
       // Calculate min and max cost
       const costs = offerHotels.map(hotel => hotel.cost);
       const minCost = Math.min(...costs);
@@ -501,6 +503,8 @@ if (validationError) {
         t('AgentTravelRequestDetailsScreen', 'error'), 
         t('AgentTravelRequestDetailsScreen', 'failedToSubmitOffer')
       );
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -525,6 +529,15 @@ if (validationError) {
   const userCanMakeOffer = user?.app_metadata?.permitted_to_work !== false && 
                           (isEditMode || request?.offers_number < MAXIMUM_OFFERS)
                           && (request && inDateReq(request));
+
+  // Shared props so every text field looks and aligns the same
+  const inputProps = {
+    containerStyle: styles.fieldContainer,
+    inputContainerStyle: styles.fieldBox,
+    inputStyle: commonStyles.inputStyle,
+    labelStyle: styles.fieldLabel,
+    renderErrorMessage: false,
+  };
   
 
   return (
@@ -534,7 +547,9 @@ if (validationError) {
       keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 40}
     >
       <ScrollView
+        ref={scrollRef}
         style={styles.container}
+        contentContainerStyle={{ paddingBottom: 50 }}
         keyboardShouldPersistTaps="handled"
       >
         {/* Request Section */}
@@ -617,7 +632,7 @@ if (validationError) {
                   <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'hotelInformation')}</Text>
                   <Text>{t('AgentTravelRequestDetailsScreen', 'rating')} {request.hotel_rating} {t('AgentTravelRequestDetailsScreen', 'stars')}</Text>
                   <Text>{t('AgentTravelRequestDetailsScreen', 'rooms')} {request.rooms} {t('AgentTravelRequestDetailsScreen', 'roomsUnit')}</Text>
-                  <Text>{t('AgentTravelRequestDetailsScreen', 'meals')} {request.meals?.join(', ') || t('AgentTravelRequestDetailsScreen', 'none')}</Text>
+                  <Text>{t('AgentTravelRequestDetailsScreen', 'meals')} {request.meals?.length ? request.meals.map((m) => t('AgentTravelRequestDetailsScreen', m)).join(', ') : t('AgentTravelRequestDetailsScreen', 'none')}</Text>
                 </View>
               </View>
               
@@ -664,216 +679,95 @@ if (validationError) {
           </Card>
         )}
         
-       {/* Offers Info Section */}
-{offerHotels.length > 0 && (
-  <Card containerStyle={styles.card}>
-    <TouchableOpacity 
-      style={styles.sectionHeader} 
-      onPress={toggleOfferSummarySection}
-    >
-      <Text style={styles.sectionTitle}>{t('AgentTravelRequestDetailsScreen', 'offerSummary')}</Text>
-      <Icon 
-        name={offerSummaryCollapsed ? 'chevron-down' : 'chevron-up'} 
-        type="ionicon" 
-         size={theme.responsiveComponents.icon.medium}
-         color={theme.colors.primary}
-      />
-    </TouchableOpacity>
-    
-    {!offerSummaryCollapsed && (
-      <View style={styles.sectionContent}>
-        {/* Offer Dates */}
-        {existingOffer && (
-          <View style={styles.infoRow}>
-            <View style={styles.infoColumn}>
-              <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'startDate')}</Text>
-              <Text>{formatDate(existingOffer.start_date)}</Text>
-            </View>
-            <View style={styles.infoColumn}>
-              <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'endDate')}</Text>
-              <Text>{formatDate(existingOffer.end_date)}</Text>
-            </View>
-          </View>
-        )}
-        
-        <View style={styles.infoRow}>
-          <View style={styles.infoColumn}>
-            <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'minCost')}</Text>
-            <Text>${minCost}</Text>
-          </View>
-          <View style={styles.infoColumn}>
-            <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'maxCost')}</Text>
-            <Text>${maxCost}</Text>
-          </View>
-        </View>
-        
-        <View style={styles.infoRow}>
-          <View style={styles.infoColumn}>
-            <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'minRating')}</Text>
-            <Text>{minRating} {t('AgentTravelRequestDetailsScreen', 'stars')}</Text>
-          </View>
-          <View style={styles.infoColumn}>
-            <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'maxRating')}</Text>
-            <Text>{maxRating} {t('AgentTravelRequestDetailsScreen', 'stars')}</Text>
-          </View>
-        </View>
-        
-        <View style={styles.infoRow}>
-          <View style={styles.infoColumn}>
-            <Text style={styles.label}>{t('AgentTravelRequestDetailsScreen', 'numberOfHotels')}</Text>
-            <Text>{offerHotels.length}</Text>
-          </View>
-          <View style={styles.infoColumn}>
-            {userCanMakeOffer && (
-              <Button
-                title={isEditMode ? t('AgentTravelRequestDetailsScreen', 'updateOffer') : t('AgentTravelRequestDetailsScreen', 'makeOffer')}
-                onPress={makeOffer}
-                buttonStyle={styles.makeOfferButton}
-              />
-            )}
-          </View>
-        </View>
-      </View>
-    )}
-  </Card>
-)}
-
-        {/* Add/Edit Hotel Section - Collapsible */}
-        {userCanMakeOffer && (
+        {/* Offer Summary Section */}
+        {offerHotels.length > 0 && (
           <Card containerStyle={styles.card}>
             <TouchableOpacity 
               style={styles.sectionHeader} 
-              onPress={() => setAddHotelSectionCollapsed(!addHotelSectionCollapsed)}
+              onPress={toggleOfferSummarySection}
             >
-              <Text style={styles.sectionTitle}>
-                {editingHotelIndex >= 0 ? t('AgentTravelRequestDetailsScreen', 'editHotel') : t('AgentTravelRequestDetailsScreen', 'addHotelToOffer')}
-              </Text>
+              <Text style={styles.sectionTitle}>{t('AgentTravelRequestDetailsScreen', 'offerSummary')}</Text>
               <Icon 
-                name={addHotelSectionCollapsed ? 'chevron-down' : 'chevron-up'} 
+                name={offerSummaryCollapsed ? 'chevron-down' : 'chevron-up'} 
                 type="ionicon" 
-                 size={theme.responsiveComponents.icon.medium}
-                 color={theme.colors.primary}
+                size={theme.responsiveComponents.icon.medium}
+                color={theme.colors.primary}
               />
             </TouchableOpacity>
-            
-            {!addHotelSectionCollapsed && (
+
+            {offerSummaryCollapsed ? (
+              <Text style={styles.summaryOneLiner}>
+                {t('AgentTravelRequestDetailsScreen', 'numberOfHotels')}: {offerHotels.length} · ${minCost} – ${maxCost}
+              </Text>
+            ) : (
               <View style={styles.sectionContent}>
-                {/* Hotel Form */}
-                <Input
-                  label={t('AgentTravelRequestDetailsScreen', 'hotelName')}
-                  value={hotelName}
-                  onChangeText={setHotelName}
-                />
-                <Input
-                  label={t('AgentTravelRequestDetailsScreen', 'hotelAddress')}
-                  value={hotelAddress}
-                  onChangeText={setHotelAddress}
-                />
-                <Input
-                  label={t('AgentTravelRequestDetailsScreen', 'numberOfRooms')}
-                  value={hotelRooms}
-                  onChangeText={setHotelRooms}
-                  keyboardType="numeric"
-                />
-                <Input
-                  label={t('AgentTravelRequestDetailsScreen', 'roomSizeInMeter')}
-                  value={hotelRoomSize}
-                  onChangeText={setHotelRoomSize}
-                  keyboardType="numeric"
-                />
-                
-                {/* Rating and Cost in same row */}
-                <View style={styles.row}>
-                  <View style={styles.halfWidth}>
-                    <Text style={styles.dropdownLabel}>{t('AgentTravelRequestDetailsScreen', 'hotelRating')}</Text>
-                    <Dropdown
-                      style={styles.dropdown}
-                      data={ratingData}
-                      labelField="label"
-                      valueField="value"
-                      value={hotelRating}
-                      onChange={item => setHotelRating(item.value)}
-                      placeholder={t('AgentTravelRequestDetailsScreen', 'selectRating')}
+                               {existingOffer && (
+                  <View style={styles.summaryDates}>
+                    <Icon
+                      name="calendar-outline"
+                      type="ionicon"
+                      size={theme.responsiveComponents.icon.small}
+                      color={theme.colors.primary}
                     />
+                    <Text style={styles.summaryDatesText}>
+                      {formatDate(existingOffer.start_date)} – {formatDate(existingOffer.end_date)}
+                    </Text>
                   </View>
-                  <View style={styles.halfWidth}>
-                    <Text style={styles.dropdownLabel}>{t('AgentTravelRequestDetailsScreen', 'totalCostInDollars')}</Text>
-                    <Input
-                      value={hotelCost}
-                      onChangeText={setHotelCost}
-                      keyboardType="numeric"
-                      containerStyle={styles.inputContainer}
-                      inputContainerStyle={styles.inputInnerContainer}
-                    />
+                )}
+
+                <View style={styles.statsRow}>
+                  <View style={styles.statTile}>
+                    <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>${minCost}</Text>
+                    <Text style={styles.statLabel}>{t('AgentTravelRequestDetailsScreen', 'minCost')}</Text>
                   </View>
-                </View>
-                
-                <Input
-                  label={t('AgentTravelRequestDetailsScreen', 'notesLabel')}
-                  value={hotelNotes}
-                  onChangeText={setHotelNotes}
-                  multiline
-                  numberOfLines={4}
-                  textAlignVertical="top"
-                  inputContainerStyle={styles.notesInputContainer}
-                  inputStyle={styles.notesInput}
-                />
-                
-                {/* Meals in one row */}
-                <Text style={styles.mealsLabel}>{t('AgentTravelRequestDetailsScreen', 'mealsLabel')}</Text>
-                <View style={styles.mealsContainer}>
-                  <CheckBox
-                    title={t('AgentTravelRequestDetailsScreen', 'breakfast')}
-                    checked={selectedMeals.breakfast}
-                    onPress={() => setSelectedMeals({ ...selectedMeals, breakfast: !selectedMeals.breakfast })}
-                    containerStyle={styles.mealCheckbox}
-                  />
-                  <CheckBox
-                    title={t('AgentTravelRequestDetailsScreen', 'lunch')}
-                    checked={selectedMeals.lunch}
-                    onPress={() => setSelectedMeals({ ...selectedMeals, lunch: !selectedMeals.lunch })}
-                    containerStyle={styles.mealCheckbox}
-                  />
-                  <CheckBox
-                    title={t('AgentTravelRequestDetailsScreen', 'dinner')}
-                    checked={selectedMeals.dinner}
-                    onPress={() => setSelectedMeals({ ...selectedMeals, dinner: !selectedMeals.dinner })}
-                    containerStyle={styles.mealCheckbox}
-                  />
-                </View>
-                
-                {/* Action Buttons */}
-                <View style={styles.buttonRow}>
-                  {editingHotelIndex >= 0 ? (
-                    <>
-                      <Button
-                        title={t('AgentTravelRequestDetailsScreen', 'updateHotel')}
-                        onPress={updateHotel}
-                        buttonStyle={[styles.addButton, { backgroundColor: theme.colors.primary }]}
-                        containerStyle={styles.buttonContainer}
-                      />
-                      <Button
-                        title={t('AgentTravelRequestDetailsScreen', 'cancel')}
-                        onPress={cancelEditingHotel}
-                        buttonStyle={[styles.addButton, { backgroundColor: theme.colors.textSecondary  }]}
-                        containerStyle={styles.buttonContainer}
-                      />
-                    </>
-                  ) : (
-                    <Button
-                      title={t('AgentTravelRequestDetailsScreen', 'addHotel')}
-                      onPress={addHotel}
-                      buttonStyle={styles.addButton}
-                      containerStyle={styles.buttonContainer}
-                    />
-                  )}
+                  <View style={styles.statTile}>
+                    <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>${maxCost}</Text>
+                    <Text style={styles.statLabel}>{t('AgentTravelRequestDetailsScreen', 'maxCost')}</Text>
+                  </View>
+                  <View style={styles.statTile}>
+                    <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>
+                      {minRating} {t('AgentTravelRequestDetailsScreen', 'stars')}
+                    </Text>
+                    <Text style={styles.statLabel}>{t('AgentTravelRequestDetailsScreen', 'minRating')}</Text>
+                  </View>
+                  <View style={styles.statTile}>
+                    <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>
+                      {maxRating} {t('AgentTravelRequestDetailsScreen', 'stars')}
+                    </Text>
+                    <Text style={styles.statLabel}>{t('AgentTravelRequestDetailsScreen', 'maxRating')}</Text>
+                  </View>
+                  <View style={styles.statTile}>
+                    <Text style={styles.statValue}>{offerHotels.length}</Text>
+                    <Text style={styles.statLabel}>{t('AgentTravelRequestDetailsScreen', 'numberOfHotels')}</Text>
+                  </View>
                 </View>
               </View>
             )}
+
+            {userCanMakeOffer && (
+              <>
+                <View style={commonStyles.divider} />
+                <Button
+                  title={isEditMode ? t('AgentTravelRequestDetailsScreen', 'updateOffer') : t('AgentTravelRequestDetailsScreen', 'makeOffer')}
+                  onPress={makeOffer}
+                  loading={submitting}
+                  disabled={submitting}
+                  icon={{
+                    name: 'checkmark-circle-outline',
+                    type: 'ionicon',
+                    size: theme.responsiveComponents.icon.medium,
+                    color: theme.colors.textWhite,
+                  }}
+                  buttonStyle={styles.makeOfferButton}
+                  titleStyle={styles.makeOfferTitle}
+                  disabledStyle={styles.makeOfferDisabled}
+                />
+              </>
+            )}
           </Card>
         )}
-        
-        {/* Hotels Section - Now showing as editable forms */}
+
+        {/* Hotels Section */}
         {offerHotels.length > 0 && (
           <Card containerStyle={styles.card}>
             <TouchableOpacity 
@@ -886,81 +780,248 @@ if (validationError) {
               <Icon 
                 name={hotelsSectionCollapsed ? 'chevron-down' : 'chevron-up'} 
                 type="ionicon" 
-                 size={theme.responsiveComponents.icon.medium}
-                 color={theme.colors.primary}
+                size={theme.responsiveComponents.icon.medium}
+                color={theme.colors.primary}
               />
             </TouchableOpacity>
-            
-            {hotelsSectionCollapsed && offerHotels.map((hotel, index) => (
-              <Card key={index} containerStyle={styles.hotelItemCard}>
+
+            {!hotelsSectionCollapsed && offerHotels.map((hotel, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.hotelItemCard,
+                  index === editingHotelIndex && styles.hotelItemCardEditing,
+                ]}
+              >
                 <View style={styles.hotelHeader}>
-                  <Text style={styles.hotelName}>{hotel.name}</Text>
-                  <View style={styles.hotelActions}>
-                    {userCanMakeOffer && (
-                      <TouchableOpacity 
-                        onPress={() => startEditingHotel(index)}
-                        style={styles.editIconContainer}
-                      >
+                  <Text style={styles.hotelName} numberOfLines={1}>{hotel.name}</Text>
+                  <Text style={styles.hotelCost}>${hotel.cost}</Text>
+                  {userCanMakeOffer && (
+                    <View style={styles.hotelActions}>
+                      <TouchableOpacity onPress={() => startEditingHotel(index)} style={styles.iconButton}>
                         <Icon name="pencil" type="ionicon" color={theme.colors.primary} size={theme.responsiveComponents.icon.medium} />
                       </TouchableOpacity>
-                    )}
-                    {userCanMakeOffer && (
-                      <TouchableOpacity 
-                        onPress={() => deleteHotel(index)}
-                        style={styles.deleteIconContainer}
-                      >
+                      <TouchableOpacity onPress={() => deleteHotel(index)} style={styles.iconButton}>
                         <Icon name="trash-outline" type="ionicon" color={theme.colors.error} size={theme.responsiveComponents.icon.medium} />
                       </TouchableOpacity>
-                    )}
-                  </View>
-                </View>
-                
-                <Divider style={styles.hotelDivider} />
-                
-                <View style={styles.hotelDetailsContainer}>
-                  <View style={styles.hotelDetailRow}>
-                    <Icon name="location-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
-                    <Text style={styles.hotelDetailText}>{hotel.address}</Text>
-                  </View>
-                  
-                  <View style={styles.hotelDetailRow}>
-                  <Icon name="bed-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
-                    <Text style={styles.hotelDetailText}>
-                      {hotel.rooms} {hotel.rooms === 1 ? t('AgentTravelRequestDetailsScreen', 'room') : t('AgentTravelRequestDetailsScreen', 'roomsUnit')}, {hotel.room_size} {t('AgentTravelRequestDetailsScreen', 'metersSquared')}
-                    </Text>
-                  </View>
-                  
-                  <View style={styles.hotelDetailRow}>
-                    <Icon name="star" type="ionicon" size={theme.responsiveComponents.icon.small} color="#FFD700" />
-                    <Text style={styles.hotelDetailText}>{hotel.rating} {t('AgentTravelRequestDetailsScreen', 'stars')}</Text>
-                  </View>
-                  
-                  <View style={styles.hotelDetailRow}>
-                 <Icon name="restaurant-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
-                    <Text style={styles.hotelDetailText}>
-                      {t('AgentTravelRequestDetailsScreen', 'mealsColon')} {hotel.meals.length > 0 ? hotel.meals.join(', ') : t('AgentTravelRequestDetailsScreen', 'none')}
-                    </Text>
-                  </View>
-                  
-                  <View style={styles.hotelDetailRow}>
-                   <Icon name="cash-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.success} />
-                    <Text style={styles.hotelDetailText}>{t('AgentTravelRequestDetailsScreen', 'totalCost')} ${hotel.cost}</Text>
-                  </View>
-                  
-                  {hotel.notes && (
-                    <View style={styles.hotelDetailRow}>
-                      <Icon name="document-text-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
-                      <Text style={styles.hotelDetailText}>{t('AgentTravelRequestDetailsScreen', 'notesColon')} {hotel.notes}</Text>
                     </View>
                   )}
                 </View>
-              </Card>
+
+                <View style={styles.hotelDetailRow}>
+                  <Icon name="star" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.warning} />
+                  <Text style={styles.hotelDetailText}>
+                    {hotel.rating} {t('AgentTravelRequestDetailsScreen', 'stars')} · {hotel.rooms} {hotel.rooms === 1 ? t('AgentTravelRequestDetailsScreen', 'room') : t('AgentTravelRequestDetailsScreen', 'roomsUnit')} · {hotel.room_size} {t('AgentTravelRequestDetailsScreen', 'metersSquared')}
+                  </Text>
+                </View>
+
+                <View style={styles.hotelDetailRow}>
+                  <Icon name="location-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
+                  <Text style={styles.hotelDetailText}>{hotel.address}</Text>
+                </View>
+
+                <View style={styles.hotelDetailRow}>
+                  <Icon name="restaurant-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
+                  <Text style={styles.hotelDetailText}>
+                     {t('AgentTravelRequestDetailsScreen', 'mealsColon')} {hotel.meals.length > 0 ? hotel.meals.map((m) => t('AgentTravelRequestDetailsScreen', m)).join(', ') : t('AgentTravelRequestDetailsScreen', 'none')}
+                  </Text>
+                </View>
+
+                {!!hotel.notes && (
+                  <View style={styles.hotelDetailRow}>
+                    <Icon name="document-text-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
+                    <Text style={styles.hotelDetailText} numberOfLines={2}>
+                      {t('AgentTravelRequestDetailsScreen', 'notesColon')} {hotel.notes}
+                    </Text>
+                  </View>
+                )}
+              </View>
             ))}
           </Card>
+        )}
+        
+        {/* Add/Edit Hotel Section */}
+        {userCanMakeOffer && (
+          <View onLayout={(e) => { formY.current = e.nativeEvent.layout.y; }}>
+            <Card
+              containerStyle={StyleSheet.flatten([
+                styles.card,
+                editingHotelIndex >= 0 && styles.cardEditing,
+              ])}
+            >
+              <TouchableOpacity 
+                style={styles.sectionHeader} 
+                onPress={() => setAddHotelSectionCollapsed(!addHotelSectionCollapsed)}
+              >
+                <Text style={[styles.sectionTitle, styles.formTitle]} numberOfLines={1}>
+                  {editingHotelIndex >= 0
+                    ? `${t('AgentTravelRequestDetailsScreen', 'editHotel')}: ${offerHotels[editingHotelIndex]?.name || ''}`
+                    : `${t('AgentTravelRequestDetailsScreen', 'addHotelToOffer')} (${offerHotels.length}/${MAXIMUM_HOTELS})`}
+                </Text>
+                <Icon 
+                  name={addHotelSectionCollapsed ? 'chevron-down' : 'chevron-up'} 
+                  type="ionicon" 
+                  size={theme.responsiveComponents.icon.medium}
+                  color={theme.colors.primary}
+                />
+              </TouchableOpacity>
+
+              {!addHotelSectionCollapsed && (
+                <View style={styles.sectionContent}>
+                  <Input
+                    {...inputProps}
+                    label={`${t('AgentTravelRequestDetailsScreen', 'hotelName')} *`}
+                    value={hotelName}
+                    onChangeText={setHotelName}
+                  />
+                  <Input
+                    {...inputProps}
+                    label={`${t('AgentTravelRequestDetailsScreen', 'hotelAddress')} *`}
+                    value={hotelAddress}
+                    onChangeText={setHotelAddress}
+                  />
+
+                  {/* Rooms | Room size */}
+                  <View style={styles.formRow}>
+                    <View style={commonStyles.halfWidth}>
+                      <Input
+                        {...inputProps}
+                        label={`${t('AgentTravelRequestDetailsScreen', 'numberOfRooms')} *`}
+                        value={hotelRooms}
+                        onChangeText={setHotelRooms}
+                        keyboardType="numeric"
+                      />
+                    </View>
+                    <View style={commonStyles.halfWidth}>
+                      <Input
+                        {...inputProps}
+                        label={`${t('AgentTravelRequestDetailsScreen', 'roomSizeInMeter')} *`}
+                        value={hotelRoomSize}
+                        onChangeText={setHotelRoomSize}
+                        keyboardType="numeric"
+                        rightIcon={<Text style={styles.unitText}>m²</Text>}
+                        rightIconContainerStyle={styles.unitIcon}
+                      />
+                    </View>
+                  </View>
+
+                  {/* Rating | Cost */}
+                  <View style={styles.formRow}>
+                    <View style={commonStyles.halfWidth}>
+                      <Text style={styles.fieldLabel}>
+                        {`${t('AgentTravelRequestDetailsScreen', 'hotelRating')} *`}
+                      </Text>
+                      <Dropdown
+                        style={styles.dropdown}
+                        placeholderStyle={commonStyles.placeholderStyle}
+                        selectedTextStyle={commonStyles.selectedTextStyle}
+                        data={ratingData}
+                        labelField="label"
+                        valueField="value"
+                        value={hotelRating}
+                        onChange={item => setHotelRating(item.value)}
+                        placeholder={t('AgentTravelRequestDetailsScreen', 'selectRating')}
+                      />
+                    </View>
+                    <View style={commonStyles.halfWidth}>
+                      <Input
+                        {...inputProps}
+                        label={`${t('AgentTravelRequestDetailsScreen', 'totalCostInDollars')} *`}
+                        value={hotelCost}
+                        onChangeText={setHotelCost}
+                        keyboardType="numeric"
+                      />
+                    </View>
+                  </View>
+
+                  <Input
+                    {...inputProps}
+                    label={t('AgentTravelRequestDetailsScreen', 'notesLabel')}
+                    value={hotelNotes}
+                    onChangeText={setHotelNotes}
+                    multiline
+                    numberOfLines={4}
+                    inputContainerStyle={styles.notesBox}
+                    inputStyle={styles.notesInput}
+                  />
+
+                  {/* Meals */}
+                  <Text style={styles.fieldLabel}>{t('AgentTravelRequestDetailsScreen', 'mealsLabel')}</Text>
+                  <View style={styles.mealsContainer}>
+                    {['breakfast', 'lunch', 'dinner'].map((meal) => {
+                      const on = selectedMeals[meal];
+                      return (
+                        <TouchableOpacity
+                          key={meal}
+                          onPress={() => setSelectedMeals((prev) => ({ ...prev, [meal]: !prev[meal] }))}
+                          accessibilityRole="checkbox"
+                          accessibilityState={{ checked: on }}
+                          style={[styles.mealChip, on && styles.mealChipOn]}
+                        >
+                          <Icon
+                            name={on ? 'checkmark-circle' : 'ellipse-outline'}
+                            type="ionicon"
+                            size={theme.responsiveComponents.icon.small + 2}
+                            color={on ? theme.colors.primary : theme.colors.textLight}
+                          />
+                          <Text style={[styles.mealChipText, on && styles.mealChipTextOn]}>
+                            {t('AgentTravelRequestDetailsScreen', meal)}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+
+                  {/* Action Buttons */}
+                  <View style={styles.buttonRow}>
+                    {editingHotelIndex >= 0 ? (
+                      <>
+                        <Button
+                          title={t('AgentTravelRequestDetailsScreen', 'updateHotel')}
+                          onPress={updateHotel}
+                          buttonStyle={styles.addButton}
+                          containerStyle={styles.buttonContainer}
+                        />
+                        <Button
+                          title={t('AgentTravelRequestDetailsScreen', 'cancel')}
+                          type="outline"
+                          onPress={cancelEditingHotel}
+                          buttonStyle={styles.cancelButton}
+                          titleStyle={styles.cancelTitle}
+                          containerStyle={styles.buttonContainer}
+                        />
+                      </>
+                    ) : (
+                      <Button
+                        title={t('AgentTravelRequestDetailsScreen', 'addHotel')}
+                        onPress={addHotel}
+                        icon={{
+                          name: 'add-circle-outline',
+                          type: 'ionicon',
+                          size: theme.responsiveComponents.icon.medium,
+                          color: theme.colors.textWhite,
+                        }}
+                        buttonStyle={styles.addButton}
+                        containerStyle={styles.buttonContainer}
+                      />
+                    )}
+                  </View>
+                </View>
+              )}
+            </Card>
+          </View>
         )}
       </ScrollView>
     </KeyboardAvoidingView>
   );
+};
+
+// Base look for every text field, built on the theme's outlined input style
+const fieldBoxBase = {
+  ...commonStyles.inputContainerStyle,
+  // react-native-elements sets a bottom border color of its own; match it so all 4 sides agree
+  borderBottomColor: theme.colors.border,
+  minHeight: theme.responsiveComponents.input.height,
 };
 
 const styles = StyleSheet.create({
@@ -979,15 +1040,19 @@ const styles = StyleSheet.create({
     marginBottom: theme.responsiveSpacing.md,
     ...theme.shadows.md,
   },
+  cardEditing: {
+    borderWidth: 2,
+    borderColor: theme.colors.primary,
+  },
   warningCard: {
     borderRadius: theme.borderRadius.md,
     marginBottom: theme.responsiveSpacing.md,
     backgroundColor: theme.colors.warningLight,
-    borderColor: '#ffeeba',
+    borderColor: theme.colors.warningBorder,
     ...theme.shadows.sm,
   },
   warningText: {
-    color: '#856404',
+    color: theme.colors.warningTitle,
     textAlign: 'center',
     fontWeight: theme.typography.fontWeight.bold,
     fontSize: theme.responsiveTypography.fontSize.md,
@@ -1002,6 +1067,10 @@ const styles = StyleSheet.create({
     fontSize: theme.responsiveTypography.fontSize.lg,
     fontWeight: theme.typography.fontWeight.bold,
     color: theme.colors.text,
+  },
+  formTitle: {
+    flex: 1,
+    marginEnd: theme.spacing.sm,
   },
   sectionContent: {
     marginTop: theme.spacing.sm,
@@ -1025,7 +1094,7 @@ const styles = StyleSheet.create({
   },
   childrenAges: {
     marginTop: theme.spacing.xs,
-    paddingLeft: 2,
+    paddingStart: 2,
   },
   notesContainer: {
     maxHeight: 100,
@@ -1035,80 +1104,141 @@ const styles = StyleSheet.create({
     padding: theme.spacing.sm,
     backgroundColor: theme.colors.backgroundGray,
   },
-  makeOfferButton: {
-    backgroundColor: theme.colors.success,
-    borderRadius: theme.borderRadius.sm,
-    paddingHorizontal: theme.spacing.xl,
+  headerTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
   },
-  row: {
-    flexDirection: screenSize.isXSmall ? 'column' : 'row',
-    justifyContent: 'space-between',
-    marginHorizontal: theme.spacing.sm,
-    marginBottom: theme.spacing.sm,
+  shareIconContainer: {
+    padding: theme.spacing.sm,
+    marginStart: theme.spacing.sm,
   },
-  halfWidth: {
-    flex: screenSize.isXSmall ? 1 : 0.48,
-    width: screenSize.isXSmall ? '100%' : 'auto',
-    marginBottom: screenSize.isXSmall ? theme.spacing.sm : 0,
-  },
-  dropdownLabel: {
+
+  // ---- Offer summary ----
+  summaryOneLiner: {
     fontSize: theme.responsiveTypography.fontSize.md,
+    color: theme.colors.textSecondary,
+    marginTop: theme.spacing.xs,
+  },
+  summaryDates: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+    marginBottom: theme.spacing.md,
+  },
+  summaryDatesText: {
+    fontSize: theme.responsiveTypography.fontSize.sm,
+    color: theme.colors.textSecondary,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: theme.spacing.sm,
+  },
+  statTile: {
+    flexGrow: 1,
+    flexBasis: '47%',
+    backgroundColor: theme.colors.primaryLight,
+    borderRadius: theme.borderRadius.md,
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.sm,
+    alignItems: 'center',
+  },
+  statValue: {
+    fontSize: theme.responsiveTypography.fontSize.lg,
     fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text,
+  },
+  statLabel: {
+    fontSize: theme.responsiveTypography.fontSize.sm,
+    color: theme.colors.textSecondary,
+    marginTop: theme.spacing.xs,
+    textAlign: 'center',
+  },
+  makeOfferButton: {
+    backgroundColor: theme.colors.secondaryDark,
+    borderRadius: theme.borderRadius.md,
+    height: theme.responsiveComponents.button.height,
+  },
+  makeOfferTitle: {
+    fontWeight: theme.typography.fontWeight.semibold,
+  },
+  makeOfferDisabled: {
+    backgroundColor: theme.colors.disabled,
+  },
+
+  // ---- Hotel form ----
+  fieldContainer: {
+    paddingHorizontal: 0,
+    marginBottom: theme.spacing.md,
+  },
+  fieldBox: {
+    ...fieldBoxBase,
+  },
+  fieldLabel: {
+    fontSize: theme.responsiveTypography.fontSize.sm,
+    fontWeight: theme.typography.fontWeight.medium,
     color: theme.colors.textSecondary,
     marginBottom: theme.spacing.xs,
-    marginLeft: theme.spacing.sm,
+  },
+  unitText: {
+    fontSize: theme.responsiveTypography.fontSize.md,
+    color: theme.colors.textSecondary,
+  },
+  unitIcon: {
+    marginHorizontal: theme.spacing.sm,
+    marginVertical: 0,
+  },
+  formRow: {
+    ...commonStyles.responsiveRow,
+    marginBottom: 0,
   },
   dropdown: {
+    ...commonStyles.dropdown,
     height: theme.responsiveComponents.input.height,
-    borderColor: theme.colors.border,
-    borderWidth: 1,
-    borderRadius: theme.borderRadius.sm,
-    paddingHorizontal: theme.spacing.sm,
-    marginBottom: theme.responsiveSpacing.md,
-    marginHorizontal: theme.spacing.sm,
-    backgroundColor: theme.colors.backgroundWhite,
+    marginBottom: theme.spacing.md,
   },
-  inputContainer: {
-    paddingHorizontal: 0,
-    height: theme.responsiveComponents.input.height,
-  },
-  inputInnerContainer: {
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-  },
-  notesInputContainer: {
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.borderRadius.md,
-    paddingHorizontal: theme.spacing.sm,
+  notesBox: {
+    ...fieldBoxBase,
+    minHeight: 100,
     maxHeight: 150,
+    alignItems: 'flex-start',
   },
   notesInput: {
     textAlignVertical: 'top',
     minHeight: 100,
     paddingTop: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.sm,
     fontSize: theme.responsiveTypography.fontSize.md,
-  },
-  mealsLabel: {
-    fontSize: theme.responsiveTypography.fontSize.md,
-    fontWeight: theme.typography.fontWeight.bold,
-    color: theme.colors.textSecondary,
-    marginBottom: theme.spacing.sm,
-    marginLeft: theme.spacing.sm,
   },
   mealsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginHorizontal: theme.spacing.sm,
-    marginBottom: theme.responsiveSpacing.md,
+    gap: theme.spacing.sm,
+    marginBottom: theme.spacing.lg,
   },
-  mealCheckbox: {
-    backgroundColor: 'transparent',
-    borderWidth: 0,
-    padding: 0,
-    margin: 0,
-    width: screenSize.isXSmall ? '100%' : '30%',
+  mealChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+    paddingVertical: theme.components.tag.paddingVertical + 2,
+    paddingHorizontal: theme.responsiveComponents.tag.paddingHorizontal,
+    borderRadius: theme.components.tag.borderRadius,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.backgroundWhite,
+  },
+  mealChipOn: {
+    backgroundColor: theme.colors.primaryLight,
+    borderColor: theme.colors.primary,
+  },
+  mealChipText: {
+    fontSize: theme.responsiveTypography.fontSize.sm,
+    color: theme.colors.textSecondary,
+  },
+  mealChipTextOn: {
+    color: theme.colors.primaryDark,
+    fontWeight: theme.typography.fontWeight.semibold,
   },
   buttonRow: {
     flexDirection: screenSize.isXSmall ? 'column' : 'row',
@@ -1121,15 +1251,32 @@ const styles = StyleSheet.create({
     marginBottom: screenSize.isXSmall ? theme.spacing.sm : 0,
   },
   addButton: {
-    backgroundColor: theme.colors.success,
-    borderRadius: theme.borderRadius.sm,
-    paddingVertical: theme.spacing.md,
-  },
-  hotelItemCard: {
+    backgroundColor: theme.colors.primary,
     borderRadius: theme.borderRadius.md,
+    height: theme.responsiveComponents.button.height,
+  },
+  cancelButton: {
+    borderColor: theme.colors.borderDark,
+    borderRadius: theme.borderRadius.md,
+    height: theme.responsiveComponents.button.height,
+  },
+  cancelTitle: {
+    color: theme.colors.textSecondary,
+  },
+
+  // ---- Hotel list ----
+  hotelItemCard: {
+    borderWidth: 1,
+    borderColor: theme.colors.borderLight,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.md,
     marginBottom: theme.spacing.sm,
     backgroundColor: theme.colors.backgroundWhite,
-    ...theme.shadows.card,
+  },
+  hotelItemCardEditing: {
+    borderWidth: 2,
+    borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.primaryLight,
   },
   hotelHeader: {
     flexDirection: 'row',
@@ -1142,25 +1289,20 @@ const styles = StyleSheet.create({
     fontWeight: theme.typography.fontWeight.bold,
     color: theme.colors.text,
     flex: 1,
+    marginEnd: theme.spacing.sm,
+  },
+  hotelCost: {
+    fontSize: theme.responsiveTypography.fontSize.lg,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.primaryDark,
+    marginEnd: theme.spacing.xs,
   },
   hotelActions: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  editIconContainer: {
-    padding: theme.spacing.sm,
-    marginRight: theme.spacing.xs,
-  },
-  deleteIconContainer: {
-    padding: theme.spacing.sm,
-  },
-  hotelDivider: {
-    backgroundColor: theme.colors.borderLight,
-    height: 1,
-    marginVertical: theme.spacing.sm,
-  },
-  hotelDetailsContainer: {
-    paddingTop: theme.spacing.xs,
+  iconButton: {
+    padding: theme.spacing.md,
   },
   hotelDetailRow: {
     flexDirection: 'row',
@@ -1168,19 +1310,10 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.sm,
   },
   hotelDetailText: {
-    marginLeft: theme.spacing.sm,
+    marginStart: theme.spacing.sm,
     fontSize: theme.responsiveTypography.fontSize.sm,
     color: theme.colors.text,
     flex: 1,
   },
-  headerTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  shareIconContainer: {
-    padding: theme.spacing.sm,
-    marginLeft: theme.spacing.sm,
-  },
 });
-export default AgentTravelRequestDetailsScreen; 
+export default AgentTravelRequestDetailsScreen;

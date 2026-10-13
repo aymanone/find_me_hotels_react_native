@@ -1112,9 +1112,7 @@ useEffect(() => {
                 />
             </View>
             </View>
-            <Text style={styles.budgetHint}>
-              {t('TravelRequestForm', 'budgetTripHint') || 'This is your total budget for the whole trip, in USD'}
-            </Text>
+          
 
              <View style={styles.row}>
                 <View style={styles.fullWidth}>
