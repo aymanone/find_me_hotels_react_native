@@ -2042,6 +2042,8 @@ invalidCost: 'يجب أن تكون التكلفة الإجمالية رقمًا 
     room: 'room',
     squareMeters: 'meters²',
     none: 'None',
+    viewAllOffers: 'View all offers for this request',
+updatedOn: 'Updated on',
   },
   ar: {
     title: 'تفاصيل العرض',
@@ -2114,6 +2116,8 @@ invalidCost: 'يجب أن تكون التكلفة الإجمالية رقمًا 
     room: 'غرفة',
     squareMeters: 'متر²',
     none: 'لا شيء',
+    viewAllOffers: 'عرض جميع العروض لهذا الطلب',
+updatedOn: 'آخر تحديث',
   }
 }
   ,
