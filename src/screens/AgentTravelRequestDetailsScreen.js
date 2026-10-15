@@ -43,7 +43,7 @@ const AgentTravelRequestDetailsScreen = ({ route, navigation }) => {
   const [hotelName, setHotelName] = useState('');
   const [hotelAddress, setHotelAddress] = useState('');
   const [hotelRooms, setHotelRooms] = useState('');
-  const [hotelRoomSize, setHotelRoomSize] = useState('');
+  const [hotelRoomType, setHotelRoomType] = useState('');
   const [hotelRating, setHotelRating] = useState(null);
   const [hotelCost, setHotelCost] = useState('');
   const [hotelNotes, setHotelNotes] = useState('');
@@ -247,7 +247,7 @@ ${requestUrl}`;
     setHotelName(hotel.name);
     setHotelAddress(hotel.address);
     setHotelRooms(hotel.rooms.toString());
-    setHotelRoomSize(hotel.room_size.toString());
+    setHotelRoomType(hotel.room_type || '');
     setHotelRating(hotel.rating);
     setHotelCost(Math.round(hotel.cost).toString());
     setHotelNotes(hotel.notes || '');
@@ -270,7 +270,7 @@ ${requestUrl}`;
     setHotelName('');
     setHotelAddress('');
     setHotelRooms('');
-    setHotelRoomSize('');
+    setHotelRoomType('');
     setHotelRating(null);
     setHotelCost('');
     setHotelNotes('');
@@ -283,12 +283,10 @@ ${requestUrl}`;
     setAddHotelSectionCollapsed(true);
   };
   const validateHotelForm = () => {
-  if (!hotelName.trim() || !hotelAddress.trim() || hotelRating === null) {
+  if (!hotelName.trim() || !hotelAddress.trim() || !hotelRoomType.trim() || hotelRating === null ) {
     return t('AgentTravelRequestDetailsScreen', 'fillAllRequiredFields');
   }
-  if (!/^\d+$/.test(hotelRoomSize.trim()) || parseInt(hotelRoomSize, 10) < 1) {
-  return t('AgentTravelRequestDetailsScreen', 'invalidRoomSize');
-}
+ 
   if (!/^\d+$/.test(hotelRooms.trim()) || parseInt(hotelRooms, 10) < 1) {
     return t('AgentTravelRequestDetailsScreen', 'invalidRooms');
   }
@@ -317,7 +315,7 @@ if (validationError) {
       name: hotelName.trim(),
       address: hotelAddress.trim(),
       rooms: parseInt(hotelRooms,10),
-      room_size: parseInt(hotelRoomSize,10),
+      room_type: hotelRoomType.trim(),
       rating: hotelRating,
       meals: meals,
       notes: hotelNotes,
@@ -360,7 +358,7 @@ if (validationError) {
       name: hotelName.trim(),
       address: hotelAddress.trim(),
       rooms: parseInt(hotelRooms,10),
-      room_size: parseInt(hotelRoomSize,10),
+      room_type: hotelRoomType.trim(),
       rating: hotelRating,
       meals: meals,
       notes: hotelNotes,
@@ -374,7 +372,7 @@ if (validationError) {
     setHotelName('');
     setHotelAddress('');
     setHotelRooms('');
-    setHotelRoomSize('');
+    setHotelRoomType('');
     setHotelRating(null);
     setHotelCost('');
     setHotelNotes('');
@@ -793,9 +791,8 @@ if (validationError) {
                   index === editingHotelIndex && styles.hotelItemCardEditing,
                 ]}
               >
-                <View style={styles.hotelHeader}>
-                  <Text style={styles.hotelName} numberOfLines={1}>{hotel.name}</Text>
-                  <Text style={styles.hotelCost}>${hotel.cost}</Text>
+                               <View style={styles.hotelHeader}>
+                  <Text style={styles.hotelName}>{hotel.name}</Text>
                   {userCanMakeOffer && (
                     <View style={styles.hotelActions}>
                       <TouchableOpacity onPress={() => startEditingHotel(index)} style={styles.iconButton}>
@@ -809,9 +806,14 @@ if (validationError) {
                 </View>
 
                 <View style={styles.hotelDetailRow}>
+                  <Icon name="cash-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.success} />
+                  <Text style={[styles.hotelDetailText, styles.hotelCostText]}>${hotel.cost}</Text>
+                </View>
+
+                               <View style={styles.hotelDetailRow}>
                   <Icon name="star" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.warning} />
                   <Text style={styles.hotelDetailText}>
-                    {hotel.rating} {t('AgentTravelRequestDetailsScreen', 'stars')} · {hotel.rooms} {hotel.rooms === 1 ? t('AgentTravelRequestDetailsScreen', 'room') : t('AgentTravelRequestDetailsScreen', 'roomsUnit')} · {hotel.room_size} {t('AgentTravelRequestDetailsScreen', 'metersSquared')}
+                    {hotel.rating} {t('AgentTravelRequestDetailsScreen', 'stars')} · {hotel.rooms} {hotel.rooms === 1 ? t('AgentTravelRequestDetailsScreen', 'room') : t('AgentTravelRequestDetailsScreen', 'roomsUnit')}
                   </Text>
                 </View>
 
@@ -820,6 +822,14 @@ if (validationError) {
                   <Text style={styles.hotelDetailText}>{hotel.address}</Text>
                 </View>
 
+                {!!(hotel.room_type || hotel.room_size) && (
+                  <View style={styles.hotelDetailRow}>
+                    <Icon name="bed-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
+                    <Text style={styles.hotelDetailText}>
+                      {hotel.room_type || `${hotel.room_size} ${t('AgentTravelRequestDetailsScreen', 'metersSquared')}`}
+                    </Text>
+                  </View>
+                )}
                 <View style={styles.hotelDetailRow}>
                   <Icon name="restaurant-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
                   <Text style={styles.hotelDetailText}>
@@ -830,7 +840,7 @@ if (validationError) {
                 {!!hotel.notes && (
                   <View style={styles.hotelDetailRow}>
                     <Icon name="document-text-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
-                    <Text style={styles.hotelDetailText} numberOfLines={2}>
+                    <Text style={styles.hotelDetailText} >
                       {t('AgentTravelRequestDetailsScreen', 'notesColon')} {hotel.notes}
                     </Text>
                   </View>
@@ -868,20 +878,40 @@ if (validationError) {
 
               {!addHotelSectionCollapsed && (
                 <View style={styles.sectionContent}>
-                  <Input
+                                   <Input
                     {...inputProps}
                     label={`${t('AgentTravelRequestDetailsScreen', 'hotelName')} *`}
                     value={hotelName}
-                    onChangeText={setHotelName}
+                    onChangeText={(text) => setHotelName(text.replace(/\n/g, ' '))}
+                    multiline
+                    numberOfLines={2}
+                    maxLength={100}
+                    inputStyle={styles.roomTypeInput}
                   />
                   <Input
                     {...inputProps}
                     label={`${t('AgentTravelRequestDetailsScreen', 'hotelAddress')} *`}
                     value={hotelAddress}
-                    onChangeText={setHotelAddress}
+                    onChangeText={(text) => setHotelAddress(text.replace(/\n/g, ' '))}
+                    multiline
+                    numberOfLines={2}
+                    maxLength={200}
+                    inputStyle={styles.roomTypeInput}
                   />
 
-                  {/* Rooms | Room size */}
+                                  {/* Room type (own line, can be long) */}
+                  <Input
+                    {...inputProps}
+                    label={`${t('AgentTravelRequestDetailsScreen', 'roomType')} *`}
+                    value={hotelRoomType}
+                    onChangeText={setHotelRoomType}
+                    multiline
+                    numberOfLines={2}
+                    maxLength={150}
+                    inputStyle={styles.roomTypeInput}
+                  />
+
+                  {/* Rooms | Cost */}
                   <View style={styles.formRow}>
                     <View style={commonStyles.halfWidth}>
                       <Input
@@ -895,37 +925,6 @@ if (validationError) {
                     <View style={commonStyles.halfWidth}>
                       <Input
                         {...inputProps}
-                        label={`${t('AgentTravelRequestDetailsScreen', 'roomSizeInMeter')} *`}
-                        value={hotelRoomSize}
-                        onChangeText={setHotelRoomSize}
-                        keyboardType="numeric"
-                        rightIcon={<Text style={styles.unitText}>m²</Text>}
-                        rightIconContainerStyle={styles.unitIcon}
-                      />
-                    </View>
-                  </View>
-
-                  {/* Rating | Cost */}
-                  <View style={styles.formRow}>
-                    <View style={commonStyles.halfWidth}>
-                      <Text style={styles.fieldLabel}>
-                        {`${t('AgentTravelRequestDetailsScreen', 'hotelRating')} *`}
-                      </Text>
-                      <Dropdown
-                        style={styles.dropdown}
-                        placeholderStyle={commonStyles.placeholderStyle}
-                        selectedTextStyle={commonStyles.selectedTextStyle}
-                        data={ratingData}
-                        labelField="label"
-                        valueField="value"
-                        value={hotelRating}
-                        onChange={item => setHotelRating(item.value)}
-                        placeholder={t('AgentTravelRequestDetailsScreen', 'selectRating')}
-                      />
-                    </View>
-                    <View style={commonStyles.halfWidth}>
-                      <Input
-                        {...inputProps}
                         label={`${t('AgentTravelRequestDetailsScreen', 'totalCostInDollars')} *`}
                         value={hotelCost}
                         onChangeText={setHotelCost}
@@ -933,6 +932,22 @@ if (validationError) {
                       />
                     </View>
                   </View>
+
+                  {/* Rating */}
+                  <Text style={styles.fieldLabel}>
+                    {`${t('AgentTravelRequestDetailsScreen', 'hotelRating')} *`}
+                  </Text>
+                  <Dropdown
+                    style={styles.dropdown}
+                    placeholderStyle={commonStyles.placeholderStyle}
+                    selectedTextStyle={commonStyles.selectedTextStyle}
+                    data={ratingData}
+                    labelField="label"
+                    valueField="value"
+                    value={hotelRating}
+                    onChange={item => setHotelRating(item.value)}
+                    placeholder={t('AgentTravelRequestDetailsScreen', 'selectRating')}
+                  />
 
                   <Input
                     {...inputProps}
@@ -1306,7 +1321,7 @@ const styles = StyleSheet.create({
   },
   hotelDetailRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems:  'flex-start',
     marginBottom: theme.spacing.sm,
   },
   hotelDetailText: {
@@ -1314,6 +1329,16 @@ const styles = StyleSheet.create({
     fontSize: theme.responsiveTypography.fontSize.sm,
     color: theme.colors.text,
     flex: 1,
+  },
+    roomTypeInput: {
+    ...commonStyles.inputStyle,
+    minHeight: 60,
+    textAlignVertical: 'top',
+  },
+    hotelCostText: {
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.primaryDark,
+    fontSize: theme.responsiveTypography.fontSize.md,
   },
 });
 export default AgentTravelRequestDetailsScreen;

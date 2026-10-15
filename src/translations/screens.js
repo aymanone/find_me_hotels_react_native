@@ -1599,6 +1599,7 @@ invalidCost: 'Total cost must be a whole number greater than 0',
     
     // Star ratings for dropdown
     starsLabel: '{count} stars',
+    roomType: 'Room type',
   },
   ar: {
     // Access and Authentication
@@ -1710,6 +1711,7 @@ invalidCost: 'يجب أن تكون التكلفة الإجمالية رقمًا 
     
     // Star ratings for dropdown
     starsLabel: '{count} نجوم',
+    roomType: 'نوع الغرفة',
   }
 }
   ,

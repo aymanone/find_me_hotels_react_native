@@ -371,13 +371,24 @@ const appHasLink =(messagingApp) =>{
                   </Text>
                 </View>
 
-                {/* Room size (its own line) */}
-                <View style={styles.hotelDetailRow}>
-                  <Icon name="resize-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
-                  <Text style={[styles.hotelDetailText, hotelTextDirection]}>
-                    {hotel.room_size} {t('ClientOfferDetailsScreen', 'squareMeters')}
-                  </Text>
-                </View>
+                              {/* Room type (own line); older offers fall back to the room size */}
+                {!!hotel.room_type && (
+                  <View style={styles.hotelDetailRow}>
+                    <Icon name="bed-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
+                    <Text style={[styles.hotelDetailText, hotelTextDirection]}>
+                      <Text style={styles.hotelDetailLabel}>{t('AgentTravelRequestDetailsScreen', 'roomType')} </Text>
+                      {hotel.room_type}
+                    </Text>
+                  </View>
+                )}
+                {!hotel.room_type && !!hotel.room_size && (
+                  <View style={styles.hotelDetailRow}>
+                    <Icon name="resize-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
+                    <Text style={[styles.hotelDetailText, hotelTextDirection]}>
+                      {hotel.room_size} {t('ClientOfferDetailsScreen', 'squareMeters')}
+                    </Text>
+                  </View>
+                )}
 
                 {/* Rating */}
                 <View style={styles.hotelDetailRow}>
@@ -659,7 +670,7 @@ const styles = StyleSheet.create({
   },
   hotelDetailRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems:  'flex-start',
     marginBottom: theme.spacing.sm,
   },
   hotelDetailText: {
