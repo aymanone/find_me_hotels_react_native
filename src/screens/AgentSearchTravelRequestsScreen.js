@@ -26,6 +26,8 @@ const getNumColumns = () => {
 const AgentSearchTravelRequestsScreen = () => {
   const navigation = useNavigation();
   const { t, language } = useTranslation();
+   const isArabic = /[\u0600-\u06FF]/.test(t('AgentSearchTravelRequestsScreen', 'destination'));
+  const rtlText = isArabic ? { textAlign: 'right', writingDirection: 'rtl' } : null;
   const [agent, setAgent] = useState(null);
   const [countries, setCountries] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState(null);
@@ -403,13 +405,15 @@ const AgentSearchTravelRequestsScreen = () => {
         ]}
         onPress={() => navigateToRequestDetails(item.id)}
       >
-        <View style={styles.dataRow}>
-          <Text style={styles.dataLabel}>{t('AgentSearchTravelRequestsScreen', 'destination')}</Text>
-          <Text style={styles.dataValue}>{item.request_country_name}, {item.request_area_name}</Text>
+               <View style={styles.dataRow}>
+          <Text style={[styles.dataValue,rtlText]}>
+            <Text style={styles.dataLabel}>{t('AgentSearchTravelRequestsScreen', 'destination')} </Text>
+            {item.request_country_name}, {item.request_area_name}
+          </Text>
         </View>
         <View style={styles.dataRow}>
-          <Text style={styles.dataLabel}>{t('AgentSearchTravelRequestsScreen', 'dates')}</Text>
-          <Text style={styles.dataValue}>
+          <Text style={[styles.dataValue,rtlText]}>
+            <Text style={styles.dataLabel}>{t('AgentSearchTravelRequestsScreen', 'dates')} </Text>
             {new Date(item.start_date).toLocaleDateString('en-US', {
               month: '2-digit',
               day: 'numeric',
@@ -421,30 +425,39 @@ const AgentSearchTravelRequestsScreen = () => {
             })}
           </Text>
         </View>
+        {nights > 0 && (
+          <View style={styles.dataRow}>
+            <Text style={[styles.dataValue,rtlText]}>
+              <Text style={styles.dataLabel}>{t('AgentSearchTravelRequestsScreen', 'nights')} </Text>
+              {nights}
+            </Text>
+          </View>
+        )}
         <View style={styles.dataRow}>
-          <Text style={styles.dataLabel}>{t('AgentSearchTravelRequestsScreen', 'budget')}</Text>
-          <Text style={styles.dataValue}>${item.min_budget} - ${item.max_budget}</Text>
+          <Text style={[styles.dataValue,rtlText]}>
+            <Text style={styles.dataLabel}>{t('AgentSearchTravelRequestsScreen', 'budget')} </Text>
+            ${item.min_budget} - ${item.max_budget}
+          </Text>
         </View>
         <View style={styles.dataRow}>
-          <Text style={styles.dataLabel}>{t('AgentSearchTravelRequestsScreen', 'travelers')}</Text>
-          <Text style={styles.dataValue}>
+          <Text style={[styles.dataValue,rtlText]}>
+            <Text style={styles.dataLabel}>{t('AgentSearchTravelRequestsScreen', 'travelers')} </Text>
             {t('AgentSearchTravelRequestsScreen', 'adultsLabel', { adults: item.adults })}, {t('AgentSearchTravelRequestsScreen', 'childrenLabel', { children: Array.isArray(item.children) ? item.children.length : 0 })}
           </Text>
         </View>
         <View style={styles.dataRow}>
-          <Text style={styles.dataLabel}>{t('AgentSearchTravelRequestsScreen', 'nationality')}</Text>
-          <Text style={styles.dataValue}>
+          <Text style={[styles.dataValue,rtlText]}>
+            <Text style={styles.dataLabel}>{t('AgentSearchTravelRequestsScreen', 'nationality')} </Text>
             {item.travelers_nationality_name}
           </Text>
         </View>
         <View style={styles.dataRow}>
-          <Text style={styles.dataLabel}>{t('AgentSearchTravelRequestsScreen', 'offers')}</Text>
-          <Text style={[
-            styles.dataValue,
-            hasMaxOffers && styles.maxOffersText
-          ]}>
-            {t('AgentSearchTravelRequestsScreen', 'offersLabel', { count: item.offers_number })}
-            {item.offers_number >= MAXIMUM_OFFERS ? ' ' + t('AgentSearchTravelRequestsScreen', 'cantMakeNewOffers') : ''}
+          <Text style={[styles.dataValue,rtlText]}>
+            <Text style={styles.dataLabel}>{t('AgentSearchTravelRequestsScreen', 'offers')} </Text>
+            <Text style={hasMaxOffers && styles.maxOffersText}>
+              {t('AgentSearchTravelRequestsScreen', 'offersLabel', { count: item.offers_number })}
+              {item.offers_number >= MAXIMUM_OFFERS ? ' ' + t('AgentSearchTravelRequestsScreen', 'cantMakeNewOffers') : ''}
+            </Text>
           </Text>
         </View>
         <View style={styles.detailsButtonContainer}>
@@ -733,20 +746,17 @@ const styles = StyleSheet.create({
  
   },
   dataRow: {
-    flexDirection: 'row',
-    marginBottom: theme.spacing.sm,
-    alignItems: 'flex-start',
+     marginBottom: theme.spacing.sm,
   },
   dataLabel: {
-    fontWeight: theme.typography.fontWeight.semibold,
-    width: screenSize.isXSmall ? 80 : 100,
+   fontWeight: theme.typography.fontWeight.semibold,
     fontSize: theme.responsiveTypography.fontSize.sm,
     color: theme.colors.textSecondary,
   },
   dataValue: {
-    flex: 1,
-    fontSize: theme.responsiveTypography.fontSize.md,
+       fontSize: theme.responsiveTypography.fontSize.md,
     color: theme.colors.text,
+
   },
   emptyText: {
     textAlign: 'center',
