@@ -2550,6 +2550,7 @@ linkError: 'تعذر فتح الرابط',
   ,
  AgentSearchTravelRequestsScreen: {
   en: {
+    nights: 'Nights',
     title: 'Search Travel Requests',
     accessDenied: 'Access Denied',
     accessDeniedMessage: 'You must be an agent to access this screen.',
@@ -2611,6 +2612,7 @@ linkError: 'تعذر فتح الرابط',
     createdAt:"created at",
   },
   ar: {
+    nights: 'الليالي',
     title: 'البحث في طلبات السفر',
     accessDenied: 'الوصول مرفوض',
     accessDeniedMessage: 'يجب أن تكون وكيل سفر للوصول إلى هذه الشاشة.',

@@ -333,7 +333,8 @@ const AgentSearchTravelRequestsScreen = () => {
       showAlert(t('AgentSearchTravelRequestsScreen', 'error'), t('AgentSearchTravelRequestsScreen', 'failedToFetchRequestDetails'));
     }
   };
-
+    const getDuration = (r) =>
+    Math.ceil((new Date(r.end_date) - new Date(r.start_date)) / (1000 * 60 * 60 * 24)) || 0;
   const sortRequests = (requests) => {
     const sortedRequests = [...requests];
 
@@ -341,8 +342,8 @@ const AgentSearchTravelRequestsScreen = () => {
       let valueA, valueB;
 
       if (sortField === 'duration') {
-        valueA = a.duration;
-        valueB = b.duration;
+         valueA = getDuration(a);
+         valueB = getDuration(b);
       } else if (sortField === 'start_date' || sortField === 'created_at') {
         valueA = new Date(a[sortField] || 0);
         valueB = new Date(b[sortField] || 0);
@@ -393,6 +394,7 @@ const AgentSearchTravelRequestsScreen = () => {
 
   const renderTravelRequest = ({ item }) => {
     const hasMaxOffers = item.offers_number >= MAXIMUM_OFFERS;
+     const nights = getDuration(item);
     return (
       <TouchableOpacity
         style={[
@@ -446,6 +448,9 @@ const AgentSearchTravelRequestsScreen = () => {
           </Text>
         </View>
         <View style={styles.detailsButtonContainer}>
+                  <Text style={styles.nightsText}>
+            {nights > 0 ? `${t('AgentSearchTravelRequestsScreen', 'nights')}: ${nights}` : ''}
+          </Text>
           <Button
             title={t('AgentSearchTravelRequestsScreen', 'viewDetails')}
             type="outline"
@@ -592,7 +597,8 @@ return (
           keyExtractor={item => item.id.toString()}
           contentContainerStyle={styles.requestsList}
           columnWrapperStyle={numColumns > 1 ? styles.columnWrapper : null}
-          ListHeaderComponent={() => searchAndSortHeader}
+          //ListHeaderComponent={() => searchAndSortHeader}
+          ListHeaderComponent={searchAndSortHeader}
           ListEmptyComponent={
             <Text style={styles.emptyText}>
               {t('AgentSearchTravelRequestsScreen', 'noRequestsFound')}
@@ -749,8 +755,17 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
   },
   detailsButtonContainer: {
-    alignItems: 'flex-end',
+   flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginTop: theme.spacing.sm,
+  },
+   nightsText: {
+    flex: 1,
+    marginRight: theme.spacing.sm,
+    fontSize: theme.responsiveTypography.fontSize.sm,
+    fontWeight: theme.typography.fontWeight.semibold,
+    color: theme.colors.textSecondary,
   },
   detailsButton: {
     paddingVertical: responsive(4, 5, 5, 5, 5),
