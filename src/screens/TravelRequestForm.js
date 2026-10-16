@@ -1,4 +1,4 @@
-import { View, StyleSheet, ScrollView, Platform, Alert, KeyboardAvoidingView, TouchableOpacity ,Image} from 'react-native';
+import { View, StyleSheet, ScrollView, Platform, Alert, KeyboardAvoidingView, TouchableOpacity ,Image,Linking} from 'react-native';
 import React, { useState, useEffect, useRef } from 'react';
 import supabase from '../config/supabase';
 import { Button, Input, Text, CheckBox, Icon } from 'react-native-elements';
@@ -90,7 +90,19 @@ if (Platform.OS === 'web' && typeof document !== 'undefined') {
   `;
   document.head.appendChild(style);
 }
-
+const SOCIAL_LINKS = [
+  { name: 'facebook', label: 'Facebook', url: 'https://www.facebook.com/profile.php?id=61594052800048' },
+  { name: 'instagram', label: 'Instagram', url: 'https://www.instagram.com/alghorfaa/' },
+    { name: 'tiktok', label: 'TikTok', url: 'https://www.tiktok.com/@alghorfaa',type: 'ionicon',  },
+];
+const openSocialLink = (url) => {
+  if (Platform.OS === 'web' && typeof window !== 'undefined') {
+    // New tab so users don't lose a half-filled form
+    window.open(url, '_blank', 'noopener,noreferrer');
+  } else {
+    Linking.openURL(url).catch(() => {});
+  }
+};
 export default function TravelRequestForm({ navigation, route }) {
   const { t, language } = useTranslation();
 
@@ -1286,6 +1298,26 @@ useEffect(() => {
             titleStyle={styles.submitButtonText}
           />
         </View>
+        <View style={styles.socialRow}>
+  {SOCIAL_LINKS.map(s => (
+    <TouchableOpacity
+      key={s.name}
+      onPress={() => openSocialLink(s.url)}
+      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+      accessibilityLabel={s.label}
+    >
+      <Icon
+
+        type= 'font-awesome-5'
+        name={s.name}
+        brand
+
+        size={responsive(18)}
+        color={theme.colors.textLight}
+      />
+    </TouchableOpacity>
+  ))}
+</View>
       </ScrollView>
 
        <ClientAuthModal
@@ -1799,5 +1831,12 @@ lockedMessage: {
   textAlign: 'center',
   padding: responsive(20),
   fontStyle: 'italic',
+},
+socialRow: {
+  flexDirection: 'row',
+  justifyContent: 'center',
+  alignItems: 'center',
+  gap: responsive(24),
+  paddingBottom: responsive(24),
 },
 });
