@@ -472,27 +472,30 @@ const updatePassword = async () => {
                 <View style={styles.statsContainer}>
                   <View style={styles.statItem}>
                     <Text style={styles.statValue}>{offerStats.total_offers || 0}</Text>
-                    <Text style={styles.statLabel}>{t('AgentAgentProfileScreen', 'totalOffers')}</Text>
+                    <Text style={styles.statLabel}>{t('CompanyAgentProfileScreen', 'totalOffers')}</Text>
                   </View>
                   
                   <View style={styles.statItem}>
                     <Text style={[styles.statValue, { color: theme.colors.success  }]}>{offerStats.accepted_offers || 0}</Text>
-                    <Text style={styles.statLabel}>{t('AgentAgentProfileScreen', 'accepted')}</Text>
+                    <Text style={styles.statLabel}>{t('CompanyAgentProfileScreen', 'accepted')}</Text>
                   </View>
                   
                   <View style={styles.statItem}>
                     <Text style={[styles.statValue, { color: theme.colors.error  }]}>{offerStats.rejected_offers || 0}</Text>
-                    <Text style={styles.statLabel}>{t('AgentAgentProfileScreen', 'rejected')}</Text>
+                    <Text style={styles.statLabel}>{t('CompanyAgentProfileScreen', 'rejected')}</Text>
                   </View>
-                  
+                  <View style={styles.statItem}>
+  <Text style={[styles.statValue, { color: theme.colors.accent }]}>{offerStats.contacted_offers || 0}</Text>
+  <Text style={styles.statLabel}>{t('CompanyAgentProfileScreen', 'contacted')}</Text>
+</View>
                   <View style={styles.statItem}>
                     <Text style={[styles.statValue, { color: theme.colors.info}]}>{offerStats.viewed_offers || 0}</Text>
-                    <Text style={styles.statLabel}>{t('AgentAgentProfileScreen', 'viewed')}</Text>
+                    <Text style={styles.statLabel}>{t('CompanyAgentProfileScreen', 'viewed')}</Text>
                   </View>
                   
                   <View style={styles.statItem}>
                     <Text style={[styles.statValue, { color: theme.colors.warning }]}>{offerStats.not_viewed_offers || 0}</Text>
-                    <Text style={styles.statLabel}>{t('AgentAgentProfileScreen', 'notViewed')}</Text>
+                    <Text style={styles.statLabel}>{t('CompanyAgentProfileScreen', 'notViewed')}</Text>
                   </View>
                 </View>
               </View>

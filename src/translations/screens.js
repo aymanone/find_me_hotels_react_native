@@ -1116,7 +1116,8 @@ export const ScreenTranslations = {
     accepted: 'Accepted',
     rejected: 'Rejected',
     viewed: 'Viewed',
-    notViewed: 'Not Viewed'
+    notViewed: 'Not Viewed',
+    contacted: 'Contacted',
   },
   ar: {
     // Alert Messages
@@ -1170,7 +1171,8 @@ export const ScreenTranslations = {
     accepted: 'مقبول',
     rejected: 'مرفوض',
     viewed: 'تم عرضه',
-    notViewed: 'لم يتم عرضه'
+    notViewed: 'لم يتم عرضه',
+    contacted: 'تم التواصل',
   }
 }
   ,
@@ -1298,7 +1300,8 @@ export const ScreenTranslations = {
     accepted: 'Accepted',
     rejected: 'Rejected',
     viewed: 'Viewed',
-    notViewed: 'Not Viewed'
+    notViewed: 'Not Viewed',
+    contacted:"contacted",
   },
   ar: {
     // Access and Error Messages
@@ -1354,7 +1357,8 @@ export const ScreenTranslations = {
     accepted: 'مقبولة',
     rejected: 'مرفوضة',
     viewed: 'تم عرضها',
-    notViewed: 'لم يتم عرضها'
+    notViewed: 'لم يتم عرضها',
+    contacted: 'تم التواصل',
   }
 }
   ,
@@ -2455,6 +2459,7 @@ linkError: 'تعذر فتح الرابط',
     viewed: 'Viewed',
     rejected: 'Rejected',
     accepted: 'Accepted',
+    contacted: 'Contacted',
     editCompany: 'Edit Company',
     updateCompany: 'Update Company',
     deleteCompany: 'Delete Company',
@@ -2522,6 +2527,7 @@ linkError: 'تعذر فتح الرابط',
     viewed: 'تم العرض',
     rejected: 'مرفوض',
     accepted: 'مقبول',
+    contacted: 'تم التواصل',
     editCompany: 'تعديل الشركة',
     updateCompany: 'تحديث الشركة',
     deleteCompany: 'حذف الشركة',

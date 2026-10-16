@@ -39,7 +39,8 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
     rejectedOffers: 0,
     pendingOffers: 0,
     viewedOffers: 0,
-    notViewedOffers: 0
+    notViewedOffers: 0,
+    contactedOffers:0
   });
 
   useEffect(() => {
@@ -117,6 +118,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
           // Calculate statistics
           const totalOffers = offersData[0].total_offers || 0;
           const acceptedOffers = offersData[0].accepted_offers || 0;
+          const contactedOffers = offersData[0].contacted_offers || 0;
           const rejectedOffers = offersData[0].rejected_offers || 0;
           const viewedOffers = offersData[0].viewed_offers || 0;
           const notViewedOffers = offersData[0].not_viewed_offers || 0;
@@ -126,7 +128,8 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
             acceptedOffers,
             rejectedOffers,
             viewedOffers,
-            notViewedOffers
+            notViewedOffers,
+            contactedOffers:0
           });
         }else{
           // If agent hasn't signed up yet, set all stats to 0
@@ -135,7 +138,8 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
             acceptedOffers: 0,
             rejectedOffers: 0,
             viewedOffers: 0,
-            notViewedOffers: 0
+            notViewedOffers: 0,
+            contactedOffers:0
           });
         }
       } catch (error) {
@@ -480,7 +484,10 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
             <Text style={[styles.statValue, { color: theme.colors.error }]}>{stats.rejectedOffers}</Text>
             <Text style={styles.statLabel}>{t('CompanyAgentProfileScreen', 'rejected')}</Text>
           </View>
-          
+          <View style={styles.statItem}>
+  <Text style={[styles.statValue, { color: theme.colors.accent }]}>{stats.contactedOffers}</Text>
+  <Text style={styles.statLabel}>{t('CompanyAgentProfileScreen', 'contacted')}</Text>
+</View>
           <View style={styles.statItem}>
             <Text style={[styles.statValue, { color: theme.colors.info }]}>{stats.viewedOffers}</Text>
             <Text style={styles.statLabel}>{t('CompanyAgentProfileScreen', 'viewed')}</Text>

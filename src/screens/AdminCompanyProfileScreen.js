@@ -58,7 +58,8 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
     notViewedOffers: 0,
     viewedOffers: 0,
     rejectedOffers: 0,
-    acceptedOffers: 0
+    acceptedOffers: 0,
+    contactedOffers:0
   });
 
   useEffect(() => {
@@ -178,7 +179,8 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
           notViewedOffers: 0,
           viewedOffers: 0,
           rejectedOffers: 0,
-          acceptedOffers: 0
+          acceptedOffers: 0,
+          contactedOffers:0
         });
         return;
       }
@@ -202,7 +204,8 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
           notViewedOffers: 0,
           viewedOffers: 0,
           rejectedOffers: 0,
-          acceptedOffers: 0
+          acceptedOffers: 0,
+          contactedOffers:0
         };
         
         data.forEach(agent => {
@@ -211,6 +214,7 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
           stats.viewedOffers += agent.viewed_offers || 0;
           stats.rejectedOffers += agent.rejected_offers || 0;
           stats.acceptedOffers += agent.accepted_offers || 0;
+          stats.contactedOffers += agent.contacted_offers || 0;
         });
         
         setSummaryStats(stats);
@@ -433,7 +437,11 @@ export default function AdminCompanyProfileScreen({ route, navigation }) {
               <Text style={styles.statValue}>{summaryStats.viewedOffers}</Text>
               <Text style={styles.statLabel}>{t('AdminCompanyProfileScreen', 'viewed')}</Text>
             </View>
-            
+            <View style={styles.statItem}>
+  <Icon name="call" type="ionicon" color={theme.colors.accent} size={theme.spacing.xxl} />
+  <Text style={styles.statValue}>{summaryStats.contactedOffers}</Text>
+  <Text style={styles.statLabel}>{t('AdminCompanyProfileScreen', 'contacted')}</Text>
+</View>
             <View style={styles.statItem}>
               <Icon name="close-circle" type="ionicon" color={theme.colors.error} size={theme.spacing.xxl}/>
               <Text style={styles.statValue}>{summaryStats.rejectedOffers}</Text>
