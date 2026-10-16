@@ -6,6 +6,7 @@ import {
   ActivityIndicator, 
   TouchableOpacity, 
   Linking,
+  Platform,
   
 } from 'react-native';
 import { 
@@ -138,6 +139,27 @@ const appHasLink =(messagingApp) =>{
       })
       .catch(err => console.error('Error opening URL:', err));
   };
+    const markContacted = () => {
+    if (offer?.status === 'not viewed' || offer?.status === 'viewed') {
+      supabase
+        .rpc('mark_offer_as_viewed', { p_offer_id: offerId, p_status: 'contacted' })
+        .then(({ error }) => { if (error) console.error(error); });
+      setOffer(prev => ({ ...prev, status: 'contacted' }));
+    }
+  };
+
+  const copyPhone = async (phoneNumber) => {
+    if (!phoneNumber) return;
+    markContacted();
+    if (Platform.OS === 'web' && navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(phoneNumber);
+        showAlert(t('ClientOfferDetailsScreen', 'success'), t('ClientOfferDetailsScreen', 'phoneCopied'));
+        return;
+      } catch (e) {}
+    }
+    Linking.openURL(`tel:${phoneNumber.replace(/[^\d+]/g, '')}`);
+  };
 
   const openMessagingApp = (phoneNumber, app) => {
   if (!phoneNumber) {
@@ -147,14 +169,14 @@ const appHasLink =(messagingApp) =>{
     );
     return;
   }
-  
+    markContacted();
   // Format phone number (remove spaces, ensure it starts with +)
-  const formattedPhone = phoneNumber.replace(/\s+/g, '');
+    const formattedPhone = phoneNumber.replace(/[^\d+]/g, '');
   
   let url;
   switch(app.toLowerCase()) {
     case 'whatsapp':
-      url = `whatsapp://send?phone=${formattedPhone}`;
+       url = `https://wa.me/${formattedPhone.replace('+', '')}`;
       break;
     case 'telegram':
       url = `tg://resolve?domain=${formattedPhone}`;
@@ -456,7 +478,7 @@ const appHasLink =(messagingApp) =>{
 
                 {appHasLink(agent.messaging_app) ? (
                   <>
-                    <Text style={styles.value}>{t('ClientOfferDetailsScreen', 'phone')} {agent.phone_number}</Text>
+                    <Text selectable style={styles.value}>{t('ClientOfferDetailsScreen', 'phone')} {agent.phone_number}</Text>
                     <Text style={styles.value}>{t('ClientOfferDetailsScreen', 'messagingApp')} {agent.messaging_app}</Text>
                     <TouchableOpacity
                       style={styles.contactButton}
@@ -477,11 +499,15 @@ const appHasLink =(messagingApp) =>{
                   <TouchableOpacity
                     onPress={() => openMessagingApp(agent.phone_number, agent.messaging_app)}>
                     <View style={styles.contactButtonContent}>
-                      <Text style={styles.value}>{t('ClientOfferDetailsScreen', 'phone')} {agent.phone_number}</Text>
+                      <Text selectable style={styles.value}>{t('ClientOfferDetailsScreen', 'phone')} {agent.phone_number}</Text>
                       <Text style={styles.value}>{t('ClientOfferDetailsScreen', 'messagingApp')} {agent.messaging_app}</Text>
                     </View>
                   </TouchableOpacity>
-                )}
+                  )}
+                                 <TouchableOpacity style={styles.copyButton} onPress={() => copyPhone(agent.phone_number)}>
+                  <Icon name="copy-outline" type="ionicon" size={theme.responsiveComponents.icon.medium} color={theme.colors.primary} />
+                  <Text style={styles.copyButtonText}>{t('ClientOfferDetailsScreen', 'copyPhone')}</Text>
+                </TouchableOpacity>
               </View>
             </View>
             
@@ -702,6 +728,22 @@ const styles = StyleSheet.create({
   },
   contactButtonContent: {
     flexDirection: 'column',
+  },
+    copyButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.spacing.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.md,
+    paddingVertical: theme.spacing.md,
+    marginTop: theme.spacing.sm,
+  },
+  copyButtonText: {
+    color: theme.colors.primary,
+    fontSize: theme.responsiveTypography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.semibold,
   },
 });
 

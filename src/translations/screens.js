@@ -2046,6 +2046,9 @@ invalidCost: 'يجب أن تكون التكلفة الإجمالية رقمًا 
     none: 'None',
     viewAllOffers: 'View all offers for this request',
 updatedOn: 'Updated on',
+phoneCopied : "Phone number copied",
+copyPhone : "Copy phone number",
+success : "Success",
   },
   ar: {
     title: 'تفاصيل العرض',
@@ -2120,6 +2123,10 @@ updatedOn: 'Updated on',
     none: 'لا شيء',
     viewAllOffers: 'عرض جميع العروض لهذا الطلب',
 updatedOn: 'آخر تحديث',
+phoneCopied : "تم نسخ رقم الهاتف",
+copyPhone : "نسخ رقم الهاتف",
+success : "نجاح",
+
   }
 }
   ,
