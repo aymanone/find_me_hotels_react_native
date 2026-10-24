@@ -353,7 +353,7 @@ const appHasLink =(messagingApp) =>{
           />
         </TouchableOpacity>
         
-        {!hotelsSectionCollapsed && offer.hotels && (
+        {!hotelsSectionCollapsed && !!offer.hotels && (
           <View style={styles.sectionContent}>
             {offer.hotels.map((hotel, index) => (
               <Card key={index} containerStyle={styles.hotelItemCard}>
@@ -461,7 +461,7 @@ const appHasLink =(messagingApp) =>{
           />
         </TouchableOpacity>
         
-        {!agentSectionCollapsed && agent && (
+        {!agentSectionCollapsed && !!agent && (
           <View style={styles.sectionContent}>
             {/* Agent Name */}
             <View style={styles.infoRow}>

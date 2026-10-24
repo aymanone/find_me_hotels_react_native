@@ -7,31 +7,78 @@ import { showAlert } from "../components/ShowAlert";
 import { theme, responsive, screenSize } from '../styles/theme';
 import { useTranslation } from '../config/localization';
 import LanguageSelector from '../components/LanguageSelector';
+import OtpStep, { getResendDelay } from '../components/OtpStep';
+import { validPhoneNumber } from '../utils/validation';
 
-export default function LoginScreen({ navigation, isModal = false, onAuthSuccess }) {
+export default function LoginScreen({ navigation, route, isModal = false, onAuthSuccess }) {
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [contact_method, setContactMethod] = useState('phone'); // 'email' | 'phone'
+  const [phone, setPhone] = useState('');
+  const [step, setStep] = useState('form'); // 'form' | 'otp' (only for phone accounts that never confirmed their number)
+  const [otpMeta, setOtpMeta] = useState(null); // { phone, sendCount, nextSendAt }
+
+  const cleanPhoneNumber = (v) => v.replace(/[\s\-().]/g, '');
+
+  const isPhoneNotConfirmed = (error) =>
+    error?.code === 'phone_not_confirmed' || /phone not confirmed/i.test(error?.message ?? '');
+
+  // Account exists but the number was never verified: send a code and show the code step
+  const startPhoneVerification = async (cleanPhone) => {
+    if (otpMeta?.phone !== cleanPhone) {
+      const { error } = await supabase.auth.signInWithOtp({
+        phone: cleanPhone,
+        options: { channel: 'whatsapp', shouldCreateUser: false },
+      });
+      if (error) throw error;
+      setOtpMeta({
+        phone: cleanPhone,
+        sendCount: 1,
+        nextSendAt: Date.now() + getResendDelay(1) * 1000,
+      });
+    }
+    setStep('otp');
+  };
 
   const handleLogin = async () => {
     try {
       setLoading(true);
-      const trimmedEmail = email.trim();
-      const loweredEmail = trimmedEmail.toLowerCase();
-      const { error } = await supabase.auth.signInWithPassword({
-        email: loweredEmail,
-        password,
-      });
 
-      if (error) throw error;
-      
+      if (contact_method === 'phone') {
+        const cleanPhone = cleanPhoneNumber(phone);
+        if (!validPhoneNumber(cleanPhone)) {
+          showAlert(t('SigninScreen', 'invalidPhone'));
+          return;
+        }
+        const { error } = await supabase.auth.signInWithPassword({
+          phone: cleanPhone,
+          password,
+        });
+        if (error) {
+          if (isPhoneNotConfirmed(error)) {
+            await startPhoneVerification(cleanPhone);
+            return;
+          }
+          throw error;
+        }
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: email.trim().toLowerCase(),
+          password,
+        });
+        if (error) throw error;
+      }
+
       if (isModal && onAuthSuccess) {
         onAuthSuccess();
       }
     } catch (error) {
-      showAlert(t('SigninScreen', 'loginError'));
+      showAlert(
+        error?.status === 429 ? t('OtpStep', 'tooManyRequests') : t('SigninScreen', 'loginError')
+      );
     } finally {
       setLoading(false);
     }
@@ -50,6 +97,52 @@ export default function LoginScreen({ navigation, isModal = false, onAuthSuccess
     };
     handleAsyncWork();
   }, [navigation]);
+
+  // If the offer-link redirect sent us here with a known phone number
+  // (WhatsApp client, no email on file), prefill the phone field.
+  useEffect(() => {
+    if (route?.params?.prefillPhone) {
+      setContactMethod('phone');
+      setPhone(route.params.prefillPhone);
+    }
+  }, [route?.params?.prefillPhone]);
+
+  if (step === 'otp' && otpMeta) {
+    return (
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+        style={{flex:1}}
+      >
+        <ScrollView
+          contentContainerStyle={[styles.container, { justifyContent: 'center' }]}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.contentWrapper}>
+            <View style={styles.languageSelectorContainer}>
+              <LanguageSelector />
+            </View>
+            <View style={{ marginTop: responsive(100, 120, 120, 120, 120) }}>
+              <OtpStep
+                phone={otpMeta.phone}
+                sendCount={otpMeta.sendCount}
+                nextSendAt={otpMeta.nextSendAt}
+                onResent={({ sendCount, nextSendAt }) =>
+                  setOtpMeta(prev => ({ ...prev, sendCount, nextSendAt }))
+                }
+                // The code check signs the user in; the app (or the parent modal) takes it from here
+                onVerified={() => {
+                  if (isModal && onAuthSuccess) onAuthSuccess();
+                }}
+                onChangeNumber={() => setStep('form')}
+              />
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    );
+  }
 
   return (
      <KeyboardAvoidingView
@@ -165,18 +258,58 @@ export default function LoginScreen({ navigation, isModal = false, onAuthSuccess
   styles.formContainer,
   isModal && { marginTop: responsive(150, 150, 150, 150, 150) }
 ]}>
-          <Input
-            placeholder={t('SigninScreen', 'email')}
-            onChangeText={setEmail}
-            value={email}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            inputContainerStyle={styles.inputContainer}
-            inputStyle={styles.inputText}
-            containerStyle={styles.inputWrapper}
-            placeholderTextColor={theme.colors.textLight}
-          />
-          
+          <View style={styles.contactToggleRow}>
+            <TouchableOpacity onPress={() => setContactMethod('email')}>
+              <Text style={[
+                styles.contactToggleText,
+                contact_method === 'email' && styles.contactToggleTextActive,
+              ]}>
+                {t('SigninScreen', 'email')}
+              </Text>
+            </TouchableOpacity>
+            <Text style={styles.contactToggleSeparator}>{'\u2022'}</Text>
+            <TouchableOpacity onPress={() => {
+              setContactMethod('phone');
+              if (!phone) setPhone('+'); // user only types the code and number
+            }}>
+              <Text style={[
+                styles.contactToggleText,
+                contact_method === 'phone' && styles.contactToggleTextActive,
+              ]}>
+                {t('SigninScreen', 'phone')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {contact_method === 'phone' ? (
+            <>
+            <Input
+              placeholder="+201234567890"
+              onChangeText={setPhone}
+              value={phone}
+              autoCapitalize="none"
+              keyboardType="phone-pad"
+              inputContainerStyle={styles.inputContainer}
+              inputStyle={styles.inputText}
+              containerStyle={styles.inputWrapper}
+              placeholderTextColor={theme.colors.textLight}
+            />
+            <Text style={styles.phoneHint}>{t('SigninScreen', 'phoneHint')}</Text>
+            </>
+          ) : (
+            <Input
+              placeholder={t('SigninScreen', 'email')}
+              onChangeText={setEmail}
+              value={email}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              inputContainerStyle={styles.inputContainer}
+              inputStyle={styles.inputText}
+              containerStyle={styles.inputWrapper}
+              placeholderTextColor={theme.colors.textLight}
+            />
+          )}
+
           <Input
             placeholder={t('SigninScreen', 'password')}
             onChangeText={setPassword}
@@ -197,7 +330,14 @@ export default function LoginScreen({ navigation, isModal = false, onAuthSuccess
 
           <TouchableOpacity 
             style={styles.forgotPasswordContainer}
-            onPress={() => navigation.navigate('ForgotPassword')}
+            onPress={() =>
+              navigation.navigate(
+                'ForgotPassword',
+                contact_method === 'phone'
+                  ? { method: 'phone', phone: cleanPhoneNumber(phone).length > 1 ? cleanPhoneNumber(phone) : '' }
+                  : { method: 'email', email: email.trim() }
+              )
+            }
           >
             <Text style={styles.forgotPasswordText}>
               {t('SigninScreen', 'forgotPassword')}
@@ -388,6 +528,36 @@ const styles = StyleSheet.create({
 
   inputWrapper: {
     marginBottom: responsive(16, 20, 20, 20, 20),
+  },
+
+  phoneHint: {
+    fontSize: responsive(11, 12, 12, 12, 12),
+    color: theme.colors.textSecondary,
+    marginTop: responsive(-12, -14, -14, -14, -14),
+    marginBottom: responsive(14, 16, 16, 16, 16),
+    paddingHorizontal: 10,
+  },
+
+  contactToggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: responsive(10, 12, 12, 12, 12),
+  },
+
+  contactToggleText: {
+    fontSize: responsive(13, 14, 14, 14, 14),
+    color: theme.colors.textLight,
+    fontWeight: '500',
+  },
+
+  contactToggleTextActive: {
+    color: theme.colors.primary,
+    fontWeight: '700',
+  },
+
+  contactToggleSeparator: {
+    marginHorizontal: responsive(10, 12, 12, 12, 12),
+    color: theme.colors.borderDark,
   },
 
   inputContainer: {

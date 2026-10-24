@@ -19,9 +19,19 @@ const waitForRoute = async (navigation, name) => {
   }
   return false;
 };
+const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+
+// WhatsApp links can arrive as "%7B%7B1%7D%7D<uuid>" or "{{1}}<uuid>"
+const cleanOfferId = (raw) => {
+  let s = String(raw ?? '');
+  try { s = decodeURIComponent(s); } catch {}
+  return s.match(UUID)?.[0] ?? s;
+};
 
 export default function OfferRedirectScreen({ navigation, route }) {
-  const { offerId, k } = route.params ?? {};
+  //const { offerId, k } = route.params ?? {};
+  const { offerId: rawOfferId, k } = route.params ?? {};
+  const offerId = rawOfferId ? cleanOfferId(rawOfferId) : rawOfferId;
 
   useEffect(() => {
     const goToRole = async (role) => {

@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { View, StyleSheet,TextInput, ScrollView, 
+import React, { useState, useEffect, useMemo } from 'react';
+import { View, StyleSheet, ScrollView, 
   KeyboardAvoidingView, Platform} from 'react-native';
-import { Button, Input, Text } from 'react-native-elements';
+import { Button, Input, Text,  CheckBox } from 'react-native-elements';
 import { Dropdown } from 'react-native-element-dropdown';
 import {signOut,notAllowedAuthenticatedUser} from '../utils/auth';
 import { validEmail, validPasswordSignup, validPhoneNumber } from '../utils/validation';
@@ -9,6 +9,7 @@ import supabase from '../config/supabase';
 import {MESSAGING_APPS} from '../config/CONSTANTS'
 import {showAlert} from "../components/ShowAlert";
 import LanguageSelector from '../components/LanguageSelector';
+import OtpStep, { getResendDelay } from '../components/OtpStep';
 import { theme, commonStyles, responsive, screenSize } from '../styles/theme';
 import { useTranslation } from '../config/localization';
 // Custom debounce hook
@@ -28,6 +29,15 @@ const useDebounce = (value, delay) => {
   return debouncedValue;
 };
 
+// Phone helpers (no external libraries)
+// Removes spaces, dashes, dots, parentheses and leading zeros (local trunk prefix, e.g. 010... -> 10...)
+const normalizeNationalPhone = (raw = '') =>
+  raw.replace(/[\s\-().]/g, '').replace(/^0+/, '');
+
+// National number only (without country code): digits only, 6 to 12 digits
+const isValidNationalPhone = (raw = '') =>
+  /^\d{6,12}$/.test(normalizeNationalPhone(raw));
+
 export default function SignupScreen({ navigation, isModal = false, onAuthSuccess }) {
   const { language,t } = useTranslation();
   const [email, setEmail] = useState('');
@@ -43,11 +53,23 @@ export default function SignupScreen({ navigation, isModal = false, onAuthSucces
   const [messaging_app, setMessagingApp] = useState('');
   const [agent_phone, setAgentPhone] = useState('');
   const [client_country, setClientCountry] = useState('');
+  const [contact_method, setContactMethod] = useState('phone'); // 'phone' | 'email', clients only
+  const [client_phone, setClientPhone] = useState('');
+  const [whatsapp_optin, setWhatsappOptin] = useState(false);
+  const isPhoneSignup = role === 'client' && contact_method === 'phone';
   const [countries, setCountries] = useState([]);
   const [loadingCountries, setLoadingCountries] = useState(false);
   const [countriesError, setCountriesError] = useState(null);
-  const [countrySearch, setCountrySearch] = useState('');
    const [showPassword, setShowPassword] = useState(false);
+  const debouncedPhone = useDebounce(client_phone, 500);
+  const [step, setStep] = useState('form'); // 'form' | 'otp'
+  const [otpMeta, setOtpMeta] = useState(null); // { phone, sendCount, nextSendAt }
+  const [phone_country, setPhoneCountry] = useState(''); // country of the phone number (can differ from client_country)
+  const [phoneCodeTouched, setPhoneCodeTouched] = useState(false);
+  const selectedPhoneCountry = useMemo(
+    () => countries.find(c => c.value === phone_country),
+    [countries, phone_country]
+  );
   const roles = [
     { label: t('SignupScreen', 'client'), value: 'client' },
     { label: t('SignupScreen', 'agent'), value: 'agent' },
@@ -83,7 +105,7 @@ export default function SignupScreen({ navigation, isModal = false, onAuthSucces
         
         const { data, error } = await supabase
           .from('countries')
-          .select('id, country_name')
+          .select('id, country_name, iso_code, call_code')
           .order('country_name');
         
         if (error) {
@@ -91,10 +113,23 @@ export default function SignupScreen({ navigation, isModal = false, onAuthSucces
         }
         
         const formattedCountries = data.map(country => ({
-          label: country.country_name,
-          value: country.id
+          label: `${country.country_name} (${country.iso_code})`,
+          name: country.country_name,
+          callLabel: `${country.iso_code} +${String(country.call_code).replace(/\D/g, '')}`,
+          search: `${country.country_name} ${country.iso_code} ${country.call_code}`,
+          value: country.id,
+          iso: country.iso_code,
+          // works whether call_code is stored as "20" or "+20"
+          callCode: '+' + String(country.call_code).replace(/\D/g, ''),
         }));
         setCountries(formattedCountries);
+        // Main country: Egypt (matched by ISO code). Default for both the client country and the phone code
+const egypt = formattedCountries.find(c => c.iso === 'EG');
+if (egypt) {
+  //setClientCountry(prev => prev || egypt.value);
+  setPhoneCountry(prev => prev || egypt.value);
+}
+
       } catch (error) {
         console.error('Error fetching countries:', error);
         setCountriesError('Unable to load countries. Please try again later.');
@@ -106,17 +141,55 @@ export default function SignupScreen({ navigation, isModal = false, onAuthSucces
     fetchCountries();
   }, []);
 
+  // Same behaviour as before for email signup; phone signup runs it after the code is verified
+  const finishSignup = () => {
+    showAlert(t('SignupScreen', 'registrationSuccess'));
+
+    if (isModal && onAuthSuccess) {
+      // Called from modal - DON'T sign out, notify parent
+      onAuthSuccess();
+    } else {
+      // Wait for 5 seconds before navigating
+      setTimeout(async () => {
+        try {
+          await signOut(navigation, 'Signin');
+        } catch (error) {
+          console.error('Error during sign out after registration:', error);
+          // Fallback if signOut fails
+          navigation.navigate('Signin');
+        }
+      }, 5000);
+    }
+  };
+
   const handleSignup = async () => {
     try {
       // Validate required fields
-      if (!email || !password || !confirmPassword) {
-        throw new Error(t('SignupScreen', 'validationError'));
-      }
+     if (!password || !confirmPassword) {
+  throw new Error(t('SignupScreen', 'validationError'));
+}
 
-      // Validate email format
-      if (!validEmail(email.trim())) {
-        throw new Error(t('SignupScreen', 'invalidEmail'));
-      }
+let fullPhone = '';
+
+if (isPhoneSignup) {
+  if (!client_phone || !selectedPhoneCountry) {
+    throw new Error(t('SignupScreen', 'validationError'));
+  }
+  if (!isValidNationalPhone(client_phone)) {
+    throw new Error(t('SignupScreen', 'invalidPhone'));
+  }
+  fullPhone = selectedPhoneCountry.callCode + normalizeNationalPhone(client_phone);
+  if (!whatsapp_optin) {
+    throw new Error(t('SignupScreen', 'whatsappOptinRequired'));
+  }
+} else {
+  if (!email) {
+    throw new Error(t('SignupScreen', 'validationError'));
+  }
+  if (!validEmail(email.trim())) {
+    throw new Error(t('SignupScreen', 'invalidEmail'));
+  }
+}
 
       // Validate password
       if (!validPasswordSignup(password)) {
@@ -140,7 +213,8 @@ export default function SignupScreen({ navigation, isModal = false, onAuthSucces
             ...userData,
             first_name: "Unknown",
             second_name:"Unknown",
-            country: client_country
+            country: client_country,
+            whatsapp_optin: isPhoneSignup && whatsapp_optin
           };
           break;
 
@@ -152,7 +226,7 @@ export default function SignupScreen({ navigation, isModal = false, onAuthSucces
             throw new Error(t('SignupScreen', 'invalidEmail'));
           }
           if (!validPhoneNumber(agent_phone)) {
-            throw new Error('Please enter a valid phone number');
+            throw new Error(t('SignupScreen', 'invalidPhone'));
           }
           userData = {
             ...userData,
@@ -190,40 +264,39 @@ export default function SignupScreen({ navigation, isModal = false, onAuthSucces
           break;
       }
 
+      // Code already sent to this number (user pressed "Change phone number" and came back):
+      // don't create the account or send again, the resend timer keeps running in the code step
+      if (isPhoneSignup && otpMeta?.phone === fullPhone) {
+        setStep('otp');
+        return;
+      }
+
       setLoading(true);
      
       // Sign up user with Supabase
       const trimmedEmail=email.trim();
       const loweredEmail= trimmedEmail.toLowerCase();
-     
-      const { error } = await supabase.auth.signUp({
-       email: loweredEmail,
-        password,
-        options: {
-          data: userData,
-        },
-      });
+     const signupPayload = isPhoneSignup
+  ? { phone: fullPhone, password, options: { data: userData, channel: 'whatsapp' } }
+  : { email: loweredEmail, password, options: { data: userData } };
+
+const { error } = await supabase.auth.signUp(signupPayload);
+
 
       if (error) throw error;
 
-      showAlert(t('SignupScreen', 'registrationSuccess'));
-      
-      // Wait for 5 seconds before navigating
-       if (isModal && onAuthSuccess) {
-        // Called from modal - DON'T sign out, notify parent
-        onAuthSuccess();
-      } 
-      else {
-      setTimeout(async () => {
-        try {
-          await signOut(navigation, 'Signin');
-        } catch (error) {
-          console.error('Error during sign out after registration:', error);
-          // Fallback if signOut fails
-          navigation.navigate('Signin');
-        }
-      }, 5000);
-    }
+      if (isPhoneSignup) {
+        // Code sent by WhatsApp: go to the verification step
+        setOtpMeta({
+          phone: fullPhone,
+          sendCount: 1,
+          nextSendAt: Date.now() + getResendDelay(1) * 1000,
+        });
+        setStep('otp');
+        return;
+      }
+
+      finishSignup();
       
     } catch (error) {
       showAlert(error.message);
@@ -231,6 +304,35 @@ export default function SignupScreen({ navigation, isModal = false, onAuthSucces
       setLoading(false);
     }
   };
+
+  if (step === 'otp' && otpMeta) {
+    return (
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.languageSelectorContainer}>
+            <LanguageSelector />
+          </View>
+          <OtpStep
+            phone={otpMeta.phone}
+            sendCount={otpMeta.sendCount}
+            nextSendAt={otpMeta.nextSendAt}
+            onResent={({ sendCount, nextSendAt }) =>
+              setOtpMeta(prev => ({ ...prev, sendCount, nextSendAt }))
+            }
+            onVerified={finishSignup}
+            onChangeNumber={() => setStep('form')}
+          />
+        </ScrollView>
+      </KeyboardAvoidingView>
+    );
+  }
 
   return (
       <KeyboardAvoidingView 
@@ -247,15 +349,147 @@ export default function SignupScreen({ navigation, isModal = false, onAuthSucces
         <LanguageSelector />
       </View>
       <Text style={styles.title}>{t('SignupScreen', 'title')}</Text>
+
       <View style={styles.form}>
-        <Input
-          placeholder={t('SignupScreen', 'email')}
-          onChangeText={setEmail}
-          value={email}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          errorMessage={email && !validEmail(email.trim()) ? t('SignupScreen', 'invalidEmail') : ''}
-        />
+             {/* Client specific fields */}
+        {role === 'client' && (
+  <View style={styles.toggleRow}>
+    <Button
+      title={t('SignupScreen', 'phone')}
+      type={contact_method === 'phone' ? 'solid' : 'outline'}
+      onPress={() => setContactMethod('phone')}
+      containerStyle={{ flex: 1, marginRight: 8 }}
+    />
+    <Button
+      title={t('SignupScreen', 'email')}
+      type={contact_method === 'email' ? 'solid' : 'outline'}
+      onPress={() => setContactMethod('email')}
+      containerStyle={{ flex: 1 }}
+    />
+  </View>
+)}
+
+{role === 'client' && !isPhoneSignup && (
+  <Input
+    placeholder={t('SignupScreen', 'email')}
+    onChangeText={setEmail}
+    value={email}
+    autoCapitalize="none"
+    keyboardType="email-address"
+    errorMessage={email && !validEmail(email.trim()) ? t('SignupScreen', 'invalidEmail') : ''}
+  />
+)}
+
+{isPhoneSignup && (
+  <>
+    <View style={styles.phoneRow}>
+      <Dropdown
+        style={[styles.dropdown, styles.codeDropdown]}
+        data={countries}
+        labelField="callLabel"
+        valueField="value"
+        value={phone_country}
+        onChange={item => {
+          setPhoneCountry(item.value);
+          setPhoneCodeTouched(true);
+        }}
+        placeholder="+"
+        placeholderStyle={styles.placeholderStyle}
+        selectedTextStyle={styles.selectedTextStyle}
+        activeColor={theme.colors.primaryLight}
+        search
+        inputSearchStyle={commonStyles.inputSearchStyle}
+        searchPlaceholder={t('SignupScreen', 'searchCountryOrCode')}
+        searchField="search"
+        maxHeight={300}
+        disable={loadingCountries || !!countriesError}
+        renderItem={(item) => (
+          <View style={styles.dropdownItemContainer}>
+            <Text style={styles.dropdownItem}>
+              {item.name} {item.callCode}
+            </Text>
+          </View>
+        )}
+        dropdownPosition="auto"
+        keyboardAvoiding={true}
+        autoScroll={false}
+      />
+      <Input
+        containerStyle={styles.phoneInput}
+        placeholder={t('SignupScreen', 'phonePlaceholder')}
+        onChangeText={setClientPhone}
+        value={client_phone}
+        keyboardType="phone-pad"
+        errorMessage={debouncedPhone && selectedPhoneCountry && !isValidNationalPhone(debouncedPhone)
+          ? t('SignupScreen', 'invalidPhone') : ''}
+      />
+    </View>
+    <Text style={styles.phoneHint}>
+      {t('SignupScreen', 'phoneCodeHint')}
+    </Text>
+  </>
+)}
+
+{/* Client country (phone or email) */}
+{role === 'client' && (
+  <>
+    <Text style={styles.label}>{t('SignupScreen', 'clientCountry')}:</Text>
+    {loadingCountries ? (
+      <Text style={styles.loadingText}>{t('SignupScreen', 'loadingCountries')}</Text>
+    ) : countriesError ? (
+      <Text style={styles.errorText}>{t('SignupScreen', 'countriesError')}</Text>
+    ) : (
+      <Dropdown
+        style={[styles.dropdown, styles.clientCountries]}
+        data={countries}
+        labelField="label"
+        valueField="value"
+        value={client_country}
+        onChange={item => {
+          setClientCountry(item.value);
+          if (!phoneCodeTouched) setPhoneCountry(item.value);
+        }}
+        placeholder={t('SignupScreen', 'selectCountry')}
+        placeholderStyle={styles.placeholderStyle}
+        selectedTextStyle={styles.selectedTextStyle}
+        activeColor={theme.colors.primaryLight}
+        search
+        inputSearchStyle={commonStyles.inputSearchStyle}
+        searchPlaceholder={t('SignupScreen', 'searchCountry')}
+        searchField="label"
+        maxHeight={300}
+        renderItem={(item) => (
+          <View style={styles.dropdownItemContainer}>
+            <Text style={styles.dropdownItem}>
+              {item.label}
+            </Text>
+          </View>
+        )}
+        dropdownPosition="auto"
+        keyboardAvoiding={true}
+        autoScroll={false}
+      />
+    )}
+  </>
+)}
+
+{isPhoneSignup && (
+  <CheckBox
+    title={t('SignupScreen', 'whatsappOptin')}
+    checked={whatsapp_optin}
+    onPress={() => setWhatsappOptin(!whatsapp_optin)}
+  />
+)}
+        {role !== 'client' && (
+          <Input
+            placeholder={t('SignupScreen', 'email')}
+            onChangeText={setEmail}
+            value={email}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            errorMessage={email && !validEmail(email.trim()) ? t('SignupScreen', 'invalidEmail') : ''}
+          />
+        )}
         
         <Input
           placeholder={t('SignupScreen', 'password')}
@@ -275,7 +509,7 @@ export default function SignupScreen({ navigation, isModal = false, onAuthSucces
   
         
         <Text style={styles.passwordHint}>
-          Password must contain at least 8 characters, including uppercase, lowercase, and numbers
+          {t('SignupScreen', 'passwordHint')}
         </Text>
         
         <Input
@@ -317,49 +551,7 @@ export default function SignupScreen({ navigation, isModal = false, onAuthSucces
           </>
         )}
 
-        {/* Client specific fields */}
-        {role === 'client' && (
-          <>
-            <Text style={styles.label}>{t('SignupScreen', 'clientCountry')}:</Text>
-            {loadingCountries ? (
-              <Text style={styles.loadingText}>Loading countries...</Text>
-            ) : countriesError ? (
-              <Text style={styles.errorText}>{t('SignupScreen', 'countriesError')}</Text>
-            ) : (
-              <Dropdown
-                style={[styles.dropdown,styles.clientCountries]}
-                data={countries}
-                labelField="label"
-                valueField="value"
-                value={client_country}
-                onChange={item => {
-                  setClientCountry(item.value);
-                  setCountrySearch('');
-                }}
-                placeholder="Select country..."
-      
-                placeholderStyle={styles.placeholderStyle}
-                selectedTextStyle={styles.selectedTextStyle}
-                activeColor={theme.colors.primaryLight}
-                search
-                searchPlaceholder="Search country..."
-                searchQuery={countrySearch}
-                onChangeSearchQuery={setCountrySearch}
-                searchField="label"
-                maxHeight={300}
-                renderItem={(item) => (
-                  <View style={styles.dropdownItemContainer}>
-                    <Text style={styles.dropdownItem}>
-                      {item.label}
-                    </Text>
-                  </View>
-                )}
-                dropdownPosition="auto"
-                keyboardAvoiding={true}
-              />
-            )}
-           </>
-        )}
+ 
 
         {/* Agent specific fields */}
         {role === 'agent' && (
@@ -381,14 +573,14 @@ export default function SignupScreen({ navigation, isModal = false, onAuthSucces
       valueField="value"
       value={messaging_app}
       onChange={item => setMessagingApp(item.value)}
-      placeholder="Select messaging app"
+      placeholder={t('SignupScreen', 'selectMessagingApp')}
       style={styles.dropdown}
       placeholderStyle={styles.placeholderStyle}
       selectedTextStyle={styles.selectedTextStyle}
       activeColor="#e8e8e8"
     />
               <Input
-                placeholder="Phone Number (e.g. +1234567890)"
+                placeholder={t('SignupScreen', 'agentPhonePlaceholder')}
                 onChangeText={setAgentPhone}
                 value={agent_phone}
                 keyboardType="phone-pad"
@@ -396,7 +588,7 @@ export default function SignupScreen({ navigation, isModal = false, onAuthSucces
                   (agent_phone && !validPhoneNumber(agent_phone)) ? 'Please enter a valid international phone number' : ''}
               />
               <Text style={styles.phoneHint}>
-                Phone number must start with country code (e.g. +20 for Egypt)
+                {t('SignupScreen', 'agentPhoneHint')}
               </Text>
             </>
           </>
@@ -424,7 +616,7 @@ export default function SignupScreen({ navigation, isModal = false, onAuthSucces
           valueField="value"
           value={role}
           onChange={item => setRole(item.value)}
-          placeholder="Select role"
+          placeholder={t('SignupScreen', 'selectRole')}
           style={styles.dropdown}
           placeholderStyle={styles.placeholderStyle}
           selectedTextStyle={styles.selectedTextStyle}
@@ -612,6 +804,25 @@ footerSeparator: {
   marginHorizontal: responsive(10, 12, 12, 12, 12),
   color: theme.colors.borderDark,
   fontSize: responsive(13, 14, 14, 14, 14),
+},
+phoneRow: {
+  flexDirection: 'row',
+  alignItems: 'flex-start',
+},
+codeDropdown: {
+  width: 110,
+  marginRight: 0,
+  marginBottom: theme.spacing.sm,
+},
+phoneInput: {
+  flex: 1,
+  paddingHorizontal: 0,
+},
+
+toggleRow: {
+  flexDirection: 'row',
+  marginHorizontal: theme.spacing.sm,
+  marginBottom: theme.spacing.lg,
 },
 });
 

@@ -32,6 +32,7 @@ export default function ClientClientProfileScreen({ navigation }) {
   const [isEditing, setIsEditing] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [userEmail, setUserEmail] = useState('');
+  const [userPhone, setUserPhone] = useState('');
   const [formData, setFormData] = useState({
     first_name: '',
     second_name: '',
@@ -63,9 +64,14 @@ export default function ClientClientProfileScreen({ navigation }) {
       
       // Get user email
       const currentUser = await getCurrentUser();
-      if (currentUser && currentUser.email) {
-        setUserEmail(currentUser.email);
+      if (currentUser ) {
         fetchClientProfile(currentUser.id);
+        if(currentUser.email && currentUser.email != `${currentUser.id}@alghorfa.net`){
+           setUserEmail(currentUser.email);
+        }
+        if(currentUser.phone){
+          setUserPhone(currentUser.phone);
+        }
       } else {
         throw new Error('User information not available');
       }
@@ -361,6 +367,10 @@ export default function ClientClientProfileScreen({ navigation }) {
                 <View style={styles.infoRow}>
                   <Text style={styles.infoLabel}>{t('ClientClientProfileScreen', 'emailLabel')}</Text>
                   <Text style={styles.infoValue}>{userEmail || t('ClientClientProfileScreen', 'notAvailable')}</Text>
+                </View>
+                 <View style={styles.infoRow}>
+                  <Text style={styles.infoLabel}>{t('ClientClientProfileScreen', 'phoneLabel')}</Text>
+                  <Text style={styles.infoValue}>{userPhone || t('ClientClientProfileScreen', 'notAvailable')}</Text>
                 </View>
                 
                 <View style={styles.infoRow}>

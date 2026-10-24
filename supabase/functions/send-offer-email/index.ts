@@ -2,6 +2,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const LINK_DAYS = 3 // was 7: shorter window limits damage if a message leaks
 const BASE_URL = 'https://alghorfa.net'
+const GRAPH_VERSION = 'v21.0'
 const enc = new TextEncoder()
 
 const b64u = (buf: ArrayBuffer | Uint8Array) =>
@@ -66,11 +67,13 @@ Deno.serve(async (req) => {
 
     const requestInfo = reqRes.data
     const client = clientRes.data
-    //const email: string | null = userRes.data?.user?.email ?? null
-    // Placeholder addresses are digits only: 201012345678@alghorfa.net
-   const rawEmail: string | null = userRes.data?.user?.email ?? null
-   const placeholder = `${offer.request_creator}@alghorfa.net`
-   const email: string | null = rawEmail && rawEmail.toLowerCase() !== placeholder ? rawEmail : null
+
+    // Placeholder accounts (phone signups) use <user id>@alghorfa.net
+    const rawEmail: string | null = userRes.data?.user?.email ?? null
+    const placeholder = `${offer.request_creator}@alghorfa.net`.toLowerCase()
+    const email: string | null =
+      rawEmail && rawEmail.toLowerCase() !== placeholder ? rawEmail : null
+
     if (reqRes.error || !requestInfo) {
       console.error('Travel request not found', reqRes.error?.message)
       return new Response('Travel request not found', { status: 400 })
@@ -80,12 +83,12 @@ Deno.serve(async (req) => {
       return new Response('Client not found', { status: 400 })
     }
 
-    // Normalize phone: keep digits and a leading +, drop spaces/dashes/etc.
+    // Normalize phone: digits only, then add a leading +
     const toE164 = (v: string) => {
-  const d = String(v ?? '').replace(/\D/g, '')
-  return d ? '+' + d : ''
-}
-const phone = toE164(client.phone_number)
+      const d = String(v ?? '').replace(/\D/g, '')
+      return d ? '+' + d : ''
+    }
+    const phone = toE164(client.phone_number)
     const useWhatsapp = !!(phone && client.whatsapp_opt_in)
 
     // Email is required unless we are going to deliver by WhatsApp
@@ -98,13 +101,15 @@ const phone = toE164(client.phone_number)
     // fresh Supabase login when the link is clicked, so nothing is burned by
     // link previews or prefetching.
     let offerLink = `${BASE_URL}/offer/${offer.id}`
+    let linkSuffix = String(offer.id) // the part after /offer/ (used by the WhatsApp URL button)
     try {
       const token = await signToken({
         o: String(offer.id),
         u: offer.request_creator,
         e: Date.now() + LINK_DAYS * 24 * 3600 * 1000,
       })
-      offerLink += `?k=${encodeURIComponent(token)}`
+      linkSuffix = `${offer.id}?k=${encodeURIComponent(token)}`
+      offerLink = `${BASE_URL}/offer/${linkSuffix}`
     } catch (e) {
       // Plain link still works: sign in, then the offer
       console.error('Could not sign offer link:', (e as Error).message)
@@ -119,44 +124,57 @@ const phone = toE164(client.phone_number)
     const hasPriceRange = offer.min_cost != null && offer.max_cost != null
     const range = hasPriceRange ? `${offer.min_cost} - ${offer.max_cost}` : ''
 
-    // 5a. WhatsApp via Twilio (falls back to email if it fails)
+    // 5a. WhatsApp via Meta Cloud API (falls back to email if it fails)
     if (useWhatsapp) {
       try {
-        const sid = Deno.env.get('TWILIO_ACCOUNT_SID')!
-        const authToken = Deno.env.get('TWILIO_AUTH_TOKEN')!
-        // Accept TWILIO_WHATSAPP_FROM with or without the "whatsapp:" prefix
-        const from = (Deno.env.get('TWILIO_WHATSAPP_FROM') ?? '').replace(/^whatsapp:/, '')
+        const phoneId = Deno.env.get('WA_PHONE_NUMBER_ID')!
+        const waToken = Deno.env.get('WA_ACCESS_TOKEN')!
 
-        const twilioRes = await fetch(
-          `https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`,
+        const waRes = await fetch(
+          `https://graph.facebook.com/${GRAPH_VERSION}/${phoneId}/messages`,
           {
             method: 'POST',
             headers: {
-              'Authorization': 'Basic ' + btoa(`${sid}:${authToken}`),
-              'Content-Type': 'application/x-www-form-urlencoded',
+              'Authorization': `Bearer ${waToken}`,
+              'Content-Type': 'application/json',
             },
-            body: new URLSearchParams({
-              From: `whatsapp:${from}`,
-              To: `whatsapp:${phone}`,
-              ContentSid: Deno.env.get('TWILIO_OFFER_TEMPLATE_SID')!,
-              ContentVariables: JSON.stringify({
-                '1': location,
-                '2': String(totalOffers),
-                // If your template uses this as a BUTTON URL, pass only the
-                // dynamic suffix here (e.g. `${offer.id}?k=...`), not the full URL.
-                '3': offerLink,
-              }),
+            body: JSON.stringify({
+              messaging_product: 'whatsapp',
+              to: phone.replace(/\D/g, ''), // digits only, no "+"
+              type: 'template',
+              template: {
+                name: Deno.env.get('WA_OFFER_TEMPLATE_NAME'),
+                language: { code: Deno.env.get('WA_OFFER_TEMPLATE_LANG') },
+                components: [
+                  {
+                    type: 'body',
+                    parameters: [
+                      { type: 'text', text: location },            // {{1}}
+                      { type: 'text', text: String(totalOffers) }, // {{2}}
+                    ],
+                  },
+                  // Template with a dynamic URL button, e.g. https://alghorfa.net/offer/{{1}}:
+                  // pass only the suffix. If your link is in the body instead, delete this
+                  // button component and add { type: 'text', text: offerLink } as {{3}} above.
+                  {
+                    type: 'button',
+                    sub_type: 'url',
+                    index: '0',
+                    parameters: [{ type: 'text', text: linkSuffix }],
+                  },
+                ],
+              },
             }),
           }
         )
 
-        if (twilioRes.ok) {
+        if (waRes.ok) {
           return new Response('WhatsApp message sent', { status: 200 })
         }
         // Status only: the body can contain phone numbers
-        console.error('Twilio error, status', twilioRes.status)
+        console.error('WhatsApp error, status', waRes.status)
       } catch (e) {
-        console.error('Twilio request failed:', (e as Error).message)
+        console.error('WhatsApp request failed:', (e as Error).message)
       }
 
       if (!email) {

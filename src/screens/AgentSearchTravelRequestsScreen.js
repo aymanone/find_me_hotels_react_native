@@ -504,6 +504,7 @@ const AgentSearchTravelRequestsScreen = () => {
             placeholder={searchType === 'destination' ? t('AgentSearchTravelRequestsScreen', 'selectCountry') : t('AgentSearchTravelRequestsScreen', 'selectNationality')}
             value={selectedCountry}
             search
+            inputSearchStyle={commonStyles.inputSearchStyle}
             maxHeight={300}
             onChange={item => setSelectedCountry(item.value)}
           />

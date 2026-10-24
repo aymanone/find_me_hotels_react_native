@@ -1163,6 +1163,17 @@ responsiveInfoItem: {
     fontSize: theme.typography.fontSize.md,
     color: theme.colors.text,
     paddingHorizontal: theme.spacing.sm,
+    ...(Platform.OS === 'web' && {
+      outlineWidth: 0,
+      outlineStyle: 'none',
+    }),
+  },
+   inputSearchStyle: {
+    // Web only: hide the browser's focus ring in dropdown search boxes
+    ...(Platform.OS === 'web' && {
+      outlineWidth: 0,
+      outlineStyle: 'none',
+    }),
   },
   
   // Buttons

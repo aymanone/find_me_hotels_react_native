@@ -17,16 +17,23 @@ export default function ResetPasswordScreen({ navigation, route }) {
   const [showPassword, setShowPassword] = useState(false);
   const [passwordError, setPasswordError] = useState('');
   const [sessionEstablished, setSessionEstablished] = useState(false);
+  const [mode, setMode] = useState(null); // 'email' | 'phone'
+  const [otpCode, setOtpCode] = useState('');
+  const [verifyingCode, setVerifyingCode] = useState(false);
+  const [resending, setResending] = useState(false);
 
   const { setIsResettingPassword } = useAuth();
 
-  // Extract tokens from route params
-  const { access_token, refresh_token } = route.params || {};
+  // Extract params: email accounts arrive with tokens from the reset link,
+  // phone accounts arrive with just the phone number (no magic-link equivalent exists)
+  const { access_token, refresh_token, phone } = route.params || {};
 
-  // Set up the session when component mounts
+  // Set up the session when component mounts (email path), or wait for a
+  // code to be entered (phone path - handled by handleVerifyCode below)
   useEffect(() => {
     const setupSession = async () => {
       if (access_token && refresh_token) {
+        setMode('email');
         try {
           // Set the resetting flag before setting session
           setIsResettingPassword(true);
@@ -52,6 +59,14 @@ export default function ResetPasswordScreen({ navigation, route }) {
           setIsResettingPassword(false); // Reset flag on error
           navigation.navigate('Signin');
         }
+      } else if (phone) {
+        setMode('phone');
+        const { data } = await supabase.auth.getSession();
+  if (data.session) {
+    setIsResettingPassword(true);
+    setSessionEstablished(true);
+  }
+     
       } else {
         showAlert(t('Alerts', 'error'), t('ResetPasswordScreen', 'resetError'));
         navigation.navigate('Signin');
@@ -64,7 +79,51 @@ export default function ResetPasswordScreen({ navigation, route }) {
     return () => {
       setIsResettingPassword(false);
     };
-  }, [access_token, refresh_token, navigation, setIsResettingPassword]);
+  }, [access_token, refresh_token, phone, navigation, setIsResettingPassword]);
+
+  const handleVerifyCode = async () => {
+    if (!otpCode) {
+      showAlert(t('Alerts', 'error'), t('ResetPasswordScreen', 'enterCode') || 'Please enter the code you received');
+      return;
+    }
+    try {
+      setVerifyingCode(true);
+      // verifyOtp authenticates the user directly and establishes a session -
+      // no separate setSession call needed, unlike the email/token_hash path.
+      setIsResettingPassword(true); 
+      const { error } = await supabase.auth.verifyOtp({
+        phone,
+        token: otpCode.trim(),
+        type: 'sms',
+      });
+      if (error) throw error;
+      setIsResettingPassword(true);
+      setSessionEstablished(true);
+    } catch (error) {
+       setIsResettingPassword(false)
+      console.error('Verify code error:', error.message);
+      showAlert(t('Alerts', 'error'), t('ResetPasswordScreen', 'invalidCode') || 'That code is invalid or expired');
+    } finally {
+      setVerifyingCode(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    try {
+      setResending(true);
+      const { error } = await supabase.auth.signInWithOtp({
+        phone,
+        options: { shouldCreateUser: false },
+      });
+      if (error) throw error;
+      showAlert(t('Alerts', 'success'), t('ResetPasswordScreen', 'codeResent') || 'A new code has been sent');
+    } catch (error) {
+      console.error('Resend code error:', error.message);
+      showAlert(t('Alerts', 'error'), t('ResetPasswordScreen', 'resetError'));
+    } finally {
+      setResending(false);
+    }
+  };
 
   const handleUpdatePassword = async () => {
     // Validate password
@@ -101,14 +160,30 @@ export default function ResetPasswordScreen({ navigation, route }) {
       showAlert(
         t('Alerts', 'success'), 
         t('ResetPasswordScreen', 'resetSuccess'),
-        [{ text: 'OK', onPress: () => navigation.navigate('Signin') }]
+        [{ text: 'OK', onPress: () => setIsResettingPassword(false) }]
       );
     } catch (error) {
       console.error('Update password error:', error.message);
+       const samePassword =
+    error?.code === 'same_password' ||
+    /different from the old password/i.test(error?.message || '');
+
+  if (samePassword) {
+    // Recoverable: stay on the screen with the flag still on
+    setPasswordError(
+      t('ResetPasswordScreen', 'samePassword') ||
+        'Please choose a password different from your old one'
+    );
+    return; // `finally` still turns the loading spinner off
+  }
       // Reset flag on error
-      setIsResettingPassword(false);
+      
       showAlert(t('Alerts', 'error'), t('ResetPasswordScreen', 'resetError'), [
-        { text: 'OK', onPress: () => navigation.navigate('Signin') }
+        { text: t('ResetPasswordScreen', 'tryAgain') || 'Try again' },
+          {
+            text: t('ResetPasswordScreen', 'skipForNow') || 'Skip for now',
+            onPress: () => setIsResettingPassword(false),
+          },
       ]);
     } finally {
       setLoading(false);
@@ -121,44 +196,88 @@ export default function ResetPasswordScreen({ navigation, route }) {
         <LanguageSelector />
       </View>
       <Text  style={styles.title}>{t('ResetPasswordScreen', 'title')}</Text>
-      <Text style={styles.subtitle}>
-        {t('ResetPasswordScreen', 'enterNewPassword')}
-      </Text>
-      
-      <Input
-        placeholder={t('ResetPasswordScreen', 'newPassword')}
-        onChangeText={(text) => {
-          setPassword(text);
-          setPasswordError('');
-        }}
-        value={password}
-        secureTextEntry={!showPassword}
-        rightIcon={{ 
-             type: 'font-awesome', 
-             name: showPassword ? 'eye-slash' : 'eye',
-             size: theme.responsiveComponents.icon.medium,
-             color: theme.colors.textSecondary,
-             onPress: () => setShowPassword(!showPassword)
-       }}
-        errorMessage={passwordError}
-        disabled={!sessionEstablished || loading}
-      />
-      
-      <Input
-        placeholder={t('ResetPasswordScreen', 'confirmPassword')}
-        onChangeText={setConfirmPassword}
-        value={confirmPassword}
-        secureTextEntry={!showPassword}
-        disabled={!sessionEstablished || loading}
-      />
-      
-      <Button
-        title={sessionEstablished ? t('ResetPasswordScreen', 'resetPassword') : t('Alerts', 'loading')}
-        onPress={handleUpdatePassword}
-        loading={loading}
-        disabled={!sessionEstablished || loading}
-        buttonStyle={styles.button}
-      />
+
+      {mode === 'phone' && !sessionEstablished ? (
+        <>
+          <Text style={styles.subtitle}>
+            {t('ResetPasswordScreen', 'enterCode') || 'Enter the code we sent you'}
+          </Text>
+
+          <Input
+            placeholder="123456"
+            onChangeText={setOtpCode}
+            value={otpCode}
+            keyboardType="number-pad"
+            disabled={verifyingCode}
+          />
+
+          <Button
+            title={t('ResetPasswordScreen', 'verifyCode') || 'Verify code'}
+            onPress={handleVerifyCode}
+            loading={verifyingCode}
+            buttonStyle={styles.button}
+          />
+
+          <Button
+            title={t('ResetPasswordScreen', 'resendCode') || 'Resend code'}
+            type="clear"
+            onPress={handleResendCode}
+            loading={resending}
+          />
+          <Button
+  title={t('ResetPasswordScreen', 'backToSignin') || 'Back to sign in'}
+  type="clear"
+  onPress={() => navigation.navigate('Signin')}
+/>
+        </>
+      ) : (
+        <>
+          <Text style={styles.subtitle}>
+            {t('ResetPasswordScreen', 'enterNewPassword')}
+          </Text>
+
+          <Input
+            placeholder={t('ResetPasswordScreen', 'newPassword')}
+            onChangeText={(text) => {
+              setPassword(text);
+              setPasswordError('');
+            }}
+            value={password}
+            secureTextEntry={!showPassword}
+            rightIcon={{ 
+                 type: 'font-awesome', 
+                 name: showPassword ? 'eye-slash' : 'eye',
+                 size: theme.responsiveComponents.icon.medium,
+                 color: theme.colors.textSecondary,
+                 onPress: () => setShowPassword(!showPassword)
+           }}
+            errorMessage={passwordError}
+            disabled={!sessionEstablished || loading}
+          />
+          
+          <Input
+            placeholder={t('ResetPasswordScreen', 'confirmPassword')}
+            onChangeText={setConfirmPassword}
+            value={confirmPassword}
+            secureTextEntry={!showPassword}
+            disabled={!sessionEstablished || loading}
+          />
+          
+          <Button
+            title={sessionEstablished ? t('ResetPasswordScreen', 'resetPassword') : t('Alerts', 'loading')}
+            onPress={handleUpdatePassword}
+            loading={loading}
+            disabled={!sessionEstablished || loading}
+            buttonStyle={styles.button}
+          />
+          <Button
+  title={t('ResetPasswordScreen', 'skipForNow') || 'Skip for now'}
+  type="clear"
+  disabled={loading}
+  onPress={() => setIsResettingPassword(false)}
+/>
+        </>
+      )}
     </View>
   );
 }

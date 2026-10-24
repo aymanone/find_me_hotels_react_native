@@ -23,6 +23,7 @@ export const ScreenTranslations = {
       Language:"Language Settings",
       SignOut:"sign out",
       ContactUs:"contact us",
+     
 
     }  ,
     ar:{
@@ -32,6 +33,7 @@ export const ScreenTranslations = {
       Language:'اعدادات اللغة',
       SignOut:"تسجيل الخروج",
        ContactUs:"اتصل بنا",
+      
 
     }
 
@@ -167,6 +169,9 @@ export const ScreenTranslations = {
   "noRegistrationNeeded": "No commitment",
   "or": "or",
   "alreadyHaveAccount": "Already have an account?",
+  phone: 'Phone',
+phoneHint: 'Include the country code, e.g. +20',
+invalidPhone: 'Please enter a valid phone number',
     },
     ar: {
       title: 'الغرفة',
@@ -189,6 +194,9 @@ export const ScreenTranslations = {
   "noRegistrationNeeded": " لا التزام",
   "or": "أو",
   "alreadyHaveAccount": "لديك حساب؟",
+  phone: 'الهاتف',
+phoneHint: 'أدخل الرقم مع رمز الدولة، مثال: +20',
+invalidPhone: 'يرجى إدخال رقم هاتف صحيح',
     }
   },
   SignupScreen: {
@@ -220,6 +228,21 @@ export const ScreenTranslations = {
       invalidPassword: 'Password must be at least 8 characters long small and capital characters and special characters.',
       countriesError: 'Unable to load countries. Please try again later.',
       "contactUs":"contact us",
+      phone: 'Phone',
+  phonePlaceholder: 'e.g. 1012345678',
+  invalidPhone: 'Please enter a valid phone number',
+  searchCountryOrCode: 'Search',
+  phoneCodeHint: 'Choose the country code of your phone number. It follows your country selection unless you change it.',
+  loadingCountries: 'Loading countries...',
+  selectCountry: 'Select country...',
+  searchCountry: 'Search country...',
+  whatsappOptin: 'I agree to receive WhatsApp messages about my requests and offers',
+  whatsappOptinRequired: 'Please agree to receive WhatsApp messages',
+  passwordHint: 'Password must contain at least 8 characters, including uppercase, lowercase, and numbers',
+  selectMessagingApp: 'Select messaging app',
+  agentPhonePlaceholder: '(e.g. +1234567890)',
+  agentPhoneHint: 'Phone number must start with country code (e.g. +20 for Egypt)',
+  selectRole: 'Select role',
     },
     ar: {
       title: 'إنشاء حساب',
@@ -249,6 +272,21 @@ export const ScreenTranslations = {
       invalidPassword: 'Password must be at least 8 characters long small and capital characters and special characters.',
       countriesError: 'تعذر تحميل البلدان. يرجى المحاولة مرة أخرى لاحقاً.',
       "contactUs":"اتصل بنا",
+      phone: 'الهاتف',
+  phonePlaceholder: 'e.g. 1012345678',
+  invalidPhone: 'يرجى إدخال رقم هاتف صحيح',
+  searchCountryOrCode: 'ابحث',
+  phoneCodeHint: 'اختر رمز دولة رقم هاتفك. يتبع الدولة التي اخترتها ما لم تغيّره.',
+  loadingCountries: 'جارٍ تحميل الدول...',
+  selectCountry: 'اختر الدولة...',
+  searchCountry: 'ابحث',
+  whatsappOptin: 'أوافق على تلقي رسائل واتساب بخصوص طلباتي والعروض',
+  whatsappOptinRequired: 'يرجى الموافقة على تلقي رسائل واتساب',
+  passwordHint: 'يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل، وتتضمن أحرفًا كبيرة وصغيرة وأرقامًا',
+  selectMessagingApp: 'اختر تطبيق المراسلة',
+  agentPhonePlaceholder: '(مثال: +1234567890)',
+  agentPhoneHint: 'يجب أن يبدأ رقم الهاتف برمز الدولة (مثال: +20 لمصر)',
+  selectRole: 'اختر الدور',
     }
   },
   ForgotPasswordScreen: {
@@ -261,6 +299,10 @@ export const ScreenTranslations = {
       resetError: 'Failed to send reset email. Please try again.',
       invalidEmail: 'Please enter a valid email address.',
       enterEmail: 'Enter your email address to reset your password',
+       phone: 'Phone',
+       enterPhone: 'Enter your phone number',
+       invalidPhone: 'Please enter a valid phone number',
+       phoneHint: 'Include the country code, e.g. +20',
     },
     ar: {
       title: 'نسيت كلمة المرور',
@@ -271,6 +313,10 @@ export const ScreenTranslations = {
       resetError: 'فشل في إرسال رابط إعادة التعيين. يرجى المحاولة مرة أخرى.',
       invalidEmail: 'يرجى إدخال عنوان بريد إلكتروني صحيح.',
       enterEmail: 'أدخل عنوان بريدك الإلكتروني لإعادة تعيين كلمة المرور',
+       phone: 'الهاتف',
+  enterPhone: 'أدخل رقم هاتفك',
+  invalidPhone: 'يرجى إدخال رقم هاتف صحيح',
+  phoneHint: 'أدخل الرقم مع رمز الدولة، مثال: +20',
     }
   },
   ResetPasswordScreen: {
@@ -284,6 +330,10 @@ export const ScreenTranslations = {
       passwordMismatch: 'Passwords do not match.',
       invalidPassword: 'Password must be at least 8 characters long small and capital characters and special characters.',
       enterNewPassword: 'Please enter your new password below.',
+      samePassword:"Please choose a password different from your old one",
+      backToSignin: 'Back to sign in',
+  skipForNow: 'Skip for now',
+  tryAgain: 'Try again',
     },
     ar: {
       title: 'إعادة تعيين كلمة المرور',
@@ -295,6 +345,10 @@ export const ScreenTranslations = {
       passwordMismatch: 'كلمات المرور غير متطابقة.',
       invalidPassword: 'Password must be at least 8 characters long small and capital characters and special characters.',
       enterNewPassword: 'يرجى إدخال كلمة المرور الجديدة أدناه.',
+       samePassword:"اختر كلمة سر مختلفة عن اخر كلمة سر",
+       backToSignin: 'العودة إلى تسجيل الدخول',
+  skipForNow: 'تخطي الآن',
+  tryAgain: 'حاول مرة أخرى',
     }
   },
   // Common alert messages
@@ -771,8 +825,8 @@ export const ScreenTranslations = {
     somePreferredAgentCountriesNoLongerAvailable: 'Some preferred agent countries are no longer available. They have been removed from your selection.',
     failedValidateAreas: 'Failed to validate areas. Please try again.',
     selectedAreaNoLongerAvailable: 'The selected area is no longer available for visits. Please select another area.',
-    travelRequestUpdatedSuccessfully: 'Travel request updated successfully!. Offers may take some time to arrive, you will receive an email as soon as a new offer is sent',
-    travelRequestSubmittedSuccessfully: 'Travel request submitted successfully!. Offers may take some time to arrive, you will receive an email as soon as a new offer is sent',
+    travelRequestUpdatedSuccessfully: 'Travel request updated successfully!. Offers may take some time to arrive, you will receive a message as soon as a new offer is sent',
+    travelRequestSubmittedSuccessfully: 'Travel request submitted successfully!. Offers may take some time to arrive, you will receive a message as soon as a new offer is sent',
     anErrorHappenedPleaseTryAgain: 'An error happened please try again',
     breakfast: 'Breakfast',
     lunch: 'Lunch',
@@ -888,8 +942,8 @@ export const ScreenTranslations = {
     somePreferredAgentCountriesNoLongerAvailable: 'بعض بلدان الوسطاء المفضلة لم تعد متاحة. تم إزالتها من اختيارك.',
     failedValidateAreas: 'فشل في التحقق من صحة المناطق. يرجى المحاولة مرة أخرى.',
     selectedAreaNoLongerAvailable: 'المنطقة المختارة لم تعد متاحة للزيارات. يرجى اختيار منطقة أخرى.',
-    travelRequestUpdatedSuccessfully: 'تم تحديث طلب رحلتك. قد تستغرق العروض بعض الوقت للوصول, ستصلك رسالة بريد إلكتروني فور إرسال عرض جديد',
-    travelRequestSubmittedSuccessfully: 'تم إرسال طلب رحلتك. قد تستغرق العروض بعض الوقت للوصول, ستصلك رسالة بريد إلكتروني فور إرسال عرض جديد',
+    travelRequestUpdatedSuccessfully: 'تم تحديث طلب رحلتك. قد تستغرق العروض بعض الوقت للوصول, ستصلك رسالة فور إرسال عرض جديد',
+    travelRequestSubmittedSuccessfully: 'تم إرسال طلب رحلتك. قد تستغرق العروض بعض الوقت للوصول, ستصلك رسالة فور إرسال عرض جديد',
     anErrorHappenedPleaseTryAgain: 'حدث خطأ يرجى المحاولة مرة أخرى',
     breakfast: 'فطار',
     lunch: 'غداء',
@@ -922,6 +976,7 @@ export const ScreenTranslations = {
   ,
   ClientClientProfileScreen: {
   en: {
+
     myProfile: 'My Profile',
     personalInformation: 'Personal Information',
     firstName: 'First Name',
@@ -951,6 +1006,7 @@ export const ScreenTranslations = {
     success: 'Success',
     // Labels for info display
     emailLabel: 'Email:',
+    phoneLabel:"Phone",
     firstNameLabel: 'First Name:',
     lastNameLabel: 'Last Name:',
     countryLabel: 'Country:',
@@ -1004,6 +1060,7 @@ export const ScreenTranslations = {
     success: 'نجح',
     // Labels for info display
     emailLabel: 'البريد الإلكتروني:',
+    phoneLabel:"رقم الهاتف:",
     firstNameLabel: 'الاسم الأول:',
     lastNameLabel: 'اسم العائلة:',
     countryLabel: 'البلد:',
@@ -1116,8 +1173,7 @@ export const ScreenTranslations = {
     accepted: 'Accepted',
     rejected: 'Rejected',
     viewed: 'Viewed',
-    notViewed: 'Not Viewed',
-    contacted: 'Contacted',
+    notViewed: 'Not Viewed'
   },
   ar: {
     // Alert Messages
@@ -1171,8 +1227,7 @@ export const ScreenTranslations = {
     accepted: 'مقبول',
     rejected: 'مرفوض',
     viewed: 'تم عرضه',
-    notViewed: 'لم يتم عرضه',
-    contacted: 'تم التواصل',
+    notViewed: 'لم يتم عرضه'
   }
 }
   ,
@@ -1300,8 +1355,7 @@ export const ScreenTranslations = {
     accepted: 'Accepted',
     rejected: 'Rejected',
     viewed: 'Viewed',
-    notViewed: 'Not Viewed',
-    contacted:"contacted",
+    notViewed: 'Not Viewed'
   },
   ar: {
     // Access and Error Messages
@@ -1357,8 +1411,7 @@ export const ScreenTranslations = {
     accepted: 'مقبولة',
     rejected: 'مرفوضة',
     viewed: 'تم عرضها',
-    notViewed: 'لم يتم عرضها',
-    contacted: 'تم التواصل',
+    notViewed: 'لم يتم عرضها'
   }
 }
   ,
@@ -1603,7 +1656,6 @@ invalidCost: 'Total cost must be a whole number greater than 0',
     
     // Star ratings for dropdown
     starsLabel: '{count} stars',
-    roomType: 'Room type',
   },
   ar: {
     // Access and Authentication
@@ -1715,7 +1767,6 @@ invalidCost: 'يجب أن تكون التكلفة الإجمالية رقمًا 
     
     // Star ratings for dropdown
     starsLabel: '{count} نجوم',
-    roomType: 'نوع الغرفة',
   }
 }
   ,
@@ -2048,11 +2099,6 @@ invalidCost: 'يجب أن تكون التكلفة الإجمالية رقمًا 
     room: 'room',
     squareMeters: 'meters²',
     none: 'None',
-    viewAllOffers: 'View all offers for this request',
-updatedOn: 'Updated on',
-phoneCopied : "Phone number copied",
-copyPhone : "Copy phone number",
-success : "Success",
   },
   ar: {
     title: 'تفاصيل العرض',
@@ -2125,12 +2171,6 @@ success : "Success",
     room: 'غرفة',
     squareMeters: 'متر²',
     none: 'لا شيء',
-    viewAllOffers: 'عرض جميع العروض لهذا الطلب',
-updatedOn: 'آخر تحديث',
-phoneCopied : "تم نسخ رقم الهاتف",
-copyPhone : "نسخ رقم الهاتف",
-success : "نجاح",
-
   }
 }
   ,
@@ -2371,6 +2411,7 @@ success : "نجاح",
   ,
   ContactUsScreen: {
   en: {
+    pythonetName:"Pythonet for Information Technology.",
     title: "Contact Us",
     subtitle: "We'd love to hear from you!",
     namePlaceholder: "Your Name",
@@ -2391,12 +2432,9 @@ success : "نجاح",
      "contactWhatsApp": "Contact us on WhatsApp",
   "whatsappMessage": "Hello, I would like to contact you regarding Alghorfa services.",
   "whatsappError": "Could not open WhatsApp. Please try again.",
-  poweredBy: 'Powered by',
-pythonetName: 'Pythonet for Information Technology',
-linkError: 'Could not open link',
-
   },
   ar: {
+    pythonetName:".بايثونت لتكنولوجيا المعلومات",
     title: "اتصل بنا",
     subtitle: "نحن نحب أن نسمع منك!",
     namePlaceholder: "اسمك",
@@ -2417,9 +2455,6 @@ linkError: 'Could not open link',
     "contactWhatsApp": "تواصل معنا عبر الواتساب",
   "whatsappMessage": "مرحباً، أود التواصل معكم بخصوص خدمات الغرفة.",
   "whatsappError": "تعذر فتح الواتساب. يرجى المحاولة مرة أخرى.",
-  poweredBy: 'بدعم من',
-pythonetName: 'بايثونت لتكنولوجيا المعلومات',
-linkError: 'تعذر فتح الرابط',
   }
 },
  AdminCompanyProfileScreen: {
@@ -2459,7 +2494,6 @@ linkError: 'تعذر فتح الرابط',
     viewed: 'Viewed',
     rejected: 'Rejected',
     accepted: 'Accepted',
-    contacted: 'Contacted',
     editCompany: 'Edit Company',
     updateCompany: 'Update Company',
     deleteCompany: 'Delete Company',
@@ -2527,7 +2561,6 @@ linkError: 'تعذر فتح الرابط',
     viewed: 'تم العرض',
     rejected: 'مرفوض',
     accepted: 'مقبول',
-    contacted: 'تم التواصل',
     editCompany: 'تعديل الشركة',
     updateCompany: 'تحديث الشركة',
     deleteCompany: 'حذف الشركة',
@@ -2563,7 +2596,6 @@ linkError: 'تعذر فتح الرابط',
   ,
  AgentSearchTravelRequestsScreen: {
   en: {
-    nights: 'Nights',
     title: 'Search Travel Requests',
     accessDenied: 'Access Denied',
     accessDeniedMessage: 'You must be an agent to access this screen.',
@@ -2625,7 +2657,6 @@ linkError: 'تعذر فتح الرابط',
     createdAt:"created at",
   },
   ar: {
-    nights: 'الليالي',
     title: 'البحث في طلبات السفر',
     accessDenied: 'الوصول مرفوض',
     accessDeniedMessage: 'يجب أن تكون وكيل سفر للوصول إلى هذه الشاشة.',
@@ -2823,5 +2854,37 @@ ar: {
   needAgentOrCompany: 'هل تريد التسجيل كوكيل أو شركة؟',
   fullSignup: 'صفحة التسجيل الكاملة'
 }
+},
+OtpStep: {
+  en: {
+    title: 'Verify your phone',
+    codeSentTo: 'We sent a 6-digit code to your WhatsApp at',
+    verify: 'Verify',
+    resendCode: 'Resend code',
+    resendIn: 'Resend code in',
+    changeNumber: 'Change phone number',
+    tooManyWrongCodes: 'Too many wrong codes. Request a new code.',
+    invalidCode: 'Invalid or expired code',
+    tooManyRequests: 'Too many requests, please try again later',
+    codeResent: 'A new code was sent to your WhatsApp',
+     attemptsLeft: 'attempts left',
+  attemptLeft: 'attempt left',
+  sendFailed: 'Could not send the code. Please try again.',
+  },
+  ar: {
+    title: 'تأكيد رقم هاتفك',
+    codeSentTo: 'أرسلنا رمزًا من 6 أرقام إلى واتساب على الرقم',
+    verify: 'تأكيد',
+    resendCode: 'إعادة إرسال الرمز',
+    resendIn: 'إعادة الإرسال بعد',
+    changeNumber: 'تغيير رقم الهاتف',
+    tooManyWrongCodes: 'عدد كبير من الرموز الخاطئة. اطلب رمزًا جديدًا.',
+    invalidCode: 'الرمز غير صحيح أو منتهي الصلاحية',
+    tooManyRequests: 'طلبات كثيرة جدًا، يرجى المحاولة لاحقًا',
+    codeResent: 'تم إرسال رمز جديد إلى واتساب',
+     attemptsLeft: 'محاولات متبقية',
+  attemptLeft: 'محاولة متبقية',
+  sendFailed: 'تعذر إرسال الرمز. حاول مرة أخرى.',
+  },
 },
 }; 
