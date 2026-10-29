@@ -2099,6 +2099,8 @@ invalidCost: 'يجب أن تكون التكلفة الإجمالية رقمًا 
     room: 'room',
     squareMeters: 'meters²',
     none: 'None',
+    viewAllOffers:"view all Offers.",
+    copyPhone:"copy Phone Number.",
   },
   ar: {
     title: 'تفاصيل العرض',
@@ -2171,6 +2173,8 @@ invalidCost: 'يجب أن تكون التكلفة الإجمالية رقمًا 
     room: 'غرفة',
     squareMeters: 'متر²',
     none: 'لا شيء',
+    viewAllOffers:"عرض كل العروض.",
+    copyPhone:"نسخ رقم الهاتف.",
   }
 }
   ,
