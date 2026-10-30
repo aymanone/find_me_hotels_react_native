@@ -398,7 +398,7 @@ const appHasLink =(messagingApp) =>{
                   <View style={styles.hotelDetailRow}>
                     <Icon name="bed-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
                     <Text style={[styles.hotelDetailText, hotelTextDirection]}>
-                      <Text style={styles.hotelDetailLabel}>{t('AgentTravelRequestDetailsScreen', 'roomType')} </Text>
+                      <Text style={styles.hotelDetailLabel}>{t('ClientOfferDetailsScreen', 'roomType')} </Text>
                       {hotel.room_type}
                     </Text>
                   </View>

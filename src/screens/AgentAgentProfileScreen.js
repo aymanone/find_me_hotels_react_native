@@ -486,7 +486,7 @@ const updatePassword = async () => {
                   </View>
                   <View style={styles.statItem}>
   <Text style={[styles.statValue, { color: theme.colors.accent }]}>{offerStats.contacted_offers || 0}</Text>
-  <Text style={styles.statLabel}>{t('CompanyAgentProfileScreen', 'contacted')}</Text>
+  <Text style={styles.statLabel}>{t('AdminCompanyProfileScreen', 'contacted')}</Text>
 </View>
                   <View style={styles.statItem}>
                     <Text style={[styles.statValue, { color: theme.colors.info}]}>{offerStats.viewed_offers || 0}</Text>

@@ -1173,7 +1173,8 @@ invalidPhone: 'يرجى إدخال رقم هاتف صحيح',
     accepted: 'Accepted',
     rejected: 'Rejected',
     viewed: 'Viewed',
-    notViewed: 'Not Viewed'
+    notViewed: 'Not Viewed',
+    contacted:"contacted",
   },
   ar: {
     // Alert Messages
@@ -1227,7 +1228,8 @@ invalidPhone: 'يرجى إدخال رقم هاتف صحيح',
     accepted: 'مقبول',
     rejected: 'مرفوض',
     viewed: 'تم عرضه',
-    notViewed: 'لم يتم عرضه'
+    notViewed: 'لم يتم عرضه',
+    contacted:"تم الاتصال",
   }
 }
   ,
@@ -1355,7 +1357,8 @@ invalidPhone: 'يرجى إدخال رقم هاتف صحيح',
     accepted: 'Accepted',
     rejected: 'Rejected',
     viewed: 'Viewed',
-    notViewed: 'Not Viewed'
+    notViewed: 'Not Viewed',
+    contacted:"contacted",
   },
   ar: {
     // Access and Error Messages
@@ -1618,6 +1621,7 @@ invalidPhone: 'يرجى إدخال رقم هاتف صحيح',
     hotelRating: 'Hotel Rating',
     selectRating: 'Select rating',
     totalCostInDollars: 'Total Cost in $',
+    roomType:"Room Type",
     notesLabel: 'Notes',
     mealsLabel: 'Meals',
     breakfast: 'Breakfast',
@@ -1634,6 +1638,7 @@ invalidPhone: 'يرجى إدخال رقم هاتف صحيح',
     mealsColon: 'Meals:',
     totalCost: 'Total Cost:',
     notesColon: 'Notes:',
+
     
     // Validations and Alerts
     invalidRooms: 'Number of rooms must be a whole number of at least 1',
@@ -1736,7 +1741,7 @@ invalidCost: 'Total cost must be a whole number greater than 0',
     dinner: 'العشاء',
     addHotel: 'إضافة فندق',
     updateHotel: 'تحديث الفندق',
-    
+    roomType:"نوع الغرفة",
     // Hotel List
     currentHotelsInOffer: 'الفنادق الحالية في العرض:',
     addedHotels: 'الفنادق المضافة:',
@@ -2079,6 +2084,7 @@ invalidCost: 'يجب أن تكون التكلفة الإجمالية رقمًا 
     name: 'Name:',
     address: 'Address:',
     rooms: 'Rooms:',
+    roomType:"Room Type:",
     rating: 'Rating:',
     cost: 'Cost:',
     meals: 'Meals:',
@@ -2101,6 +2107,7 @@ invalidCost: 'يجب أن تكون التكلفة الإجمالية رقمًا 
     none: 'None',
     viewAllOffers:"view all Offers.",
     copyPhone:"copy Phone Number.",
+
   },
   ar: {
     title: 'تفاصيل العرض',
@@ -2123,6 +2130,7 @@ invalidCost: 'يجب أن تكون التكلفة الإجمالية رقمًا 
     numberOfHotels: 'عدد الفنادق',
     hotelRating: 'تقييم الفندق',
     priceRange: 'نطاق السعر',
+    roomType:"نوع الغرفة:",
     status: 'الحالة',
     createdDate: 'تاريخ الإنشاء',
     updatedDate: 'تاريخ التحديث',
@@ -2498,6 +2506,7 @@ invalidCost: 'يجب أن تكون التكلفة الإجمالية رقمًا 
     viewed: 'Viewed',
     rejected: 'Rejected',
     accepted: 'Accepted',
+    contacted:"contacted",
     editCompany: 'Edit Company',
     updateCompany: 'Update Company',
     deleteCompany: 'Delete Company',
@@ -2565,6 +2574,7 @@ invalidCost: 'يجب أن تكون التكلفة الإجمالية رقمًا 
     viewed: 'تم العرض',
     rejected: 'مرفوض',
     accepted: 'مقبول',
+    contacted:"تم الاتصال",
     editCompany: 'تعديل الشركة',
     updateCompany: 'تحديث الشركة',
     deleteCompany: 'حذف الشركة',

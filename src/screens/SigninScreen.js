@@ -17,7 +17,7 @@ export default function LoginScreen({ navigation, route, isModal = false, onAuth
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [contact_method, setContactMethod] = useState('phone'); // 'email' | 'phone'
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState('+');
   const [step, setStep] = useState('form'); // 'form' | 'otp' (only for phone accounts that never confirmed their number)
   const [otpMeta, setOtpMeta] = useState(null); // { phone, sendCount, nextSendAt }
 

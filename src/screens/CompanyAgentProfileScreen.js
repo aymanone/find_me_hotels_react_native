@@ -486,7 +486,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
           </View>
           <View style={styles.statItem}>
   <Text style={[styles.statValue, { color: theme.colors.accent }]}>{stats.contactedOffers}</Text>
-  <Text style={styles.statLabel}>{t('CompanyAgentProfileScreen', 'contacted')}</Text>
+  <Text style={styles.statLabel}>{t('AdminCompanyProfileScreen', 'contacted')}</Text>
 </View>
           <View style={styles.statItem}>
             <Text style={[styles.statValue, { color: theme.colors.info }]}>{stats.viewedOffers}</Text>
