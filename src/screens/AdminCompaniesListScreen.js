@@ -145,6 +145,8 @@ export default function AdminCompaniesListScreen({ navigation }) {
         />
       </View>
       <SearchBar
+      searchIcon={{ type: 'font-awesome-5', name: 'search', solid: true, size: 18 }}
+      clearIcon={{ type: 'font-awesome-5', name: 'times-circle', solid: true, size: 18 }}
   placeholder={t('AdminCompaniesListScreen', 'searchCompaniesPlaceholder')}
   onChangeText={updateSearch}
   value={search}
@@ -191,7 +193,7 @@ export default function AdminCompaniesListScreen({ navigation }) {
               title={t('AdminCompaniesListScreen', 'viewProfile')}
               onPress={() => viewCompanyProfile(company.id)}
               buttonStyle={styles.viewButton}
-              icon={<Icon name="arrow-forward" type="ionicon"  color={theme.colors.textWhite} size={theme.spacing.lg} />}
+              icon={<Icon  name="arrow-right" type="font-awesome-5" solid color={theme.colors.textWhite} size={theme.spacing.lg} />}
               iconRight
               iconContainerStyle={styles.buttonIcon}
             />

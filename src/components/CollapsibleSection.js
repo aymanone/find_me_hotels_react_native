@@ -44,7 +44,8 @@ const CollapsibleSection = ({
         <Text style={[styles.title, titleStyle]}>{title}</Text>
         <Icon 
           name={collapsed ? 'chevron-down' : 'chevron-up'} 
-          type="ionicon" 
+          type="font-awesome-5"
+          solid
           size={20}
         />
       </TouchableOpacity>

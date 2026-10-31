@@ -233,7 +233,7 @@ const ClientUpdatedRequestsScreen = ({ navigation }) => {
 
               <View style={styles.viewDetailsContainer}>
                 <Text style={styles.viewDetailsText}>{t('ClientUpdatedRequestsScreen', 'viewDetails')}</Text>
-               <Icon name="chevron-forward-outline" type="ionicon" size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
+               <Icon name="chevron-right" type="font-awesome-5" solid size={theme.responsiveComponents.icon.small} color={theme.colors.primary} />
               </View>
             </Card>
           </TouchableOpacity>

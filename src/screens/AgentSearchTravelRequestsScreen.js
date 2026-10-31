@@ -637,7 +637,8 @@ return (
         >
           <Icon 
             name="arrow-up" 
-            type="font-awesome" 
+            type="font-awesome-5"
+            solid
             size={theme.responsiveComponents.icon.medium} 
             color={theme.colors.textWhite} 
           />

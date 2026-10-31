@@ -420,7 +420,8 @@ ${requestUrl}`;
     <Text h4 style={styles.sectionTitle}>{t('ClientTravelRequestDetailsScreen', 'requestDetails')}</Text>
     <Icon
   name={requestSectionExpanded ? 'chevron-up' : 'chevron-down'}
-  type="font-awesome"
+  type="font-awesome-5"
+  solid
   size={theme.responsiveComponents.icon.medium}
   color={theme.colors.primary}
 />
@@ -560,7 +561,8 @@ ${requestUrl}`;
           <Text h4 style={styles.sectionTitle}>{t('ClientTravelRequestDetailsScreen', 'offers')} ({offers.length})</Text>
          <Icon
   name={requestSectionExpanded ? 'chevron-up' : 'chevron-down'}
-  type="font-awesome"
+  type="font-awesome-5"
+  solid
   size={theme.responsiveComponents.icon.medium}
   color={theme.colors.primary}
 />

@@ -286,13 +286,13 @@ const updatePassword = async () => {
             {!editMode ? (
               <Button
                 type="clear"
-                icon={<Icon name="edit" type="material" color={theme.colors.primary} />}
+                icon={<Icon name="pencil-alt" type="font-awesome-5" solid color={theme.colors.primary} />}
                 onPress={() => setEditMode(true)}
               />
             ) : (
               <Button
                 type="clear"
-                icon={<Icon name="close" type="material" color={theme.colors.error} />}
+                icon={<Icon name="times" type="font-awesome-5" solid  color={theme.colors.error} />}
                 onPress={() => {
                   setEditMode(false);
                   setPhoneNumber(profileData.phone_number || '');
@@ -328,8 +328,9 @@ const updatePassword = async () => {
               <Text style={styles.label}>{t('AgentAgentProfileScreen', 'accountStatus')}:</Text>
               <View style={styles.statusContainer}>
                <Icon
-                  name={profileData?.permitted_to_work ? 'check-circle' : 'cancel'}
-                  type="material"
+                   name={profileData?.permitted_to_work ? 'check-circle' : 'times-circle'}
+                   type="font-awesome-5"
+                   solid
                   color={profileData?.permitted_to_work ? theme.colors.success : theme.colors.error}
                   size={theme.responsiveComponents.icon.small}
                   style={styles.statusIcon}
@@ -404,7 +405,7 @@ const updatePassword = async () => {
   {!isChangingPassword ? (
      <Button
          title={t('AgentAgentProfileScreen', 'changePassword')}
-         icon={<Icon name="lock" type="material"  color={theme.colors.primary} size={theme.responsiveComponents.icon.medium} />}
+         icon={<Icon name="lock" type="font-awesome-5"  color={theme.colors.primary} size={theme.responsiveComponents.icon.medium} />}
          type="outline"
          buttonStyle={styles.securityButton}
          containerStyle={styles.buttonContainer}

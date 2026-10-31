@@ -6,7 +6,7 @@ const config = getDefaultConfig(__dirname);
 const fallbackIcon = path.resolve(__dirname, 'shims/fallbackIcon.js');
 // Keep Ionicons, MaterialIcons, FontAwesome (v4) and FontAwesome5. Stub the rest.
 const UNUSED =
-  'AntDesign|Entypo|EvilIcons|Feather|Fontisto|Foundation|MaterialCommunityIcons|Octicons|SimpleLineIcons|Zocial';
+  'AntDesign|Entypo|EvilIcons|Feather|Fontisto|Foundation|MaterialCommunityIcons|MaterialIcons|Octicons|SimpleLineIcons|Zocial';
 // e.g. react-native-vector-icons/Ionicons, @expo/vector-icons/build/Ionicons
 const packageRe = new RegExp(
   `^(react-native-vector-icons|@expo/vector-icons)(/(build|dist|lib))?/(${UNUSED})(\\.js)?$`

@@ -328,7 +328,7 @@ const CompanyAgentProfileScreen = ({ route, navigation }) => {
           </Text>
           
           <Button
-            icon={<Icon name={isEditing ? "close" : "edit"} type="material"  size={theme.responsiveComponents.icon.medium} color={theme.colors.textWhite} />}
+            icon={<Icon name={isEditing ? "times" : "pencil-alt"} type="font-awesome-5" solid  size={theme.responsiveComponents.icon.medium} color={theme.colors.textWhite} />}
             title={isEditing ? t('CompanyAgentProfileScreen', 'cancel') : t('CompanyAgentProfileScreen', 'editProfile')}
             onPress={handleEditButtonPress}
             buttonStyle={[

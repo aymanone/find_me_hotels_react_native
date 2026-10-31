@@ -218,8 +218,9 @@ const getGridItemWidth = () => {
                   title={t('AgentUpdatedRequestsScreen', 'viewDetails')}
                 icon={
                   <Icon
-                    name="arrow-forward-outline"
-                    type="ionicon"
+                    name="arrow-right"
+                    type="font-awesome-5"
+                    solid
                     color={theme.colors.textWhite}
                     size={theme.responsiveComponents.icon.small}
                     style={{ marginRight: theme.spacing.sm }}

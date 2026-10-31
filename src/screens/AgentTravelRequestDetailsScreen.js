@@ -560,7 +560,8 @@ if (validationError) {
             <Text style={styles.sectionTitle}>{t('AgentTravelRequestDetailsScreen', 'requestDetails')}</Text>
             <Icon 
               name={requestSectionCollapsed ? 'chevron-down' : 'chevron-up'} 
-              type="ionicon" 
+              type="font-awesome-5"
+              solid
               size={theme.responsiveComponents.icon.medium}
               color={theme.colors.primary}
             />
@@ -687,7 +688,8 @@ if (validationError) {
               <Text style={styles.sectionTitle}>{t('AgentTravelRequestDetailsScreen', 'offerSummary')}</Text>
               <Icon 
                 name={offerSummaryCollapsed ? 'chevron-down' : 'chevron-up'} 
-                type="ionicon" 
+                type="font-awesome-5"
+                solid
                 size={theme.responsiveComponents.icon.medium}
                 color={theme.colors.primary}
               />
@@ -777,7 +779,8 @@ if (validationError) {
               </Text>
               <Icon 
                 name={hotelsSectionCollapsed ? 'chevron-down' : 'chevron-up'} 
-                type="ionicon" 
+                 type="font-awesome-5"
+                 solid
                 size={theme.responsiveComponents.icon.medium}
                 color={theme.colors.primary}
               />
@@ -870,7 +873,8 @@ if (validationError) {
                 </Text>
                 <Icon 
                   name={addHotelSectionCollapsed ? 'chevron-down' : 'chevron-up'} 
-                  type="ionicon" 
+                  type="font-awesome-5"
+                  solid
                   size={theme.responsiveComponents.icon.medium}
                   color={theme.colors.primary}
                 />

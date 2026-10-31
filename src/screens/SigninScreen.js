@@ -229,7 +229,8 @@ export default function LoginScreen({ navigation, route, isModal = false, onAuth
         {t('SigninScreen', 'submitNow')}
       </Text>
       <Icon 
-        type="font-awesome" 
+        type="font-awesome-5"
+        solid
         name="arrow-left" 
         size={responsive(16, 18, 18, 20, 20)} 
         color={theme.colors.textWhite} 

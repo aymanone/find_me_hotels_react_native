@@ -317,7 +317,8 @@ const fetchTravelRequests = async () => {
           </Text>
           <Icon 
             name="chevron-right" 
-            type="font-awesome" 
+            type="font-awesome-5"
+            solid
             size={theme.responsiveComponents.icon.small} 
             color={theme.colors.primary}
             containerStyle={styles.chevronIcon}

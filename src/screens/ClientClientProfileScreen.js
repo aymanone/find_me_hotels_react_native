@@ -392,7 +392,7 @@ export default function ClientClientProfileScreen({ navigation }) {
                 
                 <Button
                   title={t('ClientClientProfileScreen', 'editProfile')}
-                  icon={<Icon name="edit" type="material" color={theme.colors.textWhite} size={theme.responsiveComponents.icon.medium}  />}
+                  icon={<Icon name="pencil-alt" type="font-awesome-5" solid  color={theme.colors.textWhite} size={theme.responsiveComponents.icon.medium}  />}
                   iconContainerStyle={styles.buttonIcon}
                   onPress={() => setIsEditing(true)}
                   containerStyle={styles.fullButtonContainer}
@@ -458,7 +458,7 @@ export default function ClientClientProfileScreen({ navigation }) {
             ) : (
               <Button
                 title={t('ClientClientProfileScreen', 'changePassword')}
-                icon={<Icon name="lock" type="material" color={theme.colors.textWhite} size={theme.responsiveComponents.icon.medium}  />}
+                icon={<Icon name="lock" type="font-awesome-5" solid color={theme.colors.textWhite} size={theme.responsiveComponents.icon.medium}  />}
                 iconContainerStyle={styles.buttonIcon}
                 onPress={() => setIsChangingPassword(true)}
                 containerStyle={styles.fullButtonContainer}
@@ -473,7 +473,7 @@ export default function ClientClientProfileScreen({ navigation }) {
             <Text style={styles.sectionTitle}>{t('ClientClientProfileScreen', 'dangerZone')}</Text>
             <Button
             title={t('ClientClientProfileScreen', 'deleteAccount')}
-            icon={<Icon name="delete" type="material" color={theme.colors.textWhite} size={theme.responsiveComponents.icon.medium} />}
+            icon={<Icon name="trash-alt" type="font-awesome-5" solid  color={theme.colors.textWhite} size={theme.responsiveComponents.icon.medium} />}
             buttonStyle={styles.deleteButton}
             onPress={confirmDeleteAccount}
            containerStyle={styles.fullButtonContainer}

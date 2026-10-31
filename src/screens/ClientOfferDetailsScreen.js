@@ -278,7 +278,8 @@ const appHasLink =(messagingApp) =>{
           <Text style={styles.sectionTitle}>{t('ClientOfferDetailsScreen', 'offerInformation')}</Text>
           <Icon 
             name={offerInfoSectionCollapsed ? 'chevron-down' : 'chevron-up'} 
-            type="ionicon" 
+            type="font-awesome-5"
+            solid
             size={theme.responsiveComponents.icon.medium}
             color={theme.colors.textSecondary}
           />
@@ -347,7 +348,8 @@ const appHasLink =(messagingApp) =>{
           <Text style={styles.sectionTitle}>{t('ClientOfferDetailsScreen', 'hotels')}</Text>
           <Icon 
             name={hotelsSectionCollapsed ? 'chevron-down' : 'chevron-up'} 
-            type="ionicon" 
+            type="font-awesome-5"
+            solid
             size={theme.responsiveComponents.icon.medium}
             color={theme.colors.textSecondary}
           />
@@ -455,7 +457,8 @@ const appHasLink =(messagingApp) =>{
           <Text style={styles.sectionTitle}>{t('ClientOfferDetailsScreen', 'agentInformation')}</Text>
           <Icon 
             name={agentSectionCollapsed ? 'chevron-down' : 'chevron-up'} 
-            type="ionicon" 
+            type="font-awesome-5"
+            solid
             size={theme.responsiveComponents.icon.medium}
             color={theme.colors.textSecondary}
           />

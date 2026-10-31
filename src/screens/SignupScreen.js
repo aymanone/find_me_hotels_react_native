@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, StyleSheet, ScrollView, 
   KeyboardAvoidingView, Platform} from 'react-native';
-import { Button, Input, Text,  CheckBox } from 'react-native-elements';
+import { Button, Input, Text,  CheckBox,Icon } from 'react-native-elements';
 import { Dropdown } from 'react-native-element-dropdown';
 import {signOut,notAllowedAuthenticatedUser} from '../utils/auth';
 import { validEmail, validPasswordSignup, validPhoneNumber } from '../utils/validation';
@@ -475,6 +475,8 @@ const { error } = await supabase.auth.signUp(signupPayload);
 
 {isPhoneSignup && (
   <CheckBox
+    checkedIcon={<Icon name="check-square" type="font-awesome-5" solid size={22} color={theme.colors.primary} />}
+    uncheckedIcon={<Icon name="square" type="font-awesome-5" size={22} color={theme.colors.textLight} />}
     title={t('SignupScreen', 'whatsappOptin')}
     checked={whatsapp_optin}
     onPress={() => setWhatsappOptin(!whatsapp_optin)}

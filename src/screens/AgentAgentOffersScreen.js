@@ -281,7 +281,7 @@ const getStatusColor = (status) => {
                 <Text style={styles.viewButtonText}>
                   {outdated ? t('AgentAgentOffersScreen', 'viewOutdatedOffer') : activeOfferState(offer.travel_requests.updated_at, offer.updated_at)}
                 </Text>
-                <Icon name="arrow-right" type="font-awesome" size={theme.responsiveComponents.icon.small} color={theme.colors.textWhite} />
+                <Icon name="arrow-right"  type="font-awesome-5" solid  size={theme.responsiveComponents.icon.small} color={theme.colors.textWhite} />
               </TouchableOpacity>
             </Card>
             </View>
@@ -299,7 +299,8 @@ const getStatusColor = (status) => {
       >
         <Icon 
           name="arrow-up" 
-          type="font-awesome" 
+          type="font-awesome-5"
+          solid
           size={theme.responsiveComponents.icon.medium} 
           color={theme.colors.textWhite} 
         />

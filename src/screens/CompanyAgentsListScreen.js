@@ -216,6 +216,8 @@ const getGridItemWidth = () => {
       </View>
       
       <SearchBar
+        searchIcon={{ type: 'font-awesome-5', name: 'search', solid: true, size: 18 }}
+        clearIcon={{ type: 'font-awesome-5', name: 'times-circle', solid: true, size: 18 }}
         placeholder={t('CompanyAgentsListScreen', 'searchAgentsPlaceholder')}
         onChangeText={updateSearch}
         value={search}
