@@ -677,6 +677,14 @@ if (validationError) {
             </Text>
           </Card>
         )}
+         {/* Request Dates Passed Warning */}
+        {request && !inDateReq(request) && (
+          <Card containerStyle={styles.warningCard}>
+            <Text style={styles.warningText}>
+              {t('AgentTravelRequestDetailsScreen', 'requestDatesPassed')}
+            </Text>
+          </Card>
+        )}
         
         {/* Offer Summary Section */}
         {offerHotels.length > 0 && (
