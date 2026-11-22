@@ -1089,9 +1089,9 @@ useEffect(() => {
         status={sectionStatus.budgetAndOrigin}
         t={t}
         icon="wallet">
-            <View style={styles.row}>
+            <View style={[styles.row,{ alignItems: 'flex-start' }]}>
             <View style={styles.halfWidth}>
-                <Text style={styles.label}>{t('TravelRequestForm', 'minimumBudget')}</Text>
+                <Text style={styles.label} numberOfLines={2}>{t('TravelRequestForm', 'minimumBudget')}</Text>
                 <Input
                 keyboardType="numeric"
                 value={formData.minBudget} // Default 0 set in initial state
@@ -1108,7 +1108,7 @@ useEffect(() => {
             </View>
 
             <View style={styles.halfWidth}>
-                <Text style={styles.label}>{t('TravelRequestForm', 'maximumBudget')}</Text>
+                <Text style={styles.label} numberOfLines={2}>{t('TravelRequestForm', 'maximumBudget')}</Text>
                 <Input
                 keyboardType="numeric"
                 value={formData.maxBudget} // Default 10 set in initial state
